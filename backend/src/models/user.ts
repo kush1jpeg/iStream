@@ -1,6 +1,7 @@
 import mongoose, { model, Schema } from "mongoose";
 
 export interface IUser extends Document {
+  _id: string;
   username: string;
   email: string;
   passwordHash: string;
@@ -11,6 +12,9 @@ export interface IUser extends Document {
   following?: string[];
   createdAt: Date;
   updatedAt: Date;
+  googleId?: string;
+  twitchId?: string;
+  twitchAccessToken?: string;
 }
 const userSchema = new Schema<IUser>(
   {
@@ -34,6 +38,18 @@ const userSchema = new Schema<IUser>(
     avatar: {
       type: String,
       default: "",
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+    },
+    twitchId: {
+      type: String,
+      sparse: true,
+    },
+    twitchAccessToken: {
+      type: String,
+      sparse: true,
     },
     isVerified: {
       type: Boolean,

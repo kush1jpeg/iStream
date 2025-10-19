@@ -1,8 +1,18 @@
-import mongoose, { mongo } from "mongoose";
-const url = process.env.MONGODB_URL;
+import mongoose from "mongoose";
 
-mongoose.connection.on("connected", () => console.log("mongoDB connected"));
 export const dbConnect = async () => {
-  if (!url) return console.log("MONGODB_URL not provided");
-  await mongoose.connect(url + "/istream");
+  const url = process.env.MONGODB_URL?.trim();
+
+  if (!url) {
+    console.error("MONGODB_URL not provided or empty");
+    return;
+  }
+
+  try {
+    console.log("Connecting to MongoDB ");
+    await mongoose.connect(`${url}/istream`);
+    console.log("🔌 MongoDB connected successfully");
+  } catch (err: any) {
+    console.error(" MongoDB connection failed:", err.message);
+  }
 };
