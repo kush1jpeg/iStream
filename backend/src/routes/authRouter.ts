@@ -17,36 +17,40 @@ import {
   resetPassSchema,
   verifyAndChangePassSchema,
 } from "../validation/authSchemas.js";
-import passport from "passport";
+import type { PassportStatic } from "passport";
 
-export const authRouter = Router();
+export const authRouter = (passport: PassportStatic): Router => {
+  console.log(passport);
+  const authRouter = Router();
+  authRouter.post("/register", validate(loginSchema), register);
+  authRouter.post("/login", validate(loginSchema), login);
+  authRouter.get(
+    "/login/google",
+    passport.authenticate("google", { scope: ["profile", "email"] }),
+  );
+  authRouter.get(
+    "/login/google/callback",
+    passport.authenticate("google", { failureRedirect: "/api/auth" }),
+    loginXgoogle,
+  );
+  authRouter.post("/logout", authVerify, logout);
+  authRouter.post("/delete", authVerify, deleteAcc);
 
-authRouter.post("/register", validate(loginSchema), register);
-authRouter.post("/login", validate(loginSchema), login);
-authRouter.get(
-  "/login/google",
-  passport.authenticate("google", { scope: ["profile", "email"] }),
-);
-authRouter.get(
-  "/login/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  loginXgoogle,
-);
-authRouter.post("/logout", authVerify, logout);
-authRouter.post("/delete", authVerify, deleteAcc);
+  // password reset on authpage -> those  who forgot the password
+  authRouter.post("/forgotPass", validate(forgotPassSchema), forgotPass);
+  authRouter.post(
+    "/verifyPass",
+    validate(verifyAndChangePassSchema),
+    verifyandChangePass,
+  );
 
-// password reset on authpage -> those  who forgot the password
-authRouter.post("/forgotPass", validate(forgotPassSchema), forgotPass);
-authRouter.post(
-  "/verifyPass",
-  validate(verifyAndChangePassSchema),
-  verifyandChangePass,
-);
+  // password reset inside the app -> those who want to change their password
+  authRouter.post("/reset", validate(resetPassSchema), authVerify, resetPass);
 
-// password reset inside the app -> those who want to change their password
-authRouter.post("/reset", validate(resetPassSchema), authVerify, resetPass);
+  // to be eligible for streaming;
+  authRouter.post("/verifyOtp", authVerify, verifyOTP);
+  authRouter.post("/sendOtp", authVerify, sendOTP);
+  authRouter.post("/verified", authVerify, isVerified);
 
-// to be eligible for streaming;
-authRouter.post("/verifyOtp", authVerify, verifyOTP);
-authRouter.post("/sendOtp", authVerify, sendOTP);
-authRouter.post("/verified", authVerify, isVerified);
+  return authRouter;
+};

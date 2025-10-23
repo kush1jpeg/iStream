@@ -15,6 +15,10 @@ export interface IUser extends Document {
   googleId?: string;
   twitchId?: string;
   twitchAccessToken?: string;
+  googleAccessToken?: string;
+  isStreaming: boolean;
+  followerCount: Number;
+  followCount: Number;
 }
 const userSchema = new Schema<IUser>(
   {
@@ -35,6 +39,16 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
+    followerCount: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    followCount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
     avatar: {
       type: String,
       default: "",
@@ -51,6 +65,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       sparse: true,
     },
+    googleAccessToken: {
+      type: String,
+      sparse: true,
+    },
     isVerified: {
       type: Boolean,
       default: false,
@@ -60,15 +78,9 @@ const userSchema = new Schema<IUser>(
       unique: true,
       sparse: true, // allows nulls for non-streamers
     },
-    followers: {
-      type: [Schema.Types.ObjectId],
-      ref: "User",
-      default: [],
-    },
-    following: {
-      type: [Schema.Types.ObjectId],
-      ref: "User",
-      default: [],
+    isStreaming: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -77,4 +89,4 @@ const userSchema = new Schema<IUser>(
 );
 
 export const userModel: mongoose.Model<IUser> =
-  mongoose.models.User || model<IUser>("User", userSchema);
+  mongoose.models.users || model<IUser>("users", userSchema);

@@ -14,11 +14,12 @@ export const logout = async (req: Request, res: Response) => {
 export const deleteAcc = async (req: Request, res: Response) => {
   try {
     res.clearCookie("token");
-    const id = req.user;
-    if (!id) return res.json({ msg: "User not logged in" });
+    const username = req.body.username;
+    const id = req.id;
+    if (!id) return res.json({ msg: "UserId not logged in" });
     const user = await userModel.findById(id);
     if (!user) return res.json({ msg: "User not present" });
-    await userModel.deleteOne({ _id: id });
+    if (username == user.username) await userModel.deleteOne({ _id: id });
     return res.status(200).json({ message: "Account deleted successfully" });
   } catch (err) {
     console.error("Logout error:", err);

@@ -58,6 +58,6 @@ export const loginXgoogle = async (req: Request, res: Response) => {
     secure: false,
     maxAge: 7 * 24 * 60 * 60 * 1000, //ms
   });
-
-  return res.json({ msg: "logged in successfully", error: "res" });
+  req.id = user._id;
+  return res.json({ msg: "logged in successfully" });
 };

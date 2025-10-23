@@ -1,0 +1,41 @@
+import { Request, Response } from "express";
+import mongoose from "mongoose";
+import { followModel } from "../models/follow";
+
+export const followXUnfollow = async (req: Request, res: Response) => {
+  try {
+    const followedId = req.body;
+    const userId = req.id;
+
+    if (!userId || !followedId)
+      return res
+        .status(400)
+        .json({ error: "Both followerId and followedId are required." });
+
+    if (userId === followedId)
+      return res
+        .status(400)
+        .json({ error: "You cannot follow yourself, narcissist." });
+
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(followedId)
+    )
+      return res.status(400).json({ error: "Invalid user ID format." });
+
+    const existing = await followModel.findOne({ userId, followedId });
+
+    if (existing) {
+      await followModel.deleteOne({ _id: existing._id });
+      return res.status(200).json({ message: "Unfollowed successfully." });
+    }
+
+    const newFollow = await followModel.create({ userId, followedId });
+    return res
+      .status(201)
+      .json({ message: "Followed successfully.", follow: newFollow });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
