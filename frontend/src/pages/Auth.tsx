@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import InteractiveCharacter from "@/components/ui/poor-ghost";
 import { Eye, EyeOff, Zap } from 'lucide-react';
 import styles from '../auth.module.css';
 import { AsciiLogo } from '@/components/AsciiLogo';
+import { Pinwheel } from 'ldrs/react'
+import 'ldrs/react/Pinwheel.css'
+
 
 export function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,26 +13,30 @@ export function Auth() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [glitchActive, setGlitchActive] = useState(false);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setGlitchActive(true);
-    setTimeout(() => setGlitchActive(false), 300);
   };
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoaded(true);
+    }, 500); 
+
+  return () => clearTimeout(timer); // cleanup if component unmounts
+}, []);
 
   const handleOAuthLogin = async (provider: 'google' | 'twitch') => {
     setOauthLoading(provider);
     setError('');
-    setGlitchActive(true);
-    setTimeout(() => setGlitchActive(false), 300);
   };
 
-  return (
+  return (<>
     <div className={styles['auth-container']} data-theme="dark">
       <div className={styles['scanlines']}></div>
       <div className={styles['crt-flicker']}></div>
@@ -40,8 +47,9 @@ export function Auth() {
             <div className={styles['logo-glow']}></div>
           </div>
 
-          <div className="absolute right-16 mt-3">
-            <InteractiveCharacter />
+          <div   className={`absolute right-16 mt-3 transition-opacity duration-1000 ${
+          loaded ? 'opacity-100' : 'opacity-0'}`}>
+          <InteractiveCharacter />
           </div>
         </div>
 
@@ -236,6 +244,6 @@ export function Auth() {
         ))}
       </div>
     </div>
-  );
+  </>);
 }
 

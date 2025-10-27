@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { AsciiLogo } from '../AsciiLogo';
 
 const PALETTE = {
   dark: "#0a0a14",            // match the page background
@@ -90,7 +89,7 @@ const createCharacterModel = (illo) => {
 /**
  * Renders the interactive 3D character animation.
  */
-const InteractiveCharacter = () => {
+const InteractiveCharacter = (props) => {
   const canvasRef = useRef(null);
   const animationState = useRef({}).current; 
 

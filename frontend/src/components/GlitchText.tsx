@@ -9,8 +9,7 @@ interface GlitchTextProps {
 export const GlitchText = ({ text, className, as: Component = "span" }: GlitchTextProps) => {
   return (
     <Component 
-      className={cn("glitch inline-block", className)}
-      data-text={text}
+      className={cn("glitch  normal-case inline-block", className)}
     >
       {text}
     </Component>

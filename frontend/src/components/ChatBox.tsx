@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { RetroContainer } from "./RetroContainer";
-import { Send, Terminal } from "lucide-react";
+import { Send, Smile, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Picker from "emoji-picker-react";
 
 interface Message {
   id: string;
@@ -17,6 +18,11 @@ export const ChatBox = () => {
     { id: "3", username: "vhs_collector", message: "Reminds me of old broadcasts", timestamp: "12:36" },
   ]);
   const [input, setInput] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
+
+    const handleEmojiClick = (emojiData: any) => {
+    setInput((prev) => prev + emojiData.emoji);
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -58,23 +64,41 @@ export const ChatBox = () => {
         ))}
       </div>
 
-      {/* Input */}
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Type message..."
-          className="flex-1 bg-input border-2 border-primary px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:shadow-glow"
-        />
-        <button
-          onClick={handleSend}
-          className="px-4 py-2 bg-primary text-primary-foreground border-2 border-primary shadow-chunky hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-        >
-          <Send className="w-4 h-4" />
-        </button>
-      </div>
+  <div className="relative flex gap-2 w-full">
+  {/* Input */}
+  <input
+    type="text"
+    value={input}
+    onChange={(e) => setInput(e.target.value)}
+    onKeyPress={(e) => e.key === "Enter" && handleSend()}
+    placeholder="Type message..."
+    className="flex-1 bg-input border-2 border-primary px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground focus:outline-none focus:shadow-glow"
+  />
+
+  {/* Emoji Button */}
+  <button
+    onClick={() => setShowEmoji((prev) => !prev)}
+    className="absolute right-0 mr-14 flex items-center justify-center px-2 py-2 bg-none hover:translate-y-0.5 transition-all"
+  >
+    <Smile className="w-5 h-5 text-foreground" />
+  </button>
+
+  {/* Send Button */}
+  <button
+    onClick={() => handleSend()}
+    className="px-4 py-2 bg-primary text-primary-foreground border-2 border-primary shadow-chunky hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+  >
+    <Send className="w-4 h-4" />
+  </button>
+
+  {/* Emoji Picker */}
+  {showEmoji && (
+    <div className="absolute mb-2 bottom-8 z-50">
+      <Picker onEmojiClick={handleEmojiClick} />
+    </div>
+  )}
+</div>
+
     </RetroContainer>
   );
 };
