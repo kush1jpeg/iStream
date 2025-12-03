@@ -8,40 +8,40 @@ export const getFollowers = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
-
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ error: "Invalid user ID" });
     }
-    const followers = await followModel.aggregate([
-      { $match: { followedId: new mongoose.Types.ObjectId(userId) } },
+
+    const following = await followModel.aggregate([
+      { $match: { followerId: new mongoose.Types.ObjectId(userId) } }, // 👈 opposite of before
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
       {
         $lookup: {
           from: "users",
-          localField: "followerId",
+          localField: "followedId", // 👈 now join on followedId
           foreignField: "_id",
-          as: "followerInfo",
+          as: "followedInfo",
         },
       },
-      { $unwind: "$followerInfo" },
+      { $unwind: "$followedInfo" },
       {
         $project: {
           _id: 0,
-          id: "$followerInfo._id",
-          username: "$followerInfo.username",
-          isStreaming: "$followerInfo.isStreaming",
-          avatar: "$followerInfo.avatar",
+          id: "$followedInfo._id",
+          username: "$followedInfo.username",
+          avatar: "$followedInfo.avatar",
+          isStreaming: "$followedInfo.isStreaming",
+          // add any other fields like email, verified, etc.
         },
       },
     ]);
-
     return res.status(200).json({
       page,
       limit,
-      count: followers.length,
-      followers,
+      count: following.length,
+      following,
     });
   } catch (err) {
     console.error(err);

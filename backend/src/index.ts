@@ -13,6 +13,7 @@ import { userRouter } from "./routes/userRouter";
 import { dbConnect } from "./config/mongoose";
 import session from "express-session";
 import { initPassport } from "./services/passportAuth";
+import { startWorkerCluster } from "./services/rabbitMq/rabbitMq";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -40,6 +41,10 @@ const startServer = async () => {
   try {
     // connecting to db
     await dbConnect();
+
+    // starting the ffmpeg workers
+    startWorkerCluster();
+
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
     });

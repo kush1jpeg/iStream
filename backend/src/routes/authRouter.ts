@@ -1,15 +1,14 @@
 import { Router } from "express";
-import { register } from "../controller/register.js";
-import { login, loginXgoogle } from "../controller/login.js";
-import { deleteAcc, logout } from "../controller/logout.js";
-import { authVerify } from "../middlewares/jwtVerify.js";
-import { sendOTP, verifyOTP } from "../controller/otp.js";
-import { isVerified } from "../middlewares/verified.js";
+import { login, loginXgoogle } from "../controller/auth/login";
+import { deleteAcc, logout } from "../controller/auth/logout";
+import { authVerify } from "../middlewares/jwtVerify";
+import { sendOTP, verifyOTP } from "../controller/auth/otp";
+import { isVerified } from "../middlewares/verified";
 import {
   forgotPass,
   resetPass,
   verifyandChangePass,
-} from "../controller/resetPass.js";
+} from "../controller/auth/resetPass";
 import { validate } from "../middlewares/validateZOD.js";
 import {
   forgotPassSchema,
@@ -18,6 +17,7 @@ import {
   verifyAndChangePassSchema,
 } from "../validation/authSchemas.js";
 import type { PassportStatic } from "passport";
+import { register } from "../controller/auth/register";
 
 export const authRouter = (passport: PassportStatic): Router => {
   console.log(passport);

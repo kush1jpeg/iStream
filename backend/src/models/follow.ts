@@ -9,12 +9,12 @@ export interface IFollow extends Document {
 const followSchema = new Schema<IFollow>({
   followerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
   },
   followedId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "users",
     required: true,
   },
   createdAt: { type: Date, default: Date.now },
@@ -24,4 +24,4 @@ followSchema.index({ followerId: 1, followedId: 1 }, { unique: true }); // preve
 followSchema.index({ followedId: 1 });
 
 export const followModel: mongoose.Model<IFollow> =
-  mongoose.models.Follow || model("Follow", followSchema);
+  mongoose.models.follow || model("follow", followSchema);
