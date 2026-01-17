@@ -4,79 +4,57 @@
 @tailwind components;
 @tailwind utilities;
 
-/* iStream Retro Design System - Analog Broadcast Aesthetic */
+/* iStream Retro Design System - Analog Broadcast Aesthetic (Static) */
+:root {
+  /* Core Dark Theme */
+  --background: 0 0% 4%; /* Almost black */
+  --foreground: 0 0% 90%; /* White-ish text */
+  --muted: 0 0% 20%; /* Dark gray for secondary text */
+  --muted-foreground: 0 0% 60%; /* Gray text */
 
-@layer base {
-  :root {
-    /* Core Terminal Colors */
-    --background: 220 15% 8%;
-    --foreground: 120 100% 85%;
+  /* Minimal Accents */
+  --primary: 280 90% 60%;
+  --primary-foreground: 0 0% 95%; /* Light text for contrast */
+  --secondary: 0 80% 60%; /* Subtle red accent */
+  --secondary-foreground: 0 0% 95%;
 
-    /* Terminal Green Accent */
-    --terminal-green: 120 100% 65%;
-    --terminal-green-dim: 120 100% 35%;
-    --terminal-amber: 45 100% 60%;
+  --accent: 180 80% 55%; /* Slight cyan accent */
+  --accent-foreground: 0 0% 95%;
 
-    /* VHS Purple/Pink */
-    --vhs-purple: 280 80% 60%;
-    --vhs-pink: 320 80% 65%;
-    --vhs-cyan: 180 80% 60%;
+  --destructive: 0 70% 50%; /* For destructive buttons */
+  --destructive-foreground: 0 0% 95%;
 
-    /* CRT Blue Glow */
-    --crt-blue: 210 100% 70%;
-    --crt-blue-dim: 210 100% 30%;
+  /* UI Elements */
+  --card: 0 0% 12%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 90%;
+  --input: 0 0% 15%;
+  --border: 0 0% 25%;
+  --ring: 220 80% 60%;
+  --radius: 0px;
 
-    /* UI Tokens */
-    --card: 220 15% 12%;
-    --card-foreground: 120 100% 85%;
+  /* Subtle Gradients */
+  --gradient-terminal: linear-gradient(
+    180deg,
+    hsl(220 80% 60% / 0.1),
+    hsl(0 80% 60% / 0.05)
+  );
+  --gradient-vhs: linear-gradient(
+    135deg,
+    hsl(220 80% 60% / 0.3),
+    hsl(0 80% 60% / 0.3)
+  );
+  --gradient-crt: radial-gradient(
+    ellipse at center,
+    hsl(220 80% 60% / 0.1),
+    transparent
+  );
 
-    --popover: 220 15% 10%;
-    --popover-foreground: 120 100% 85%;
-
-    --primary: 120 100% 65%;
-    --primary-foreground: 220 15% 8%;
-
-    --secondary: 280 80% 60%;
-    --secondary-foreground: 220 15% 8%;
-
-    --muted: 220 15% 20%;
-    --muted-foreground: 120 50% 50%;
-
-    --accent: 320 80% 65%;
-    --accent-foreground: 220 15% 8%;
-
-    --destructive: 0 80% 60%;
-    --destructive-foreground: 220 15% 8%;
-
-    --border: 120 100% 35%;
-    --input: 220 15% 15%;
-    --ring: 120 100% 65%;
-
-    --radius: 0px;
-
-    /* Retro Gradients */
-    --gradient-terminal: linear-gradient(
-      180deg,
-      hsl(120 100% 65% / 0.1),
-      hsl(120 100% 35% / 0.05)
-    );
-    --gradient-vhs: linear-gradient(135deg, hsl(280 80% 60%), hsl(320 80% 65%));
-    --gradient-crt: radial-gradient(
-      ellipse at center,
-      hsl(210 100% 70% / 0.15),
-      transparent
-    );
-
-    /* Retro Shadows */
-    --shadow-glow:
-      0 0 20px hsl(120 100% 65% / 0.5), 0 0 40px hsl(120 100% 65% / 0.2);
-    --shadow-vhs: 0 4px 20px hsl(280 80% 60% / 0.4);
-    --shadow-chunky: 4px 4px 0px hsl(120 100% 35%);
-
-    /* Animation Timings */
-    --transition-glitch: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --transition-analog: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+  /* Shadows */
+  --shadow-glow: 0 0 15px hsl(220 80% 60% / 0.4);
+  --shadow-vhs: 0 4px 20px hsl(220 80% 60% / 0.3);
+  --shadow-chunky: 2px 2px 0px hsl(220 30% 40%);
 }
 
 @layer base {
@@ -101,231 +79,36 @@
     text-transform: uppercase;
   }
 
-  /* CRT Screen Curvature Effect */
+  /* CRT Container (Static) */
   .crt-container {
     position: relative;
     overflow: hidden;
-  }
-
-  .crt-container::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background: var(--gradient-crt);
-    pointer-events: none;
-    z-index: 10;
-  }
-
-  /* Scanline Effect */
-  .scanlines {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .scanlines::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      rgba(0, 0, 0, 0.15) 0px,
-      transparent 1px,
-      transparent 2px,
-      rgba(0, 0, 0, 0.15) 3px
-    );
-    pointer-events: none;
-    z-index: 10;
-    animation: scanline 8s linear infinite;
-  }
-
-  @keyframes scanline {
-    0% {
-      transform: translateY(0);
-    }
-    100% {
-      transform: translateY(4px);
-    }
-  }
-
-  /* VHS Tracking Effect */
-  .vhs-effect {
-    position: relative;
-  }
-
-  .vhs-effect::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.03) 50%,
-      transparent 100%
-    );
-    pointer-events: none;
-    animation: vhs-tracking 3s ease-in-out infinite;
-  }
-
-  @keyframes vhs-tracking {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    50% {
-      transform: translateX(2px);
-    }
-  }
-
-  /* Glitch Text Effect */
-  .glitch {
-    position: relative;
-    display: inline-block;
-  }
-
-  .glitch::before,
-  .glitch::after {
-    content: attr(data-text);
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .glitch::before {
-    left: 2px;
-    text-shadow: -2px 0 hsl(320 80% 65%);
-    clip: rect(24px, 550px, 90px, 0);
-    animation: glitch-anim-1 2s infinite linear alternate-reverse;
-  }
-
-  .glitch::after {
-    left: -2px;
-    text-shadow: -2px 0 hsl(180 80% 60%);
-    clip: rect(85px, 550px, 140px, 0);
-    animation: glitch-anim-2 3s infinite linear alternate-reverse;
-  }
-
-  @keyframes glitch-anim-1 {
-    0% {
-      clip: rect(10px, 9999px, 31px, 0);
-    }
-    20% {
-      clip: rect(70px, 9999px, 71px, 0);
-    }
-    40% {
-      clip: rect(80px, 9999px, 16px, 0);
-    }
-    60% {
-      clip: rect(60px, 9999px, 130px, 0);
-    }
-    80% {
-      clip: rect(20px, 9999px, 105px, 0);
-    }
-    100% {
-      clip: rect(91px, 9999px, 53px, 0);
-    }
-  }
-
-  @keyframes glitch-anim-2 {
-    0% {
-      clip: rect(65px, 9999px, 119px, 0);
-    }
-    20% {
-      clip: rect(36px, 9999px, 39px, 0);
-    }
-    40% {
-      clip: rect(62px, 9999px, 43px, 0);
-    }
-    60% {
-      clip: rect(68px, 9999px, 60px, 0);
-    }
-    80% {
-      clip: rect(95px, 9999px, 6px, 0);
-    }
-    100% {
-      clip: rect(15px, 9999px, 95px, 0);
-    }
-  }
-
-  /* Film Grain */
-  .film-grain {
-    position: relative;
-  }
-
-  .film-grain::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
-    pointer-events: none;
-    animation: grain 0.3s steps(6) infinite;
-  }
-
-  @keyframes grain {
-    0%,
-    100% {
-      transform: translate(0, 0);
-    }
-    10% {
-      transform: translate(-5%, -10%);
-    }
-    30% {
-      transform: translate(3%, -15%);
-    }
-    50% {
-      transform: translate(12%, 9%);
-    }
-    70% {
-      transform: translate(9%, 4%);
-    }
-    90% {
-      transform: translate(-1%, 7%);
-    }
-  }
-
-  /* Flicker Animation */
-  .flicker {
-    animation: flicker 0.15s infinite;
-  }
-
-  @keyframes flicker {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    41%,
-    43%,
-    47%,
-    53% {
-      opacity: 0.7;
-    }
-    45%,
-    55% {
-      opacity: 0.95;
-    }
   }
 }
 
-@theme inline {
-  @keyframes float {
-  0% {
-    transform: translate(0, 0) rotate(0deg);
-    }
-  100% {
-    transform: translate(100px, 150px) rotate(30deg);
-    }
-  }
+/* scroll bar of chat  */
+.chat-scroll::-webkit-scrollbar {
+  width: 8px; /* Thin scrollbar */
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: #1e1e2f; /* dark background track for dark theme */
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background-color: #9f7aea; /* soft purple for thumb */
+  border-radius: 4px; /* slightly rounded for aesthetic */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #7c3aed; /* deeper purple on hover */
+}
+
+/* Firefox */
+.chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #9f7aea #1e1e2f; /* thumb color / track color */
 }

@@ -9,8 +9,8 @@ interface RetroContainerProps extends HTMLAttributes<HTMLDivElement> {
   scanlines?: boolean;
 }
 
-export const RetroContainer = ({ 
-  children, 
+export const RetroContainer = ({
+  children,
   className,
   variant = "default",
   glow = false,

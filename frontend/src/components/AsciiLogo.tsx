@@ -20,30 +20,30 @@ export const AsciiLogo = ({ className }: AsciiLogoProps) => {
     "    ██╔════╝╚═██╔══╝██╔══██╗██╔════ ██╔══██╗ ████╗ ████║",
     "██║███████╗   ██║   ██████╔╝█████╗  ███████║  ██╔████╔██║",
     "██║╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║  ██║╚██╔╝██║",
-    "██║███████║   ██║   ██║  ██║███████╗██║   ██║  ██║ ╚═╝  ██║",
-    "╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝  ╚═╝       ╚═╝",
+    "██║███████║   ██║   ██║  ██║███████╗██║   ██║  ██║ ╚═╝██║",
+    "╚═╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝  ╚═╝     ╚═╝",
   ];
 
   return (
     <>
-    <pre className={cn("font-mono text-xs md:text-sm leading-tight", className)}>
-      {lines.map((line, i) => (
-        <div
-          key={i}
-          className={cn(
-            "transition-all duration-100",
-            glitchLine === i && "text-vhs-pink animate-glitch"
-          )}
-          style={{
-            textShadow: glitchLine === i ? "2px 2px hsl(var(--vhs-cyan)), -2px -2px hsl(var(--vhs-purple))" : "none"
-          }}
-        >
-          {line}
-        </div>
-      ))}
-         <p className="hero-tagline">Broadcasting a Retro Future</p>
-    </pre>
-                 
-</>
+      <pre className={cn("font-mono text-xs md:text-sm leading-tight", className)}>
+        {lines.map((line, i) => (
+          <div
+            key={i}
+            className={cn(
+              "transition-all duration-100",
+              glitchLine === i && "text-vhs-pink animate-glitch"
+            )}
+            style={{
+              textShadow: glitchLine === i ? "2px 2px hsl(var(--vhs-cyan)), -2px -2px hsl(var(--vhs-purple))" : "none"
+            }}
+          >
+            {line}
+          </div>
+        ))}
+        <p className="hero-tagline">Broadcasting a Retro Future</p>
+      </pre>
+
+    </>
   );
 };

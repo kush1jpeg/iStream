@@ -9,25 +9,25 @@ const StreamPage = () => {
   return (
     <div className="min-h-screen bg-background crt-container film-grain">
       <Navigation />
-      
+
       <main className=" mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Stream Area */}
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player */}
-            <VideoPlayer 
+            <VideoPlayer
               title="Late Night Coding Session"
-              // streamUrl will be provided by your Go backend
+            // streamUrl will be provided by your Go backend
             />
 
             {/* Stream Info */}
             <RetroContainer variant="terminal" glow>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Title */}
                 <div>
-                  <GlitchText 
-                    text="Late Night Coding Session" 
-                    as="h1" 
+                  <GlitchText
+                    text="Late Night Coding Session"
+                    as="h1"
                     className="text-lg font-pixel mb-2"
                   />
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -49,8 +49,8 @@ const StreamPage = () => {
                 {/* Description */}
                 <div className="pt-4 border-t-2 border-primary">
                   <p className="font-mono text-sm leading-relaxed">
-                    Building a retro terminal emulator in Rust. Expect VHS glitches, 
-                    analog artifacts, and occasional signal loss. This is what happens 
+                    Building a retro terminal emulator in Rust. Expect VHS glitches,
+                    analog artifacts, and occasional signal loss. This is what happens
                     when you broadcast from a basement server rack powered by nostalgia.
                   </p>
                 </div>
@@ -58,7 +58,7 @@ const StreamPage = () => {
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2">
                   {["#coding", "#retro", "#rust", "#terminal", "#latenight"].map((tag) => (
-                    <span 
+                    <span
                       key={tag}
                       className="px-2 py-1 bg-muted border border-primary text-xs font-mono hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
                     >
@@ -70,12 +70,7 @@ const StreamPage = () => {
             </RetroContainer>
           </div>
 
-          {/* Chat Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="lg:sticky lg:top-6">
-              <ChatBox />
-            </div>
-          </div>
+          <ChatBox />
         </div>
       </main>
     </div>

@@ -69,7 +69,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background crt-container film-grain">
       <Navigation />
-      
+
       <main className="container mx-auto px-4 py-8 space-y-8">
         {/* Status Bar */}
         <StatusBar className="animate-slide-in" />
@@ -77,23 +77,20 @@ const Index = () => {
         {/* Hero Section with ASCII Logo */}
         <div className="mb-12 space-y-6">
           <div className="flex flex-col items-center justify-center gap-6 p-8 scanlines">
-            {/* ASCII Art Logo */}
-            <div className="overflow-x-auto w-full flex justify-center">
-              <AsciiLogo className="text-primary animate-slide-in" />
-            </div>
-            
+
+
             {/* Tagline */}
             <div className="text-center space-y-3 max-w-3xl">
               <div className="flex items-center justify-center gap-3">
                 <Wifi className="w-6 h-6 text-vhs-purple animate-pulse" />
-                <GlitchText 
-                  text="Independent Broadcast Network" 
-                  as="h2" 
+                <GlitchText
+                  text="Independent Broadcast Network"
+                  as="h2"
                   className="text-lg md:text-xl font-pixel text-vhs-purple"
                 />
                 <Wifi className="w-6 h-6 text-vhs-cyan animate-pulse" />
               </div>
-              
+
               <p className="text-muted-foreground text-base md:text-lg font-mono leading-relaxed">
                 <span className="text-vhs-pink">{'>'}</span> Streaming from basements, garages & forgotten server racks
                 <br />
@@ -133,7 +130,7 @@ const Index = () => {
             </h3>
             <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-vhs-purple to-vhs-cyan opacity-50" />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {streams.map((stream, i) => (
               <div
@@ -161,16 +158,23 @@ const Index = () => {
             <RetroContainer variant="terminal" className="col-span-1 md:col-span-2">
               <div className="font-mono text-sm space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-terminal-green">user@istream</span>
+                  <span className="text-terminal-green">kushuvikas@gmail.com</span>
                   <span className="text-muted-foreground">~</span>
                   <span className="text-vhs-purple">$</span>
                   <span className="text-foreground">cat README.md</span>
                 </div>
                 <div className="text-muted-foreground pl-4 space-y-1">
-                  <p>{'>'} Built with love by indie devs</p>
-                  <p>{'>'} Powered by forgotten server racks</p>
-                  <p>{'>'} Running on coffee & nostalgia</p>
-                  <p className="text-vhs-cyan">{'>'} Fork us on GitHub (if you can find it)</p>
+                  <p>{'>'} Built by kush1jpeg</p>
+                  <p>{'>'} Running on coffee & marlboro</p>
+                  <p>{'>'} <a href="https://github.com/kush1jpeg" className="hover:opacity-80" target="_blank" rel="noopener noreferrer"> github - https://github.com/kush1jpeg</a></p>
+                  <p className="text-vhs-cyan">
+                    {'>'} <a
+                      href="mailto:kushuvikas@gmail.com"
+                      className="italic hover:opacity-80"
+                    >
+                      pls give me an internship - kushuvikas@gmail.com
+                    </a>
+                  </p>
                 </div>
               </div>
             </RetroContainer>
@@ -204,8 +208,8 @@ const Index = () => {
             </p>
             <div className="font-mono text-xs text-muted-foreground space-y-1">
               <p>[ SIGNAL STRENGTH: ████████░░ 80% ] [ LATENCY: ~42ms ] [ STATUS: OPERATIONAL ]</p>
-              <p className="text-vhs-purple">
-                "In a world of polished corporate streams, we broadcast the beautifully broken" 
+              <p className="text-vhs-purple text-sm">
+                "In a world of polished corporate streams, we broadcast the beautifully broken"
               </p>
             </div>
           </div>

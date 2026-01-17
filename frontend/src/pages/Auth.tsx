@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import InteractiveCharacter from "@/components/ui/poor-ghost";
 import { Eye, EyeOff, Zap } from 'lucide-react';
 import styles from '../auth.module.css';
 import { AsciiLogo } from '@/components/AsciiLogo';
@@ -13,7 +12,6 @@ export function Auth() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
 
@@ -23,14 +21,6 @@ export function Auth() {
     setLoading(true);
     setError('');
   };
-useEffect(() => {
-  const timer = setTimeout(() => {
-    setLoaded(true);
-    }, 500); 
-
-  return () => clearTimeout(timer); // cleanup if component unmounts
-}, []);
-
   const handleOAuthLogin = async (provider: 'google' | 'twitch') => {
     setOauthLoading(provider);
     setError('');
@@ -41,16 +31,8 @@ useEffect(() => {
       <div className={styles['scanlines']}></div>
       <div className={styles['crt-flicker']}></div>
       <div className={styles['auth-grid']}>
-        <div className={styles['hero-section top-2']}>
-          <AsciiLogo className='rounded-lg bg-black px-6  z-10  text-center scale-125 ' />
-          <div className={styles['logo-container']}>
-            <div className={styles['logo-glow']}></div>
-          </div>
-
-          <div   className={`absolute right-16 mt-3 transition-opacity duration-1000 ${
-          loaded ? 'opacity-100' : 'opacity-0'}`}>
-          <InteractiveCharacter />
-          </div>
+        <div className="flex items-center justify-center select-none ">
+          <img src="/icon.png" alt="logo" className='z-10 scale-125 pointer-events-none' draggable="false" />
         </div>
 
         <div className={styles['auth-panel']}>
@@ -117,9 +99,10 @@ useEffect(() => {
                     className={styles['password-toggle']}
                   >
                     {showPassword ? (
-                      <EyeOff className={styles['icon']} />
-                    ) : (
                       <Eye className={styles['icon']} />
+
+                    ) : (
+                      <EyeOff className={styles['icon']} />
                     )}
                   </button>
                 </div>
