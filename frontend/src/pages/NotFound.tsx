@@ -1,6 +1,6 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
-import { AsciiLogo } from "@/components/AsciiLogo";
+
 
 const NotFound = () => {
   const location = useLocation();

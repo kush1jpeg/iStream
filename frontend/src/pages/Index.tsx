@@ -1,7 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { StreamCard } from "@/components/StreamCard";
 import { GlitchText } from "@/components/GlitchText";
-import { AsciiLogo } from "@/components/AsciiLogo";
 import { StatusBar } from "@/components/StatusBar";
 import { Signal, Wifi, Terminal, Code, Zap, Sparkles } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";

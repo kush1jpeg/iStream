@@ -7,14 +7,11 @@ interface StatusBarProps {
 
 export const StatusBar = ({ className }: StatusBarProps) => {
   const [time, setTime] = useState(new Date());
-  const [blink, setBlink] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
-    const blinkTimer = setInterval(() => setBlink(b => !b), 500);
     return () => {
       clearInterval(timer);
-      clearInterval(blinkTimer);
     };
   }, []);
 
@@ -28,12 +25,11 @@ export const StatusBar = ({ className }: StatusBarProps) => {
     <div className={cn("bg-card border-2 border-primary p-3 font-mono text-xs", className)}>
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className={cn("transition-opacity", blink ? "opacity-100" : "opacity-0")}>█</span>
           <span className="text-muted-foreground">
             {time.toLocaleTimeString('en-US', { hour12: false })}
           </span>
         </div>
-        
+
         <div className="flex items-center gap-4">
           {stats.map((stat) => (
             <div key={stat.label} className="flex items-center gap-2">

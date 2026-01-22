@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff, Zap } from 'lucide-react';
 import styles from '../auth.module.css';
-import { AsciiLogo } from '@/components/AsciiLogo';
-import { Pinwheel } from 'ldrs/react'
 import 'ldrs/react/Pinwheel.css'
 
 
@@ -212,7 +210,6 @@ export function Auth() {
         </div>
       </div>
 
-      <div className={styles['background-grid']}></div>
       <div className={styles['floating-pixels']}>
         {[...Array(20)].map((_, i) => (
           <div
@@ -220,7 +217,7 @@ export function Auth() {
             className={styles['pixel']}
             style={{
               left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
+              animationDelay: `${Math.random() * 1}s`,
               animationDuration: `${5 + Math.random() * 10}s`,
             }}
           ></div>

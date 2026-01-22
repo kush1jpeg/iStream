@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import StreamPage from "./pages/StreamPage";
 import { Auth } from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import ProfileSection from "./pages/profile";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +21,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/stream/:id" element={<StreamPage />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={< ProfileSection />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
