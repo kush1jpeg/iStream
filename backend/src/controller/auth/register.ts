@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
-import { userModel } from "../models/user.js";
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { userModel } from "../../models/user";
 
-export const jwtkey = process.env.JWT_SECRET || "supersecret";
+export const jwtkey = process.env.JWT_SECRET!;
+export const refreshKey = process.env.REFRESH_SECRET!;
 
 export const register = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -17,23 +18,41 @@ export const register = async (req: Request, res: Response) => {
       return res.json({ msg: "login instead", error: "already present" });
     }
     const hashpassword = await bcrypt.hash(password, 10);
-    const username = email.split("@")[0].slice(0, 10); // limited to 10 chars;
+    const username = email.split("@")[0].slice(0, 20); // limited to 20 chars;
     const newUser = new userModel({
       username,
       email,
       passwordHash: hashpassword,
     });
 
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       {
         id: newUser._id,
       },
       jwtkey,
+      { expiresIn: "15m" },
     );
-    res.cookie("token", token, {
+
+    const refreshToken = jwt.sign(
+      {
+        id: newUser._id,
+      },
+      refreshKey,
+      { expiresIn: "7d" },
+    );
+
+    newUser.refreshToken = refreshToken;
+
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      maxAge: 7 * 24 * 60 * 60 * 1000, //ms
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 15 * 60 * 1000, //ms
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     await newUser.save();

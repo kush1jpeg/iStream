@@ -1,9 +1,10 @@
-// passportSetup.ts
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Strategy as TwitchStrategy } from "passport-twitch-new";
-import { userModel, type IUser } from "../models/user.js";
-import passport, { type Profile } from "passport";
-import type { VerifyCallback } from "jsonwebtoken";
+import passport from "passport";
+import {
+  Strategy as GoogleStrategy,
+  type Profile,
+  type VerifyCallback,
+} from "passport-google-oauth20";
+import { userModel } from "../models/user";
 
 export function initPassport() {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -18,16 +19,16 @@ export function initPassport() {
       {
         clientID: process.env.GOOGLE_CLIENT_ID!,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        callbackURL: "http://localhost:4000/api/auth/login/google/callback",
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
       },
       async (
-        accessToken: string,
-        refreshToken: string,
+        _: string, // for access and refresh tokens by google
+        __: string,
         profile: Profile,
         done: VerifyCallback,
       ) => {
         try {
-          console.log("✅ Callback triggered!");
+          console.log("callback triggered!");
           if (!profile) {
             // Fail fast
             throw new Error(
@@ -45,19 +46,14 @@ export function initPassport() {
             user = await userModel.create({
               email,
               username: profile.displayName,
-              avatar: profile.photos[0],
+              avatar: profile.photos[0]?.value,
               googleId: profile.id,
               isVerified: true,
-              googleAccessToken: accessToken,
             });
-          } else {
-            user.googleAccessToken = accessToken;
-            // return if user exists
           }
-
           done(null, user);
         } catch (err) {
-          done(err, null);
+          done(err);
         }
       },
     ),
@@ -97,15 +93,4 @@ export function initPassport() {
   //     },
   //   ),
   // );
-
-  passport.serializeUser((user: IUser, done) => done(null, user._id));
-  passport.deserializeUser(async (id: string, done) => {
-    try {
-      const user = await userModel.findById(id);
-      done(null, user);
-    } catch (err) {
-      done(err, null);
-    }
-  });
-  return passport;
 }

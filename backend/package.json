@@ -28,12 +28,15 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.2",
     "express-session": "^1.18.2",
+    "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.1",
     "nodemailer": "^7.0.9",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-twitch-new": "^0.0.3",
+    "paytmchecksum": "^1.5.1",
+    "socket.io": "^4.8.3",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -46,6 +49,7 @@
     "@types/node": "^22.18.12",
     "@types/nodemailer": "^7.0.2",
     "@types/passport": "^1.0.17",
+    "@types/passport-google-oauth20": "^2.0.17",
     "eslint": "^9.10.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.15.0",

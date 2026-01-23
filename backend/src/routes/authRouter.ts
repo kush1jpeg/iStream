@@ -2,8 +2,6 @@ import { Router } from "express";
 import { login, loginXgoogle } from "../controller/auth/login";
 import { deleteAcc, logout } from "../controller/auth/logout";
 import { authVerify } from "../middlewares/jwtVerify";
-import { sendOTP, verifyOTP } from "../controller/auth/otp";
-import { isVerified } from "../middlewares/verified";
 import {
   forgotPass,
   resetPass,
@@ -16,13 +14,15 @@ import {
   resetPassSchema,
   verifyAndChangePassSchema,
 } from "../validation/authSchemas.js";
-import type { PassportStatic } from "passport";
 import { register } from "../controller/auth/register";
+import { refreshAccessToken } from "../controller/auth/refreshTokenHandler";
+import { sendOTP, verifyOTP } from "../services/mailer/otp";
+import passport from "passport";
 
-export const authRouter = (passport: PassportStatic): Router => {
-  console.log(passport);
+export const authRouter = (): Router => {
   const authRouter = Router();
   authRouter.post("/register", validate(loginSchema), register);
+  authRouter.post("/refresh-token", refreshAccessToken); // frontend calls /refresh-token based on some logic
   authRouter.post("/login", validate(loginSchema), login);
   authRouter.get(
     "/login/google",
@@ -48,9 +48,8 @@ export const authRouter = (passport: PassportStatic): Router => {
   authRouter.post("/reset", validate(resetPassSchema), authVerify, resetPass);
 
   // to be eligible for streaming;
-  authRouter.post("/verifyOtp", authVerify, verifyOTP);
   authRouter.post("/sendOtp", authVerify, sendOTP);
-  authRouter.post("/verified", authVerify, isVerified);
+  authRouter.post("/verifyOtp", authVerify, verifyOTP);
 
   return authRouter;
 };

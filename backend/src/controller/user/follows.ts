@@ -13,14 +13,14 @@ export const getFollowers = async (req: Request, res: Response) => {
     }
 
     const following = await followModel.aggregate([
-      { $match: { followerId: new mongoose.Types.ObjectId(userId) } }, // 👈 opposite of before
+      { $match: { followerId: new mongoose.Types.ObjectId(userId) } },
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit },
       {
         $lookup: {
           from: "users",
-          localField: "followedId", // 👈 now join on followedId
+          localField: "followedId",
           foreignField: "_id",
           as: "followedInfo",
         },
