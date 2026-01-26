@@ -10,9 +10,10 @@ export function registerStreamHandler(io: Server, socket: Socket) {
     socket.join(streamId);
 
     let viewers = await redis.hincrby(`stream:${streamId}`, "viewers", 1); // for tracking active viewers
-    await redis.hincrby(`stream:${streamId}`, "views", 1); // for the total views
+    let views = await redis.hincrby(`stream:${streamId}`, "views", 1); // for the total views
     viewers = Math.max(0, viewers);
     io.to(streamId).emit("stream:viewers", Number(viewers));
+    io.to(streamId).emit("stream:views", Number(views));
   });
 
   socket.on("stream:leave", async ({ streamId }) => {

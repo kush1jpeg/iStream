@@ -27,7 +27,6 @@ export interface IUser extends Document {
   twitchId?: string;
   websiteId?: string;
   refreshToken: string | null;
-  isStreaming: boolean;
   followerCount: Number;
   followCount: Number;
   currentAnimation?: string; // to store shopped animation sprite next to livestream and profile
@@ -105,10 +104,6 @@ const userSchema = new Schema<IUser>(
       sparse: true,
     },
     isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isStreaming: {
       type: Boolean,
       default: false,
     },

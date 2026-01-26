@@ -22,6 +22,7 @@ const App = () => (
           <Route path="/stream/:id" element={<StreamPage />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={< ProfileSection />} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

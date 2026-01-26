@@ -4,6 +4,7 @@ import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
 import { Signal, Wifi, Terminal, Code, Zap, Sparkles } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
+import { Sidebar } from "@/components/sidebar";
 
 const Index = () => {
   // Mock stream data with color accents
@@ -65,155 +66,163 @@ const Index = () => {
     { icon: Sparkles, label: "Pixel Perfect", color: "text-vhs-pink" },
   ];
 
+  const followedUsers = [
+    { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
+    { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
+  ];
+
   return (
-    <div className="min-h-screen bg-background crt-container film-grain">
-      <Navigation />
+    <div className="min-h-screen bg-background crt-container film-grain flex">
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Status Bar */}
-        <StatusBar className="animate-slide-in" />
+      <Sidebar followedUsers={followedUsers} />
+      <div className=" flex flex-col flex-1 overflow-y-auto">
+        <Navigation />
+        <main className=" container mx-auto px-4 py-8 space-y-8">
+          {/* Status Bar */}
+          <StatusBar className="animate-slide-in" />
 
-        {/* Hero Section with ASCII Logo */}
-        <div className="mb-12 space-y-6">
-          <div className="flex flex-col items-center justify-center gap-6 p-8 scanlines">
+          {/* Hero Section with ASCII Logo */}
+          <div className="mb-12 space-y-6">
+            <div className="flex flex-col items-center justify-center gap-6 p-8 scanlines">
 
 
-            {/* Tagline */}
-            <div className="text-center space-y-3 max-w-3xl">
-              <div className="flex items-center justify-center gap-3">
-                <Wifi className="w-6 h-6 text-vhs-purple animate-pulse" />
-                <GlitchText
-                  text="Independent Broadcast Network"
-                  as="h2"
-                  className="text-lg md:text-xl font-pixel text-vhs-purple"
-                />
-                <Wifi className="w-6 h-6 text-vhs-cyan animate-pulse" />
+              {/* Tagline */}
+              <div className="text-center space-y-3 max-w-3xl">
+                <div className="flex items-center justify-center gap-3">
+                  <Wifi className="w-6 h-6 text-vhs-purple animate-pulse" />
+                  <GlitchText
+                    text="Independent Broadcast Network"
+                    as="h2"
+                    className="text-lg md:text-xl font-pixel text-vhs-purple"
+                  />
+                  <Wifi className="w-6 h-6 text-vhs-cyan animate-pulse" />
+                </div>
+
+                <p className="text-muted-foreground text-base md:text-lg font-mono leading-relaxed">
+                  <span className="text-vhs-pink">{'>'}</span> Streaming from basements, garages & forgotten server racks
+                  <br />
+                  <span className="text-terminal-green">{'>'}</span> Built by indie devs, for indie devs
+                  <br />
+                  <span className="text-vhs-cyan">{'>'}</span> <span className="text-accent flicker">Warning:</span> May contain analog artifacts & digital nostalgia
+                </p>
               </div>
 
-              <p className="text-muted-foreground text-base md:text-lg font-mono leading-relaxed">
-                <span className="text-vhs-pink">{'>'}</span> Streaming from basements, garages & forgotten server racks
-                <br />
-                <span className="text-terminal-green">{'>'}</span> Built by indie devs, for indie devs
-                <br />
-                <span className="text-vhs-cyan">{'>'}</span> <span className="text-accent flicker">Warning:</span> May contain analog artifacts & digital nostalgia
-              </p>
+              {/* Indie Dev Badges */}
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {badges.map((badge, i) => (
+                  <RetroContainer
+                    key={badge.label}
+                    className="px-4 py-2 hover:scale-105 transition-transform cursor-pointer animate-slide-in"
+                    style={{ animationDelay: `${i * 100}ms` }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <badge.icon className={`w-4 h-4 ${badge.color}`} />
+                      <span className="text-xs font-mono uppercase">{badge.label}</span>
+                    </div>
+                  </RetroContainer>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Live Streams Grid */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-primary">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-destructive animate-pulse shadow-glow" />
+                <Signal className="w-5 h-5 text-destructive animate-pulse" />
+              </div>
+              <h3 className="font-pixel text-sm uppercase text-primary tracking-wider">
+                Live Broadcasts
+              </h3>
+              <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-vhs-purple to-vhs-cyan opacity-50" />
             </div>
 
-            {/* Indie Dev Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {badges.map((badge, i) => (
-                <RetroContainer
-                  key={badge.label}
-                  className="px-4 py-2 hover:scale-105 transition-transform cursor-pointer animate-slide-in"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {streams.map((stream, i) => (
+                <div
+                  key={stream.id}
+                  className="animate-slide-in"
                   style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <div className="flex items-center gap-2">
-                    <badge.icon className={`w-4 h-4 ${badge.color}`} />
-                    <span className="text-xs font-mono uppercase">{badge.label}</span>
-                  </div>
-                </RetroContainer>
+                  <StreamCard
+                    id={stream.id}
+                    title={stream.title}
+                    streamer={stream.streamer}
+                    viewers={stream.viewers}
+                    isLive={stream.isLive}
+                    colorAccent={stream.colorAccent}
+                  />
+                </div>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Live Streams Grid */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-primary">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse shadow-glow" />
-              <Signal className="w-5 h-5 text-destructive animate-pulse" />
+          {/* Footer */}
+          <footer className="mt-16 pt-8 border-t-2 border-primary">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Terminal Prompt */}
+              <RetroContainer variant="terminal" className="col-span-1 md:col-span-2">
+                <div className="font-mono text-sm space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-terminal-green">kushuvikas@gmail.com</span>
+                    <span className="text-muted-foreground">~</span>
+                    <span className="text-vhs-purple">$</span>
+                    <span className="text-foreground">cat README.md</span>
+                  </div>
+                  <div className="text-muted-foreground pl-4 space-y-1">
+                    <p>{'>'} Built by kush1jpeg</p>
+                    <p>{'>'} Running on coffee & marlboro</p>
+                    <p>{'>'} <a href="https://github.com/kush1jpeg" className="hover:opacity-80" target="_blank" rel="noopener noreferrer"> github - https://github.com/kush1jpeg</a></p>
+                    <p className="text-vhs-cyan">
+                      {'>'} <a
+                        href="mailto:kushuvikas@gmail.com"
+                        className="italic hover:opacity-80"
+                      >
+                        pls give me an internship - kushuvikas@gmail.com
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </RetroContainer>
+
+              {/* System Stats */}
+              <RetroContainer className="space-y-2">
+                <div className="font-mono text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Uptime:</span>
+                    <span className="text-terminal-green">847h 23m</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Bandwidth:</span>
+                    <span className="text-vhs-purple">2.4 TB/mo</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Coffee:</span>
+                    <span className="text-vhs-cyan">∞ cups</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Bugs:</span>
+                    <span className="text-vhs-pink">Features*</span>
+                  </div>
+                </div>
+              </RetroContainer>
             </div>
-            <h3 className="font-pixel text-sm uppercase text-primary tracking-wider">
-              Live Broadcasts
-            </h3>
-            <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-vhs-purple to-vhs-cyan opacity-50" />
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {streams.map((stream, i) => (
-              <div
-                key={stream.id}
-                className="animate-slide-in"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                <StreamCard
-                  id={stream.id}
-                  title={stream.title}
-                  streamer={stream.streamer}
-                  viewers={stream.viewers}
-                  isLive={stream.isLive}
-                  colorAccent={stream.colorAccent}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <footer className="mt-16 pt-8 border-t-2 border-primary">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Terminal Prompt */}
-            <RetroContainer variant="terminal" className="col-span-1 md:col-span-2">
-              <div className="font-mono text-sm space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-terminal-green">kushuvikas@gmail.com</span>
-                  <span className="text-muted-foreground">~</span>
-                  <span className="text-vhs-purple">$</span>
-                  <span className="text-foreground">cat README.md</span>
-                </div>
-                <div className="text-muted-foreground pl-4 space-y-1">
-                  <p>{'>'} Built by kush1jpeg</p>
-                  <p>{'>'} Running on coffee & marlboro</p>
-                  <p>{'>'} <a href="https://github.com/kush1jpeg" className="hover:opacity-80" target="_blank" rel="noopener noreferrer"> github - https://github.com/kush1jpeg</a></p>
-                  <p className="text-vhs-cyan">
-                    {'>'} <a
-                      href="mailto:kushuvikas@gmail.com"
-                      className="italic hover:opacity-80"
-                    >
-                      pls give me an internship - kushuvikas@gmail.com
-                    </a>
-                  </p>
-                </div>
-              </div>
-            </RetroContainer>
-
-            {/* System Stats */}
-            <RetroContainer className="space-y-2">
-              <div className="font-mono text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Uptime:</span>
-                  <span className="text-terminal-green">847h 23m</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Bandwidth:</span>
-                  <span className="text-vhs-purple">2.4 TB/mo</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Coffee:</span>
-                  <span className="text-vhs-cyan">∞ cups</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Bugs:</span>
-                  <span className="text-vhs-pink">Features*</span>
-                </div>
-              </div>
-            </RetroContainer>
-          </div>
-
-          <div className="text-center space-y-2 opacity-70">
-            <p className="font-mono text-sm text-muted-foreground">
-              iStream v1.0.0 - Analog Broadcast System
-            </p>
-            <div className="font-mono text-xs text-muted-foreground space-y-1">
-              <p>[ SIGNAL STRENGTH: ████████░░ 80% ] [ LATENCY: ~42ms ] [ STATUS: OPERATIONAL ]</p>
-              <p className="text-vhs-purple text-sm">
-                "In a world of polished corporate streams, we broadcast the beautifully broken"
+            <div className="text-center space-y-2 opacity-70">
+              <p className="font-mono text-sm text-muted-foreground">
+                iStream v1.0.0 - Analog Broadcast System
               </p>
+              <div className="font-mono text-xs text-muted-foreground space-y-1">
+                <p>[ SIGNAL STRENGTH: ████████░░ 80% ] [ LATENCY: ~42ms ] [ STATUS: OPERATIONAL ]</p>
+                <p className="text-vhs-purple text-sm">
+                  "In a world of polished corporate streams, we broadcast the beautifully broken"
+                </p>
+              </div>
             </div>
-          </div>
-        </footer>
-      </main>
+          </footer>
+        </main>
+      </div>
     </div>
   );
 };

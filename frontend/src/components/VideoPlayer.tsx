@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
 import { RetroContainer } from "./RetroContainer";
 import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 
 interface VideoPlayerProps {
   streamUrl?: string;
