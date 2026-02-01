@@ -1,5 +1,5 @@
 import { GlitchText } from "./GlitchText";
-import { Radio, Tv, Settings, User } from "lucide-react";
+import { Radio, Tv, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 

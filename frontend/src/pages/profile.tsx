@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
+import { Sidebar } from "@/components/sidebar";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
@@ -43,14 +44,21 @@ const mockDonations = [
   { id: 2, from: "PixelQueen", amount: 25, message: "Love your content!", date: "2024-01-14" },
 ];
 
+const followedUsers = [
+  { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
+  { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
+];
+
+
 const Profile = () => {
   const [user, setUser] = useState(mockUser);
-
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain relative overflow-hidden">
 
       <Navigation />
+      <Sidebar followedUsers={followedUsers} />
+
 
       <main className="container px-4 py-4 relative z-10">
         {/* Profile Header Section */}
@@ -140,7 +148,7 @@ const Profile = () => {
                 {mockStreams.map((stream) => (
                   <div
                     key={stream.id}
-                    className="flex items-center gap-4 p-4 border border-vhs-pink/30 bg-black/30 hover:bg-vhs-pink/10 transition-colors"
+                    className="flex items-center gap-4 p-4 border border-vhs-pink/30 rounded-l bg-black/30 hover:bg-vhs-pink/10 transition-colors"
                   >
                     <div className="w-12 h-12 bg-gradient-to-br from-vhs-purple to-vhs-pink flex items-center justify-center border border-vhs-pink/50">
                       <span className="font-pixel text-white text-lg">
@@ -195,7 +203,6 @@ const Profile = () => {
 
           </Tabs>
         </RetroContainer>
-        <StatusBar className=" mt-5" />
       </main>
     </div>
   );
