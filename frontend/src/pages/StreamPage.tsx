@@ -1,9 +1,9 @@
 import { Navigation } from "@/components/Navigation";
 import { VideoPlayer } from "@/components/VideoPlayer";
-import { ChatBox } from "@/components/ChatBox";
 import { GlitchText } from "@/components/GlitchText";
 import { Users, Eye, Signal } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
+import { ChatBox } from "@/components/LiveChatBox";
 
 const StreamPage = () => {
   return (

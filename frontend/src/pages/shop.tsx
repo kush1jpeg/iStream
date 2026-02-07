@@ -1,18 +1,16 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
-import { Filter } from "lucide-react";
 import Carousel from "@/components/ui/carousel";
+import { Navigation } from "@/components/Navigation";
+import { Sidebar } from "@/components/sidebar";
+import { ShoppingCart } from "lucide-react";
 
 
+const followedUsers = [
+  { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
+  { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
+];
 
 const allDrops = Array.from({ length: 12 }).map((_, i) => ({
   id: i + 10,
@@ -23,18 +21,19 @@ const allDrops = Array.from({ length: 12 }).map((_, i) => ({
 }));
 
 export default function ShopLanding() {
-  const [filter, setFilter] = useState<string | null>(null);
 
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="bg-background crt-container film-grain text-zinc-100">
+      <Navigation />
+      <Sidebar followedUsers={followedUsers} />
 
       {/* HERO */}
 
-      <section className="relative overflow-hidden border-b border-zinc-800 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-10 items-center">
+      <section className="relative overflow-hidden border-border border-zinc-800 ">
+        <div className="max-w-7xl mx-auto px-6 py-4 grid md:grid-cols-2 gap-10 items-center">
 
-          <div className="space-y-6">
+          <div className="space-y-6 z-50">
             <h1 className="text-5xl font-bold leading-tight">
               Digital Drops.<br />Forged Fresh.
             </h1>
@@ -43,7 +42,6 @@ export default function ShopLanding() {
               Limited creator assets. Avatars, overlays, badges. Buy once. Flex forever.
             </p>
 
-            <Button size="lg">Explore Drops</Button>
           </div>
 
           {/* HERO CAROUSEL */}
@@ -52,41 +50,13 @@ export default function ShopLanding() {
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-12">
-        <Drawer>
-          <DrawerTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Filter className="w-4 h-4 mr-2" /> Filters
-            </Button>
-          </DrawerTrigger>
+      <div className="max-w-7xl mx-auto p-6 space-y-12 ">
 
-          <DrawerContent className="bg-zinc-950 border-zinc-800">
-            <DrawerHeader>
-              <DrawerTitle>Filter Drops</DrawerTitle>
-            </DrawerHeader>
-
-            <div className="p-6 flex gap-4">
-              {["avatar", "badge", "overlay"].map((t) => (
-                <Button
-                  key={t}
-                  variant={filter === t ? "default" : "outline"}
-                  onClick={() => setFilter(t)}
-                >
-                  {t}
-                </Button>
-              ))}
-
-              <Button variant="ghost" onClick={() => setFilter(null)}>
-                Reset
-              </Button>
-            </div>
-          </DrawerContent>
-        </Drawer>
 
         {/* NEWEST */}
 
         <section className="space-y-4">
-          <h2 className="text-3xl font-semibold">Newest Drops</h2>
+          <h2 className="text-3xl font-semibold">All Drops</h2>
 
           <div className="grid md:grid-cols-3 gap-6">
             {allDrops.map((item) => (
@@ -97,28 +67,17 @@ export default function ShopLanding() {
                     <div className="font-medium">{item.title}</div>
                     <div className="flex justify-between mt-2">
                       <span>${item.price}</span>
-                      <Button size="sm">Buy</Button>
+                      <div>
+                        <Button size="sm">
+                          <ShoppingCart />
+                          Buy</Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
           </div>
-        </section>
-
-        {/* ALL DROPS */}
-
-        <section className="space-y-6">
-
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-semibold">All Drops</h3>
-
-            {/* FILTER DRAWER */}
-
-
-          </div>
-
-
         </section>
       </div>
     </div>

@@ -1,4 +1,3 @@
-"use client";
 import { IconArrowNarrowRight } from "@tabler/icons-react";
 import { useState, useRef, useId, useEffect } from "react";
 
@@ -72,10 +71,10 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
     title } = slide;
 
   return (
-    <div className="[perspective:1200px] [transform-style:preserve-3d]">
+    <div className=" [perspective:600px] [transform-style:preserve-3d]">
       <li
         ref={slideRef}
-        className="flex flex-1 flex-col items-center justify-center relative text-center text-white opacity-100 transition-all duration-300 ease-in-out w-[70vmin] h-[70vmin] mx-[4vmin]  "
+        className="flex flex-1 flex-col items-center justify-center text-center text-white opacity-100 transition-all duration-300 ease-in-out w-[70vmin] h-[40vmin] mx-[4vmin] my-5  "
         onClick={() => handleSlideClick(index)}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -89,7 +88,19 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
         }}
       >
         <div
-          className="absolute top-0 left-0 w-full h-full bg-[#1D1F2F] rounded-[1%] overflow-hidden transition-all duration-150 ease-out"
+          className={`
+    absolute top-0 left-0 w-full h-full
+    bg-[#0B0D16]
+    rounded-[1%] overflow-hidden
+
+    transition-[filter,opacity,transform]
+    duration-300
+    ease-out
+
+    ${current !== index
+              ? "blur-md brightness-[0.35] saturate-[0.6] opacity-70 scale-[0.9]"
+              : "blur-0 brightness-100 saturate-100 opacity-100 scale-100"}
+  `}
           style={{
             transform:
               current === index
@@ -97,6 +108,8 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
                 : "none",
           }}
         >
+
+
           <img
             className="absolute inset-0 w-[120%] h-[120%] object-cover opacity-100 transition-opacity duration-600 ease-in-out"
             style={{
@@ -109,7 +122,7 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
             decoding="sync"
           />
           {current === index && (
-            <div className="absolute inset-0 bg-black/30 transition-all duration-1000" />
+            <div className="absolute inset-0 transition-all duration-1000" />
           )}
         </div>
 
@@ -137,23 +150,28 @@ interface CarouselControlProps {
   handleClick: () => void;
 }
 
-const CarouselControl = ({
-  type,
-  title,
-  handleClick,
-}: CarouselControlProps) => {
+export const CarouselControl = ({ type, title, handleClick }: CarouselControlProps) => {
   return (
     <button
-      className={`w-10 h-10 flex items-center mx-2 justify-center bg-neutral-200 dark:bg-neutral-800 border-3 border-transparent rounded-full focus:border-[#6D64F7] focus:outline-none hover:-translate-y-0.5 active:translate-y-0.5 transition duration-200 ${type === "previous" ? "rotate-180" : ""
-        }`}
       title={title}
       onClick={handleClick}
+      className={`
+        w-12 h-12 flex items-center justify-center
+        bg-background/70
+        text-primary
+        rounded-full
+        border border-border
+        shadow-[var(--shadow-glow)]
+        transition-all duration-200
+        hover:scale-110 hover:shadow-[0_0_25px_hsl(280_90%_60%_/_0.2)]
+        active:translate-y-1
+        ${type === "previous" ? "rotate-180" : ""}
+      `}
     >
-      <IconArrowNarrowRight className="text-neutral-600 dark:text-neutral-200" />
+      <IconArrowNarrowRight className="w-5 h-5" />
     </button>
   );
 };
-
 interface CarouselProps {
   slides: SlideData[];
 }
@@ -181,11 +199,11 @@ export default function Carousel({ slides }: CarouselProps) {
 
   return (
     <div
-      className="relative w-[70vmin] h-[70vmin] mx-auto"
+      className="relative w-[90vmin] h-[50vmin] mx-auto"
       aria-labelledby={`carousel-heading-${id}`}
     >
       <ul
-        className="absolute flex mx-[-4vmin] transition-transform duration-1000 ease-in-out"
+        className="absolute flex mx-[-9vmin] transition-transform duration-1000 ease-in-out"
         style={{
           transform: `translateX(-${current * (100 / slides.length)}%)`,
         }}
@@ -201,7 +219,7 @@ export default function Carousel({ slides }: CarouselProps) {
         ))}
       </ul>
 
-      <div className="absolute flex justify-center w-full top-[calc(100%+1rem)]">
+      <div className="absolute flex justify-center w-full top-[calc(84%+1rem)] gap-16 z-50 ">
         <CarouselControl
           type="previous"
           title="Go to previous slide"
