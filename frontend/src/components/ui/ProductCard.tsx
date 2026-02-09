@@ -35,8 +35,8 @@ export default function ProductCard({ item }: ProductCardProps) {
           />
 
           {/* Title overlay */}
-          <div className="absolute flex flex-col bottom-2 left-2 text-white font-semibold text-lg px-2 py-1 rounded">
-            <span className="font-normal">{item.title}</span>
+          <div className="absolute flex flex-col bottom-2 left-2 text-white font-semibold text-l px-2 py-2 rounded">
+            <span className="font-normal text-xl">{item.title}</span>
             <span className={`transition-opacity duration-300 ${isHovered ? "opacity-0" : "opacity-100"}`}>
               ${item.price}
             </span>
@@ -46,8 +46,8 @@ export default function ProductCard({ item }: ProductCardProps) {
           <button
             /* onClick={} */
             className={`
-      absolute bottom-2 ml-1
-      text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg font-semibold text-sm
+      absolute bottom-2 ml-1 m-[-1]
+      text-white px-3 py-2 rounded-full flex items-center gap-2 shadow-lg font-semibold text-sm
       transform transition-all duration-300 ease-out
       ${isHovered ? "translate-y-0 opacity-100 bg-primary" : "translate-y-full opacity-0"}
     `}
