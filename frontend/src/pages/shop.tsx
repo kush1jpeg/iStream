@@ -1,10 +1,10 @@
-import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Carousel from "@/components/ui/carousel";
 import { Navigation } from "@/components/Navigation";
 import { Sidebar } from "@/components/sidebar";
-import { ShoppingCart } from "lucide-react";
+import ProductCard from "@/components/ui/ProductCard";
+import SearchBar from "@/components/ui/SearchBar";
+import { useState } from "react";
+import { FilterShop } from "@/components/ui/filter";
 
 
 const followedUsers = [
@@ -22,7 +22,9 @@ const allDrops = Array.from({ length: 12 }).map((_, i) => ({
 
 export default function ShopLanding() {
 
-
+  const [query, setQuery] = useState("");
+  // const [allDrops, setDrops] = useState("");
+  const [loading, setLoading] = useState(false);
   return (
     <div className="bg-background crt-container film-grain text-zinc-100">
       <Navigation />
@@ -53,29 +55,18 @@ export default function ShopLanding() {
       <div className="max-w-7xl mx-auto p-6 space-y-12 ">
 
 
-        {/* NEWEST */}
+        <section className="space-y-6">
+          <div className="flex items-center justify-between mr-10">
+            <h2 className="text-3xl font-semibold">All Drops</h2>
+            <div className="w-full max-w-md">
+              <SearchBar query={query} setQuery={setQuery} />
+            </div>
+          </div>
+          <FilterShop />
 
-        <section className="space-y-4">
-          <h2 className="text-3xl font-semibold">All Drops</h2>
-
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-4 gap-6">
             {allDrops.map((item) => (
-              <motion.div key={item.id} whileHover={{ scale: 1.04 }}>
-                <Card className="bg-zinc-900 border-zinc-800 overflow-hidden">
-                  <img src={item.img} className="h-48 w-full object-cover" />
-                  <CardContent className="p-4">
-                    <div className="font-medium">{item.title}</div>
-                    <div className="flex justify-between mt-2">
-                      <span>${item.price}</span>
-                      <div>
-                        <Button size="sm">
-                          <ShoppingCart />
-                          Buy</Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+              <ProductCard key={item.id} item={item} />
             ))}
           </div>
         </section>

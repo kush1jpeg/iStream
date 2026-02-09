@@ -29,7 +29,7 @@ export const Navigation = () => {
 
         {/* Navigation Items */}
         <div className="flex gap-6">
-          <NavItem href="/" icon={Tv} label="Shop" active={location.pathname === "/"} />
+          <NavItem href="/shop" icon={Tv} label="Shop" active={location.pathname === "/shop"} />
           <NavItem href="/auth" icon={User} label="Login" active={location.pathname === "/auth"} />
         </div>
       </div>
