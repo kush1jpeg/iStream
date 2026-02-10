@@ -3,21 +3,25 @@ import mongoose, { model, Schema } from "mongoose";
 export interface IMsg extends Document {
   _id: mongoose.Types.ObjectId;
   senderId: mongoose.Types.ObjectId;
-  receiverId: mongoose.Types.ObjectId;
+  conversationKey: mongoose.Types.ObjectId;
   message: String;
   timestamp: Date;
-  read: Boolean;
+  readBy: mongoose.Types.ObjectId[];
 }
 
 const messageSchema = new Schema({
   senderId: { type: mongoose.Types.ObjectId, ref: "users" },
-  conversationId: { type: mongoose.Types.ObjectId, ref: "conversation" },
-  message: String,
+  conversationKey: {
+    type: mongoose.Types.ObjectId,
+    ref: "conversation",
+    unique: true,
+  },
+  message: { type: String },
   timestamp: { type: Date, default: Date.now },
-  read: { type: Boolean, default: false },
+  readBy: [{ type: mongoose.Types.ObjectId, ref: "users" }],
 });
 
-messageSchema.index({ senderId: 1, receiverId: 1 });
+messageSchema.index({ conversationId: 1, timestamp: 1 });
 
 export const msgModel: mongoose.Model<IMsg> =
   mongoose.models.msgPvt || model("msgPvt", messageSchema);

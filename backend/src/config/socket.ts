@@ -1,42 +1,43 @@
 import { Server } from "socket.io";
 import { registerStreamHandler } from "../socket/registerStreamHandler";
-import { socketVerify } from "../middlewares/jwtVerify";
+import { socketAuthMiddleware } from "../middlewares/jwtVerify";
 import { registerLiveChatHandler } from "../socket/registerLiveChatHandler";
 import { registerPvtChatHandler } from "../socket/registerPvtChatHandler";
+import { createAdapter } from "@socket.io/redis-adapter";
+import Redis from "ioredis";
 
-export function initSocket(server: any) {
+export async function initSocket(server: any) {
   const io = new Server(server, {
     cors: { origin: "*" },
   });
+  const pubClient = new Redis({ host: "redis", port: 6379 });
+  const subClient = pubClient.duplicate();
+
+  await Promise.all([pubClient.connect(), subClient.connect()]);
+
+  io.adapter(createAdapter(pubClient, subClient));
 
   // Only apply auth for DM & liveChat
+  io.of("/live").use(socketAuthMiddleware);
+  io.of("/dm").use(socketAuthMiddleware);
+  io.of("/group").use(socketAuthMiddleware);
 
   // Live chat
-  io.of("/live").use(async (socket, next) => {
-    try {
-      const userId = await socketVerify(socket);
-      socket.data.userId = userId;
-      next();
-    } catch (err) {
-      next(new Error("Unauthorized"));
-    }
-  });
   io.of("/live").on("connection", (socket) => {
-    registerLiveChatHandler(io, socket);
+    const live = io.of("/live");
+    registerLiveChatHandler(live, socket);
   });
 
   // Private DM
-  io.of("/dm").use(async (socket, next) => {
-    try {
-      const userId = await socketVerify(socket);
-      socket.data.userId = userId;
-      next();
-    } catch (err) {
-      next(new Error("Unauthorized"));
-    }
-  });
   io.of("/dm").on("connection", (socket) => {
-    registerPvtChatHandler(io, socket);
+    const dm = io.of("/dm");
+    registerPvtChatHandler(dm, socket);
+  });
+
+  // Group DM
+  io.of("/group").on("connection", (socket) => {
+    const dm = io.of("/group");
+    registerPvtChatHandler(dm, socket);
   });
 
   // visible to all users;

@@ -5,6 +5,7 @@ export interface IConversation extends Document {
   lastMessage?: mongoose.Types.ObjectId; // link to latest msg
   isGroup: boolean; // single or group chat
   groupName?: string; // name if it's group
+  conversationKey: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,26 +17,13 @@ const conversationSchema = new Schema<IConversation>(
     ],
     lastMessage: { type: mongoose.Types.ObjectId, ref: "msgPvt" },
     isGroup: { type: Boolean, default: false },
-    groupName: { type: String, trim: true },
+    groupName: { type: String, trim: true, sparse: true },
+    conversationKey: { type: String, trim: true, unique: true },
   },
   { timestamps: true },
 );
 
 conversationSchema.index({ groupName: 1 });
-
-conversationSchema.pre("save", async function (next) {
-  if (!this.isGroup && this.participants.length === 2) {
-    const existing = await mongoose.models.Conversation.findOne({
-      participants: { $all: this.participants, $size: 2 },
-      isGroup: false,
-    });
-    if (existing) {
-      const err = new Error("Conversation already exists");
-      return next(err);
-    }
-  }
-  next();
-});
 
 export const conversationModel: mongoose.Model<IConversation> =
   mongoose.models.conversation || model("conversation", conversationSchema);

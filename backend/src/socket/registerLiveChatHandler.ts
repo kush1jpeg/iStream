@@ -1,4 +1,4 @@
-import { Server, Socket } from "socket.io";
+import { Namespace, Socket } from "socket.io";
 import { redis } from "../config/redis";
 
 interface ChatPayload {
@@ -6,7 +6,7 @@ interface ChatPayload {
   message: string;
 }
 
-export function registerLiveChatHandler(io: Server, socket: Socket) {
+export function registerLiveChatHandler(io: Namespace, socket: Socket) {
   socket.on("stream:send", async ({ streamId, message }: ChatPayload) => {
     const userId = socket.data.userId;
     // do a streamId check based on redis hash
@@ -14,7 +14,7 @@ export function registerLiveChatHandler(io: Server, socket: Socket) {
       return socket.emit("error", "Stream does not exist");
     }
 
-    io.to(streamId).emit("stream:chat", {
+    socket.to(streamId).emit("stream:chat", {
       message,
       userId,
       timeStamp: Date.now(),

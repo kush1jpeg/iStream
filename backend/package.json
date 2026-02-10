@@ -21,6 +21,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
     "amqplib": "^0.10.9",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
@@ -35,7 +36,6 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-twitch-new": "^0.0.3",
-    "paytmchecksum": "^1.5.1",
     "socket.io": "^4.8.3",
     "zod": "^4.1.12"
   },

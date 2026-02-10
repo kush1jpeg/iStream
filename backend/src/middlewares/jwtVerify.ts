@@ -36,16 +36,29 @@ export const authVerify = async (
 
 import { Socket } from "socket.io";
 
-export const socketVerify = async (socket: Socket) => {
+export const socketAuthMiddleware = (
+  socket: Socket,
+  next: (err?: Error) => void,
+) => {
   try {
     const token = socket.handshake.auth?.token;
-    if (!token) throw new Error("Missing token : Please Signin");
+
+    if (!token) {
+      return next(new Error("AUTH_MISSING"));
+    }
 
     const decoded = jwt.verify(token, jwtkey) as JwtPayload;
 
+    if (!decoded.id) {
+      return next(new Error("AUTH_INVALID"));
+    }
+
+    // attach identity to socket
     socket.data.userId = decoded.id;
-    return decoded.id;
+    socket.data.role = decoded.role; // optional
+
+    next();
   } catch (err) {
-    throw new Error("Invalid token : Please Signin again");
+    return next(new Error("AUTH_INVALID"));
   }
 };

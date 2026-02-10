@@ -6,7 +6,6 @@ export const userBatchDetails = async (req: Request, res: Response) => {
     const idsParam = req.query.ids as string;
     if (!idsParam) return res.status(400).json({ msg: "No IDs provided" });
 
-    // Split and sanitize IDs
     const ids = idsParam
       .split(",")
       .map((id) => id.trim())

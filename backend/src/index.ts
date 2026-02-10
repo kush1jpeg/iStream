@@ -38,7 +38,7 @@ const startServer = async () => {
     await redisConnect();
 
     // await socket.io server connection
-    initSocket(server);
+    await initSocket(server);
 
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
