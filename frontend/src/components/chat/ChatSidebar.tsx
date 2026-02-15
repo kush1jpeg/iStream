@@ -55,9 +55,6 @@ export const ChatSidebar = ({ conversations, activeId, onSelect }: ChatSidebarPr
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      {convo.isLive && (
-                        <Radio className="w-3 h-3 text-[#E74C3C] animate-pulse flex-shrink-0" />
-                      )}
                       <span className="truncate text-[#1ABC9C]">#{convo.name}</span>
                     </div>
                     {convo.unreadCount > 0 && (

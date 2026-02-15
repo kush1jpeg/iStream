@@ -10,106 +10,83 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ message, isOwn, onEdit, onDelete }: ChatMessageProps) => {
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', {
+  const formatTime = (date: Date) =>
+    date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: false
+      hour12: false,
     });
-  };
-
 
   // Read receipt indicator
   const ReadReceipt = () => {
     if (!isOwn) return null;
 
-    if (message.readBy.length > 0) {
-      return (
-        <CheckCheck className="w-3 h-3 text-[#1ABC9C]" />
-      );
-    }
-    return (
+    return message.readBy.length > 0 ? (
+      <CheckCheck className="w-3 h-3 text-[#1ABC9C]" />
+    ) : (
       <Check className="w-3 h-3 text-[#555]" />
     );
   };
 
-  return (
-    <div
-      className={cn(
-        "group py-1.5 px-2 hover:bg-[#1ABC9C]/5 transition-colors",
-        message.isStreamer && "border-l-2 border-[#9B59B6] bg-[#9B59B6]/5"
-      )}
-    >
-      <div className="flex items-start gap-2">
-        {/* Pixel Avatar */}
-        <div
-          className={cn(
-            "w-6 h-6 flex-shrink-0 border flex items-center justify-center text-[10px] font-bold",
-            message.isStreamer
-              ? "border-[#9B59B6] bg-[#9B59B6]/20 text-[#9B59B6]"
-              : "border-[#1ABC9C] bg-[#1ABC9C]/10 text-[#1ABC9C]"
-          )}
-        >
-          {message.senderName.charAt(0).toUpperCase()}
-        </div>
+  // Dynamic styles
+  const containerClasses = cn(
+    "group flex py-1.5 px-2 transition-colors",
+    isOwn ? "justify-end" : "justify-start"
+  );
 
-        {/* Message Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <span
-              className={cn(
-                "font-mono text-sm font-bold",
-                message.isStreamer ? "text-[#9B59B6]" : "text-[#1ABC9C]",
-                isOwn && "text-[#E74C3C]"
+  const messageBoxClasses = cn(
+    "flex flex-col max-w-[70%] p-2 rounded-md break-words",
+    isOwn
+      ? "bg-[#1ABC9C]/20 border border-[#1ABC9C] text-[#0a0a0a] items-end"
+      : "bg-[#9B59B6]/20 border border-[#9B59B6] text-[#ccc] items-start"
+  );
+
+  return (
+    <div className={containerClasses}>
+      <div className="w-6 h-6 flex-shrink-0 border flex items-center justify-center text-[10px] font-bold border-[#9B59B6] bg-[#9B59B6]/20 text-[#9B59B6] mr-2">
+        {isOwn ? "pfp" : message.senderName.charAt(0).toUpperCase()}
+      </div>
+
+      <div className={messageBoxClasses}>
+        <div className="flex gap-2">
+          {isOwn && (
+            <div className="flex items-center gap-1 mt-1 ml-auto">
+              <ReadReceipt />
+              {message.readBy.length > 0 && (
+                <span className="text-[8px] font-mono text-[#555]">seen by {message.readBy}</span>
               )}
-            >
+
+            </div>
+          )}
+
+
+          <div className="flex items-baseline gap-2 flex-wrap">
+            <span className={cn(
+              "font-mono text-sm font-bold",
+              isOwn ? "text-white" : "text-[#9B59B6]"
+            )}>
               {isOwn ? "you" : message.senderName}
             </span>
-            {message.isStreamer && (
-              <span className="px-1 py-0.5 bg-[#9B59B6] text-[#0a0a0a] text-[8px] font-bold uppercase">
-                STREAMER
-              </span>
-            )}
-            <span className="text-[10px] font-mono text-[#555]">
-              {formatTime(message.timestamp)}
-            </span>
+            <span className="text-[10px] font-mono text-[#555]">{formatTime(message.timestamp)}</span>
           </div>
 
-          <p className="font-mono text-sm text-[#ccc] mt-0.5 break-words">
-            {message.content}
-          </p>
-
-          {/* Read Receipt & Actions Row */}
-          <div className="flex items-center gap-2 mt-1">
-            <ReadReceipt />
-
-            {message.readBy.length > 0 && isOwn && (
-              <span className="text-[8px] font-mono text-[#555]">
-                seen by {message.readBy.length}
-              </span>
-            )}
-
-            {/* Edit/Delete Actions (only for own messages) */}
-            {isOwn && !message.isSystem && (
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 ml-auto">
-                <button
-                  onClick={onEdit}
-                  className="p-1 hover:bg-[#1ABC9C]/20 text-[#555] hover:text-[#1ABC9C] transition-colors"
-                >
-                  <Edit2 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={onDelete}
-                  className="p-1 hover:bg-[#E74C3C]/20 text-[#555] hover:text-[#E74C3C] transition-colors"
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            )}
+          {/* Delete actions */}
+          <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-2">
+            <button
+              onClick={onDelete}
+              className="p-1 hover:bg-[#E74C3C]/20 text-[#555] hover:text-[#E74C3C] transition-colors"
+            >
+              <Trash2 className="w-3 h-3" />
+            </button>
           </div>
         </div>
+
+        <p className="mt-1 font-mono text-sm text-slate-200">{message.content}</p>
+
+
       </div>
+
     </div>
   );
 };

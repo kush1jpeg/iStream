@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatWindow } from "@/components/chat/ChatWindow";
+import { Sidebar } from "@/components/sidebar";
 
 export interface Message {
   id: string;
@@ -10,8 +11,6 @@ export interface Message {
   content: string;
   timestamp: Date;
   readBy: string[];
-  isStreamer?: boolean;
-  isSystem?: boolean;
 }
 
 export interface Conversation {
@@ -24,7 +23,6 @@ export interface Conversation {
   lastActivity: Date;
   unreadCount: number;
   isOnline?: boolean;
-  isLive?: boolean;
 }
 
 const Chat = () => {
@@ -41,7 +39,6 @@ const Chat = () => {
       lastMessage: "This stream is amazing!",
       lastActivity: new Date(),
       unreadCount: 3,
-      isLive: true,
     },
     {
       id: "group-2",
@@ -51,7 +48,6 @@ const Chat = () => {
       lastMessage: "Anyone working on Rust?",
       lastActivity: new Date(Date.now() - 3600000),
       unreadCount: 0,
-      isLive: false,
     },
     {
       id: "dm-1",
@@ -69,15 +65,15 @@ const Chat = () => {
   // Mock messages for active conversation
   const mockMessages: Record<string, Message[]> = {
     "group-1": [
-      { id: "1", senderId: "terminal_wizard", senderName: "terminal_wizard", content: "Welcome to the stream everyone!", timestamp: new Date(Date.now() - 3600000), readBy: ["pixel_fan", "retro_user"], isStreamer: true },
-      { id: "sys-1", senderId: "system", senderName: "SYSTEM", content: ">>> pixel_fan has joined the chat <<<", timestamp: new Date(Date.now() - 3500000), readBy: [], isSystem: true },
+      { id: "1", senderId: "terminal_wizard", senderName: "terminal_wizard", content: "Welcome to the stream everyone!", timestamp: new Date(Date.now() - 3600000), readBy: ["pixel_fan", "retro_user"] },
+      { id: "sys-1", senderId: "system", senderName: "SYSTEM", content: ">>> pixel_fan has joined the chat <<<", timestamp: new Date(Date.now() - 3500000), readBy: [] },
       { id: "2", senderId: "pixel_fan", senderName: "pixel_fan", content: "This stream is amazing!", timestamp: new Date(Date.now() - 3400000), readBy: ["terminal_wizard", "retro_user"] },
       { id: "3", senderId: "retro_user", senderName: "retro_user", content: "Love the analog vibes", timestamp: new Date(Date.now() - 3300000), readBy: ["terminal_wizard", "pixel_fan"] },
-      { id: "4", senderId: "terminal_wizard", senderName: "terminal_wizard", content: "Building a retro terminal emulator in Rust today", timestamp: new Date(Date.now() - 3200000), readBy: ["pixel_fan"], isStreamer: true },
-      { id: "sys-2", senderId: "system", senderName: "SYSTEM", content: ">>> vhs_collector has joined the chat <<<", timestamp: new Date(Date.now() - 3100000), readBy: [], isSystem: true },
+      { id: "4", senderId: "terminal_wizard", senderName: "terminal_wizard", content: "Building a retro terminal emulator in Rust today", timestamp: new Date(Date.now() - 3200000), readBy: ["pixel_fan"] },
+      { id: "sys-2", senderId: "system", senderName: "SYSTEM", content: ">>> vhs_collector has joined the chat <<<", timestamp: new Date(Date.now() - 3100000), readBy: [] },
       { id: "5", senderId: "vhs_collector", senderName: "vhs_collector", content: "Reminds me of old broadcasts", timestamp: new Date(Date.now() - 3000000), readBy: ["terminal_wizard"] },
       { id: "6", senderId: "pixel_fan", senderName: "pixel_fan", content: "What font are you using?", timestamp: new Date(Date.now() - 2900000), readBy: [] },
-      { id: "7", senderId: "terminal_wizard", senderName: "terminal_wizard", content: "VT323 for the terminal, Press Start 2P for headers", timestamp: new Date(Date.now() - 2800000), readBy: [], isStreamer: true },
+      { id: "7", senderId: "terminal_wizard", senderName: "terminal_wizard", content: "VT323 for the terminal, Press Start 2P for headers", timestamp: new Date(Date.now() - 2800000), readBy: [] },
     ],
     "dm-1": [
       { id: "dm1-1", senderId: "pixel_fan", senderName: "pixel_fan", content: "Hey! Really enjoy your streams", timestamp: new Date(Date.now() - 86400000), readBy: ["current-user"] },
@@ -90,11 +86,18 @@ const Chat = () => {
 
   const activeConvo = conversations.find(c => c.id === activeConversation);
   const messages = activeConversation ? mockMessages[activeConversation] || [] : [];
+  const followedUsers = [
+    { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
+    { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
+  ];
+
 
   return (
     <div className="min-h-screen bg-[#101010] crt-container film-grain">
       {/* <Sidebar followedUsers={} /> */}
       <Navigation />
+      <Sidebar followedUsers={followedUsers} />
+
 
       <main className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-140px)]">
