@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package auth;
+
+// RESPONSES
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+  string refresh_token = 4;
+}
+
+message DeleteAccountResponse {
+  bool success = 1;
+}
+
+message RefreshTokenResponse {
+  bool success = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}
+
+message GenericResponse {
+  bool success = 1;
+  string message = 2;
+}

@@ -1,0 +1,29 @@
+{
+  "name": "socketserver",
+  "version": "1.0.0",
+  "description": "websocket Server using socket.io and redis adapter",
+  "keywords": [
+    "istream"
+  ],
+  "author": "kush1jpeg",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^22.18.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "cors": "^2.8.6",
+    "jsonwebtoken": "^9.0.2",
+    "ioredis": "^5.9.2",
+    "lru-cache": "^11.2.6",
+    "socket.io": "^4.8.3"
+  }
+}

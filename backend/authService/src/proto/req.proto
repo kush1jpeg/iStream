@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package auth;
+
+// REQUESTS
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RequestUserId {
+  string user_id = 1;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message VerifyAndChangePasswordRequest {
+  string reset_token = 1;
+  string new_password = 2;
+}
+
+message ResetPasswordRequest {
+  string user_id = 1;
+  string old_password = 2;
+  string new_password = 3;
+}

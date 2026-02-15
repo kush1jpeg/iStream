@@ -1,0 +1,28 @@
+{
+  "name": "@shared/ontos",
+  "version": "1.0.0",
+  "description": "A shared helper package to help reduce boilerplate code spanned across the istream microservices :> also ontos is from ontology.",
+  "license": "ISC",
+  "author": "kush1jpeg",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.3",
+    "@grpc/proto-loader": "^0.8.0",
+    "ioredis": "^5.9.3",
+    "mongoose": "^8.19.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "eslint": "^9.10.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.15.0",
+    "typescript": "^5.9.3"
+  }
+}

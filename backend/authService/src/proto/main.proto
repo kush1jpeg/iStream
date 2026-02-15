@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package auth;
+
+import "req.proto";
+import "res.proto";
+
+service AuthService {
+  // normal login
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Register(RegisterRequest) returns (LoginResponse);
+
+  rpc LoginWithGoogle(RequestUserId) returns (LoginResponse); //google login + same for Register
+
+  rpc DeleteAccount(RequestUserId) returns (DeleteAccountResponse); //deleteAcc
+
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse); //refreshTokens
+
+  // password reset
+  rpc ForgotPassword(ForgotPasswordRequest) returns (GenericResponse); // for outside the app - reset using email
+  rpc VerifyAndChangePassword(VerifyAndChangePasswordRequest) returns (GenericResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (GenericResponse); // inside the app
+}
