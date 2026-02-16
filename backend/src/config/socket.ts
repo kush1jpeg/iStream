@@ -3,8 +3,10 @@ import { registerStreamHandler } from "../socket/registerStreamHandler";
 import { socketAuthMiddleware } from "../middlewares/jwtVerify";
 import { registerLiveChatHandler } from "../socket/registerLiveChatHandler";
 import { registerPvtChatHandler } from "../socket/registerPvtChatHandler";
+import { registerNotifyHandler } from "../socket/registerNotifyHandler";
 import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
+import { redisSubNotify } from "./redis";
 
 export async function initSocket(server: any) {
   const io = new Server(server, {
@@ -17,10 +19,11 @@ export async function initSocket(server: any) {
 
   io.adapter(createAdapter(pubClient, subClient));
 
-  // Only apply auth for DM & liveChat
+  // Only apply auth for DM, liveChat & notification
   io.of("/live").use(socketAuthMiddleware);
   io.of("/dm").use(socketAuthMiddleware);
   io.of("/group").use(socketAuthMiddleware);
+  io.of("/notify").use(socketAuthMiddleware);
 
   // Live chat
   io.of("/live").on("connection", (socket) => {
@@ -38,6 +41,13 @@ export async function initSocket(server: any) {
   io.of("/group").on("connection", (socket) => {
     const dm = io.of("/group");
     registerPvtChatHandler(dm, socket);
+  });
+
+  // notifications
+  redisSubNotify(io.of("/notify")); // establishing redisSubscriber
+  io.of("/notify").on("connection", (socket) => {
+    const notify = io.of("/notify");
+    registerNotifyHandler(notify, socket);
   });
 
   // visible to all users;

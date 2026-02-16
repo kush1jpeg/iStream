@@ -15,7 +15,7 @@ export const forgotPass = async (req: Request, res: Response) => {
   if (!user) return res.status(404).json({ msg: "User not found" });
 
   const resetToken = crypto.randomUUID();
-  await redis.set(`reset:${resetToken}`, user._id, "EX", 900); // expire in 15 minutes
+  await redis.set(`reset:${resetToken}`, String(user._id), "EX", 900); // expire in 15 minutes
 
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
   await sendMail(MailTemplates.forgotPassword(resetLink, email));

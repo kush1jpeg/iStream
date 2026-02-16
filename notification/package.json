@@ -1,0 +1,35 @@
+{
+  "name": "notification",
+  "version": "1.0.0",
+  "description": "notification microservice for istream",
+  "license": "BSD-3-Clause",
+  "author": "kush1jpeg",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kush1jpeg/istream.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kush1jpeg/istream/issues"
+  },
+  "homepage": "https://github.com/kush1jpeg/istream#readme",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "express": "^4.21.2",
+    "nodemailer": "^7.0.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "@types/express": "^4.17.23",
+    "@types/amqplib": "^0.10.7",
+    "@types/nodemailer": "^7.0.2",
+    "eslint": "^9.10.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.15.0",
+    "typescript": "^5.9.3"
+  }
+}

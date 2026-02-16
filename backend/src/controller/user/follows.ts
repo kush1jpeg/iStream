@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { followModel } from "../../models/follow.js";
 
-export const getFollowers = async (req: Request, res: Response) => {
+export const getFollowing = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
@@ -28,7 +28,6 @@ export const getFollowers = async (req: Request, res: Response) => {
       { $unwind: "$followedInfo" },
       {
         $project: {
-          _id: 0,
           id: "$followedInfo._id",
           username: "$followedInfo.username",
           avatar: "$followedInfo.avatar",

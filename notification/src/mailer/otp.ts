@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import { userModel } from "../../models/user";
+import { MailTemplates } from "../../services/mailer/mailManager";
+import { sendMail } from "./nodeMailer";
 import { redis } from "../../config/redis";
-import { getPublishChannel } from "../../config/rabbitmq";
-import { exchange } from "../..";
-import { QueueOTP } from "../../types/types";
 
-export const sendFirstStreamOTP = async (req: Request, res: Response) => {
+export const sendOTP = async (req: Request, res: Response) => {
   try {
     const id = req.id;
     if (!id) {
@@ -25,32 +24,8 @@ export const sendFirstStreamOTP = async (req: Request, res: Response) => {
     const otpgen = Math.floor(100000 + Math.random() * 900000);
     await redis.set(`otp:${user._id}`, otpgen.toString(), "EX", 300); // expiry in 5mins
 
-    const OTPconfig: QueueOTP = {
-      type: "otp_queue",
-      template: "firstStreamOTP",
-      otp: String(otpgen),
-      email: user.email,
-    };
-
-    const publishChannel = await getPublishChannel();
-    if (!publishChannel) {
-      throw new Error("Publish channel is empty or undefined!");
-    }
-
-    // queueing into rabbitmq;
-    publishChannel.publish(
-      exchange,
-      "otp_queue",
-      Buffer.from(JSON.stringify(OTPconfig)),
-      { persistent: true }, // survive restart
-      (err, ok) => {
-        if (err !== null) {
-          console.error("Message nacked! by the broker", err);
-        } else {
-          return res.status(200).json({ message: "OTP sent successfully" });
-        }
-      },
-    );
+    await sendMail(MailTemplates.firstStreamOTP(String(otpgen), user.email)); // as id was included
+    return res.status(200).json({ message: "OTP sent successfully" });
   } catch (error) {
     console.error("Error in sendOTP:", error);
     return res.status(500).json({ error: "Internal server error" });

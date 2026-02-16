@@ -2,7 +2,7 @@ import mongoose, { model, Schema, Document } from "mongoose";
 
 export interface IPay extends Document {
   userId: mongoose.Types.ObjectId;
-  streamId: mongoose.Types.ObjectId;
+  streamId?: mongoose.Types.ObjectId;
   amount: number;
   currency: "INR";
   status: "FAILED" | "SUCCESS" | "PENDING";

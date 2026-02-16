@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { initiateTransactionApi } from "../controller/shop/initiateTransactionApi";
+import { createIntent } from "../controller/payment/createOrder";
+import { authVerify } from "../middlewares/jwtVerify";
 
 export const shopRouter: Router = Router();
 
-shopRouter.post("paytm/initiateTransaction", initiateTransactionApi);
+shopRouter.post("/createOrderIntent", authVerify, createIntent);

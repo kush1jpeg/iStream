@@ -1,4 +1,5 @@
 import mongoose, { model, Schema, Types } from "mongoose";
+import { IUser } from "../types/types";
 
 const animeDefaults = [
   // would remove these hotlinks and use cloudflare cdn or cloudinary
@@ -9,29 +10,6 @@ const animeDefaults = [
   "https://i.pinimg.com/736x/45/7a/07/457a07d796872e64b2447c13fc7adb6a.jpg",
   "https://i.pinimg.com/736x/ee/8e/50/ee8e50595f217b35bdf417969e4663dd.jpg",
 ];
-
-export interface IUser extends Document {
-  _id: Types.ObjectId;
-  username: string;
-  email: string;
-  bio: string;
-  passwordHash: string | null;
-  avatar: string;
-  banner: string;
-  isVerified: boolean; // true if is mail or oauth verified and can stream
-  followers?: string[];
-  following?: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  googleId?: string;
-  twitchId?: string;
-  websiteId?: string;
-  refreshToken: string | null;
-  followerCount: Number;
-  followCount: Number;
-  currentAnimation?: string; // to store shopped animation sprite next to livestream and profile
-  ownedAnimation?: Array<string>;
-}
 
 function pickRandom(arr: string[]) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -70,6 +48,11 @@ const userSchema = new Schema<IUser>(
       type: Number,
       required: true,
       default: 0,
+    },
+    lastReadNotificationId: {
+      type: Schema.Types.ObjectId,
+      ref: "notifications",
+      sparse: true,
     },
     avatar: {
       type: String,

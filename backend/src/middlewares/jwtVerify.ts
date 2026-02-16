@@ -55,7 +55,6 @@ export const socketAuthMiddleware = (
 
     // attach identity to socket
     socket.data.userId = decoded.id;
-    socket.data.role = decoded.role; // optional
 
     next();
   } catch (err) {

@@ -1,26 +1,10 @@
 import mongoose, { Schema, model, Types } from "mongoose";
-
-export interface IStream {
-  _id: Types.ObjectId;
-  streamerId: Types.ObjectId;
-  title: string;
-  description?: string;
-  tags: Array<string>;
-  streamKeyHash: string;
-  status?: "pending" | "live" | "ended";
-  startedAt?: Date;
-  endedAt?: Date;
-  viewers?: number;
-  views?: number;
-  // playbackUrl:string,
-  createdAt?: Date; // from timestamps
-  updatedAt?: Date;
-}
+import { IStream } from "../types/types";
 
 const StreamSchema = new Schema(
   {
     streamerId: {
-      type: Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "users",
       required: true,
       index: true,
@@ -68,6 +52,11 @@ const StreamSchema = new Schema(
     },
 
     viewers: {
+      type: Number,
+      default: 0,
+    },
+
+    like: {
       type: Number,
       default: 0,
     },

@@ -16,7 +16,7 @@ import {
 } from "../validation/authSchemas.js";
 import { register } from "../controller/auth/register";
 import { refreshAccessToken } from "../controller/auth/refreshTokenHandler";
-import { sendOTP, verifyOTP } from "../services/mailer/otp";
+import { sendFirstStreamOTP, verifyOTP } from "../services/mailer/otp";
 import passport from "passport";
 
 export const authRouter = (): Router => {
@@ -48,7 +48,7 @@ export const authRouter = (): Router => {
   authRouter.post("/reset", validate(resetPassSchema), authVerify, resetPass);
 
   // to be eligible for streaming;
-  authRouter.post("/sendOtp", authVerify, sendOTP);
+  authRouter.post("/sendOtp", authVerify, sendFirstStreamOTP);
   authRouter.post("/verifyOtp", authVerify, verifyOTP);
 
   return authRouter;
