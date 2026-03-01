@@ -1,27 +1,46 @@
 import express from "express";
 import { bindExchange, connectToRabbitMQ } from "./config/rabbitmq";
-import { MailconsumeAtLeast } from "./consumers/atleast";
-import { MailconsumeAtMost } from "./consumers/atmost";
+import { consumeNotifs } from "./consumers/notifs";
+import { consumeMails } from "./consumers/mails";
+import { consumePayments } from "./consumers/payments";
+import { dbConnect } from "./config/mongoose";
+import { redisConnect } from "./config/redis";
+import { consumeStreamNotifs } from "./consumers/streamNotifs";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
 app.use(express.json());
 
-const slowQueue = ["payment_queue", "otp_queue"];
-const fastQueue = ["general_queue"];
+const notifyQueue = [
+  "follow_queue",
+  "like_queue",
+  "stream_queue",
+  "chat_queue",
+];
 
 const startServer = async () => {
   try {
     const { connection } = await connectToRabbitMQ();
 
-    const fastChannel = await connection.createChannel();
-    await bindExchange(fastChannel, "notification", fastQueue);
-    await MailconsumeAtMost("general_queue", fastChannel);
+    const notifyChannel = await connection.createChannel();
+    await bindExchange(notifyChannel, "notification", notifyQueue); // binding to routing keys
+
+    await consumeStreamNotifs("stream_queue", notifyChannel);
+    await consumeNotifs("follow_queue", notifyChannel);
+    await consumeNotifs("like_queue", notifyChannel);
+    await consumeNotifs("chat_queue", notifyChannel);
 
     const slowChannel = await connection.createChannel();
-    await bindExchange(slowChannel, "notification", slowQueue);
-    await MailconsumeAtLeast("otp_queue", slowChannel);
-    await MailconsumeAtLeast("payment_queue", slowChannel);
+
+    await slowChannel.assertQueue("otp_queue", { durable: true });
+    await consumeMails("otp_queue", slowChannel);
+
+    await slowChannel.assertQueue("payment_queue", { durable: true });
+    await consumePayments("payment_queue", slowChannel);
+
+    await dbConnect();
+
+    await redisConnect();
 
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
