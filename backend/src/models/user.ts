@@ -66,8 +66,14 @@ const userSchema = new Schema<IUser>(
       type: String,
       sparse: true,
     },
-    ownedAnimation: {
-      type: Array,
+    Inventory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ShopItem",
+      },
+    ],
+    currentFrame: {
+      type: String,
       sparse: true,
     },
     websiteId: {

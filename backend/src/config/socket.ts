@@ -1,7 +1,10 @@
 import { Server } from "socket.io";
 import { registerStreamHandler } from "../socket/registerStreamHandler";
 import { socketAuthMiddleware } from "../middlewares/jwtVerify";
-import { registerLiveChatHandler } from "../socket/registerLiveChatHandler";
+import {
+  registerLiveChatHandler,
+  superchatHandler,
+} from "../socket/registerLiveChatHandler";
 import { registerPvtChatHandler } from "../socket/registerPvtChatHandler";
 import { registerNotifyHandler } from "../socket/registerNotifyHandler";
 import { createAdapter } from "@socket.io/redis-adapter";
@@ -26,6 +29,7 @@ export async function initSocket(server: any) {
   io.of("/notify").use(socketAuthMiddleware);
 
   // Live chat
+  superchatHandler(io.of("/live"));
   io.of("/live").on("connection", (socket) => {
     const live = io.of("/live");
     registerLiveChatHandler(live, socket);

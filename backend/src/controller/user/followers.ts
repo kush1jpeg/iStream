@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import { followModel } from "../../models/follow.js";
+import { followModel } from "../../models/follow";
 
 export const getFollowers = async (req: Request, res: Response) => {
   try {

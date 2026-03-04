@@ -17,7 +17,8 @@ streamRouter.get("/users", userBatchDetails);
 // streamRouter.post("/:streamId/superchat-initiate", gatewayOrder);
 // streamRouter.post("/:streamId/superchat", processOrder);
 
-streamRouter.post("/stream/initiate", authVerify, isVerified, initiateStream);
-streamRouter.post("/stream/start", authVerify, isVerified, startStream);
+streamRouter.post("/initiate", authVerify, isVerified, initiateStream);
+streamRouter.post("/start", authVerify, isVerified, startStream);
+
 // streamRouter("/stream/stop",stopStream)
 streamRouter.delete("/:streamId/delete", authVerify, isVerified, deleteStream);

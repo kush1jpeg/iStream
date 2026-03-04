@@ -1,9 +1,5 @@
-import path from "path";
 import dotenv from "dotenv";
-
-// Force load from project root (works in dev + prod)
-dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-console.log("Loaded env from:", path.resolve(process.cwd(), ".env"));
+dotenv.config();
 
 import express from "express";
 import cookieParser from "cookie-parser";
@@ -20,9 +16,17 @@ import { connectToRabbitMQ } from "./config/rabbitmq";
 import { initPassport } from "./services/passportAuth";
 import passport from "passport";
 
+import Razorpay from "razorpay";
+import { startSuperchatCron } from "./controller/payment/reconcilliation";
+export const instance = new Razorpay({
+  key_id: process.env.KEY_ID,
+  key_secret: process.env.KEY_SECRET,
+});
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 export const exchange = "notification";
+export const payExchange = "payment";
 export const server = http.createServer(app); // sharing the same port for now
 
 app.use(express.json());
@@ -48,9 +52,26 @@ const startServer = async () => {
     // await socket.io server connection
     await initSocket(server);
 
-    // rabbitmq Channel + exchange
-    const { connection, publishChannel } = await connectToRabbitMQ();
-    await publishChannel.assertExchange(exchange, "direct", { durable: true });
+    // rabbitmq Channel + PayExchange(to be asserted in the payment microservice in future)
+    const { connection, publishChannel, payChannel } =
+      await connectToRabbitMQ();
+    await publishChannel.assertExchange("notification", "direct", {
+      durable: true,
+    });
+
+    await payChannel.assertExchange(payExchange, "topic", {
+      durable: true,
+    });
+    await payChannel.assertQueue("payment_superchat", { durable: true });
+    await payChannel.bindQueue(
+      "payment_superchat",
+      payExchange,
+      "payment.superchat",
+    ); // binding to exchange
+
+    // reconcilliation
+    startSuperchatCron();
+
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
     });

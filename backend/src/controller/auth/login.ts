@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 
 import type { Request, Response } from "express";
 import { jwtkey, refreshKey } from "./register.js";
-import { IUser, userModel } from "../../models/user.js";
+import { userModel } from "../../models/user.js";
+import { IUser } from "../../types/types.js";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
@@ -65,7 +66,7 @@ export const loginXgoogle = async (req: Request, res: Response) => {
   const passportUser = req.user as IUser; // callback gives user in req
   const user = await userModel.findById(passportUser._id);
   if (!user) return res.status(404).json({ msg: "User not found" });
-  req.id = user._id;
+  req.id = user.id;
   console.log("User = ", user);
 
   const refreshToken = jwt.sign(

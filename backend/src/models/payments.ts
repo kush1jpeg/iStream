@@ -1,32 +1,33 @@
-import mongoose, { model, Schema, Document } from "mongoose";
-
-export interface IPay extends Document {
-  userId: mongoose.Types.ObjectId;
-  streamId?: mongoose.Types.ObjectId;
-  amount: number;
-  currency: "INR";
-  status: "FAILED" | "SUCCESS" | "PENDING";
-  provider: "RazorPay";
-  providerPaymentId: string; // TXN-id
-  createdAt: Date;
-  updatedAt: Date;
-}
+import mongoose, { model, Schema } from "mongoose";
+import { IPay } from "../types/types";
 
 const paymentSchema = new Schema<IPay>(
   {
-    userId: { ref: "users", required: true },
-    streamId: { ref: "streams", required: false }, // to work for both shop and superChat
-    amount: { type: Number, required: true, default: 0 },
+    userId: { ref: "users", required: true, type: Schema.Types.ObjectId },
+    username: { type: String, required: false, sparse: true },
+    amount: { type: Number, required: true },
+    streamId: { ref: "streams", required: false, type: Schema.Types.ObjectId }, // for superchat
+    itemId: { ref: "shopItem", required: true, type: Schema.Types.ObjectId }, // for shop
     currency: { type: String, default: "INR" },
-    status: { type: String, required: true },
+    status: {
+      type: String,
+      required: true,
+      enum: ["FAILED", "SUCCESS", "PENDING"],
+    },
+    email: { type: String, sparse: true, required: false },
+    message: { type: String, sparse: true, required: false },
+    userPfp: { type: String, sparse: true, required: false },
     provider: { type: String },
-    providerPaymentId: { type: String, required: true },
+    orderId: { type: String, required: true },
+    providerPaymentId: { type: String, required: false },
+    expiresAt: { type: Date, sparse: true, index: { expires: 0 } },
   },
   { timestamps: true },
 );
 
 paymentSchema.index({ userId: 1, createdAt: -1 });
 paymentSchema.index({ streamId: 1, createdAt: -1 });
+paymentSchema.index({ itemId: 1, createdAt: -1 });
 
 export const PaymentModel: mongoose.Model<IPay> =
-  mongoose.models.Payment || model<IPay>("Payments", paymentSchema);
+  mongoose.models.Payments || model<IPay>("Payments", paymentSchema);

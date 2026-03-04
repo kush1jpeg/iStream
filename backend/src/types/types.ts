@@ -1,17 +1,23 @@
-import mongoose, { Types } from "mongoose";
+import { Types } from "mongoose";
 
 export interface QueueOTP {
   type: string;
   template: string;
-  otp: string;
+  link?: string;
+  otp?: string;
   email: string;
 }
 
-type NotificationType = "follow" | "stream_live" | "chat";
+type NotificationType =
+  | "follow"
+  | "stream_live"
+  | "stream_start"
+  | "chat"
+  | "like";
 export interface INotification extends Document {
-  userId: mongoose.Types.ObjectId;
-  actorId: mongoose.Types.ObjectId;
   type: NotificationType;
+  userId: Types.ObjectId;
+  actorId: Types.ObjectId;
   createdAt: Date;
 }
 
@@ -35,7 +41,8 @@ export interface IUser extends Document {
   followerCount: Number;
   followCount: Number;
   currentAnimation?: string; // to store shopped animation sprite next to livestream and profile
-  ownedAnimation?: Array<string>;
+  currentFrame?: string; // to store shopped frames
+  Inventory?: Array<Types.ObjectId>;
   lastReadNotificationId: Types.ObjectId | null;
 }
 
@@ -55,4 +62,23 @@ export interface IStream {
   // playbackUrl:string,
   createdAt?: Date; // from timestamps
   updatedAt?: Date;
+}
+
+export interface IPay extends Document {
+  userId: Types.ObjectId;
+  username?: string;
+  email?: string;
+  message?: string;
+  amount: number;
+  streamId?: Types.ObjectId;
+  userPfp?: string; // optional snapshot
+  itemId?: Types.ObjectId;
+  currency: "INR";
+  status: "FAILED" | "SUCCESS" | "PENDING";
+  provider: "RazorPay";
+  orderId: string; // TXN-id
+  providerPaymentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  expiresAt: Date | null;
 }

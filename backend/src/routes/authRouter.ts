@@ -16,8 +16,8 @@ import {
 } from "../validation/authSchemas.js";
 import { register } from "../controller/auth/register";
 import { refreshAccessToken } from "../controller/auth/refreshTokenHandler";
-import { sendFirstStreamOTP, verifyOTP } from "../services/mailer/otp";
 import passport from "passport";
+import { sendFirstStreamOTP, verifyOTP } from "../services/otp/otp";
 
 export const authRouter = (): Router => {
   const authRouter = Router();

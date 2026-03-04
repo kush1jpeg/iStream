@@ -5,7 +5,7 @@ export const search = async (req: Request, res: Response) => {
   try {
     const query = String(req.query.user).trim();
 
-    if (!query || query.length < 2) {
+    if (!query || query.trim().length < 2) {
       return res.json([]);
     }
 

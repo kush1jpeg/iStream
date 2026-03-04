@@ -9,17 +9,21 @@ export interface IMsg extends Document {
   readBy: mongoose.Types.ObjectId[];
 }
 
-const messageSchema = new Schema({
-  senderId: { type: mongoose.Types.ObjectId, ref: "users" },
-  conversationKey: {
-    type: mongoose.Types.ObjectId,
-    ref: "conversation",
-    unique: true,
+const messageSchema = new Schema(
+  {
+    senderId: { type: mongoose.Types.ObjectId, ref: "users" },
+    conversationKey: {
+      type: mongoose.Types.ObjectId,
+      ref: "conversation",
+      unique: true,
+    },
+    message: { type: String },
+    readBy: [{ type: mongoose.Types.ObjectId, ref: "users" }],
   },
-  message: { type: String },
-  timestamp: { type: Date, default: Date.now },
-  readBy: [{ type: mongoose.Types.ObjectId, ref: "users" }],
-});
+  {
+    timestamps: true,
+  },
+);
 
 messageSchema.index({ conversationId: 1, timestamp: 1 });
 
