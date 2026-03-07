@@ -1,0 +1,103 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: staticServe
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - hls_data:/hls:ro
+
+  mediamtx:
+    image: bluenviron/mediamtx:1
+    container_name: mediamtx
+    ports:
+    - "1935:1935"    #OBS RTMP
+    volumes:
+      - ./config/mediamtx.yml:/mediamtx.yml:ro
+    restart: unless-stopped
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - istream
+
+  # ffmpeg-worker:
+  #   build: ./workerBackend/
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   volumes:
+  #     - hls_data:/hls
+  #   networks:
+  #     - istream
+  #     replicas: 2          # spawn 2 workers initially
+  #   restart: always
+
+  auto-scaler:
+    build: ./autoScaler/
+    container_name: auto-scaler
+    depends_on:
+      - rabbitmq
+      - redis
+    env_file:
+      - ./autoScaler/.env
+    networks:
+      - istream
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+
+  job-server:
+    build: ./jobServer/
+    container_name: job-server
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - PORT= 3000
+    restart: unless-stopped
+    networks:
+      - istream
+
+    backend:
+    build: ./backend/
+    container_name: main-backend
+    depends_on:
+      - rabbitmq
+      -redis
+      - job-server
+    restart: unless-stopped
+    networks:
+      - istream
+
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+    ports:
+      - "6379"
+    networks:
+      - istream
+    volumes:
+      - redis_data:/data
+
+volumes:
+  hls_data:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  istream:
+

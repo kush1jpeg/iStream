@@ -1,0 +1,18 @@
+# OBS -> RTMP ingest
+rtmp: yes
+rtmpAddress: :1935
+
+# auth
+authMethod: http
+authHTTPAddress: http://schedulerBackend/auth
+
+#rtmp ingestion hooks
+paths:
+  all:
+    source: publisher
+
+    runOnReady: 'curl -X POST http://localhost:3000/enqueue -H "Content-Type: application/json" -d "{\"MTX_PATH\":\"$MTX_PATH\"}"'
+
+    runOnReadyRestart: yes
+
+
