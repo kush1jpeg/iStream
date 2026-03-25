@@ -1,4 +1,5 @@
 import amqp, { ConfirmChannel, ChannelModel } from "amqplib";
+import { Connection } from "mongoose";
 
 let connection: ChannelModel | null = null;
 let publishChannel: ConfirmChannel | null = null;
@@ -13,7 +14,7 @@ export async function connectToRabbitMQ() {
     payChannel = await connection.createConfirmChannel();
 
     console.log("🔥 Connected to RabbitMQ in Docker network!");
-    return { connection, publishChannel, payChannel };
+    return { publishChannel, payChannel };
   } catch (error) {
     console.error("❌ Failed to connect to RabbitMQ:", error);
     throw new Error("unreachable");
@@ -25,6 +26,13 @@ export async function getPayChannel(): Promise<ConfirmChannel> {
     throw new Error("RabbitMQ channel is not initialized yet.");
   }
   return payChannel;
+}
+
+export async function getConnection(): Promise<ChannelModel> {
+  if (!connection) {
+    throw new Error("RabbitMQ channel is not initialized yet.");
+  }
+  return connection;
 }
 
 export async function getPublishChannel(): Promise<ConfirmChannel> {

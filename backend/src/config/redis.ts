@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 import { Namespace } from "socket.io";
-import { INotification } from "../types/types";
+import { INotification, IStreamLog } from "../types/types";
 
 const port = Number(process.env.REDIS_PORT) || 6379;
 
@@ -32,6 +32,17 @@ export const redisSubNotify = async (io: Namespace) => {
     try {
       const strMsg = typeof msg === "string" ? msg : msg.toString();
       const payload = JSON.parse(strMsg) as INotification;
+      io.to(JSON.stringify(payload.userId)).emit("notifications", msg);
+    } catch (err) {
+      console.error("Invalid notification payload", err);
+    }
+  });
+
+  redis.subscribe("stream:log", (msg) => {
+    if (!msg) throw new Error("error during registerNotifyHandler");
+    try {
+      const strMsg = typeof msg === "string" ? msg : msg.toString();
+      const payload = JSON.parse(strMsg) as IStreamLog;
       io.to(JSON.stringify(payload.userId)).emit("notifications", msg);
     } catch (err) {
       console.error("Invalid notification payload", err);

@@ -53,8 +53,7 @@ const startServer = async () => {
     await initSocket(server);
 
     // rabbitmq Channel + PayExchange(to be asserted in the payment microservice in future)
-    const { connection, publishChannel, payChannel } =
-      await connectToRabbitMQ();
+    const { publishChannel, payChannel } = await connectToRabbitMQ();
     await publishChannel.assertExchange("notification", "direct", {
       durable: true,
     });
@@ -75,18 +74,12 @@ const startServer = async () => {
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
     });
-
-    process.on("SIGINT", () => {
-      connection.close();
-      gracefulShutdown("SIGINT");
-    });
-    process.on("SIGTERM", () => {
-      connection.close();
-      gracefulShutdown("SIGINT");
-    });
   } catch (err) {
     console.error("Failed to start the server:", err);
   }
 };
 
 startServer();
+
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

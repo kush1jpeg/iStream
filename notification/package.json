@@ -15,12 +15,16 @@
   "homepage": "https://github.com/kush1jpeg/istream#readme",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts"
   },
   "dependencies": {
     "amqplib": "^0.10.9",
     "express": "^4.21.2",
     "nodemailer": "^7.0.9",
+    "dotenv": "^16.4.5",
     "mongoose": "^8.19.1",
     "ioredis": "^5.9.2"
   },

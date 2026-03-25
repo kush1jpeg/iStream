@@ -3,7 +3,7 @@ import { redis } from "../../config/redis";
 import { streamModel } from "../../models/stream";
 
 export const startStream = async (req: Request, res: Response) => {
-  const streamId = req.body.streamId;
+  const [streamId, streamKey] = req.body;
   if (!streamId) {
     return res
       .status(400)
@@ -25,13 +25,15 @@ export const startStream = async (req: Request, res: Response) => {
   }
 
   stream.status = "live";
+  stream.expiresAt = null;
   stream.startedAt = new Date();
   await stream.save();
 
   // streamer: as the stream starts create redis stream details;
   const redisData = {
     streamerId: userId,
-    streamId,
+    thumbnail: stream.thumbnail,
+    streamKey: streamKey,
     createdAt: new Date().toISOString(),
     viewers: "0", // store as string
     views: "0",
@@ -40,6 +42,9 @@ export const startStream = async (req: Request, res: Response) => {
   const pipeline = redis.multi();
   pipeline.hset(`stream:${streamId}`, redisData);
   pipeline.set(`live:user:${userId}`, streamId);
+
+  // for MediaMTX auth
+  pipeline.set(`streamKey:${streamKey}`, streamId);
 
   await pipeline.exec();
 };

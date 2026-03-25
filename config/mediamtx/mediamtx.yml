@@ -1,0 +1,23 @@
+# OBS -> RTMP ingest
+rtmp: yes
+rtmpEncryption: "no"
+rtmpAddress: :1935
+
+# plan to use the auth for those plats like obs which can send username and pass;
+# i will verify username and pass then return a token which obs will use as the stream key making it more secure
+
+# authMethod: http
+# authHTTPAddress: http://job-server/auth
+
+#rtmp ingestion hooks
+paths:
+  all:
+    source: publisher
+
+    runOnReady: 'curl -X POST http://job-server/enqueue -H "Content-Type: application/json" -d "{\"MTX_PATH\":\"$MTX_PATH\"}"'
+    # runOnConnect: curl http://my-custom-server/webhook?conn_type=$MTX_CONN_TYPE&conn_id=$MTX_CONN_ID
+    # runOnDisconnect: curl http://my-custom-server/webhook?conn_type=$MTX_CONN_TYPE&conn_id=$MTX_CONN_ID
+
+    runOnReadyRestart: yes
+
+

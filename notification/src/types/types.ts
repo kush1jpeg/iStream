@@ -20,3 +20,21 @@ export interface INotification extends Document {
   type: NotificationType;
   createdAt: Date;
 }
+
+export interface IPay extends Document {
+  userId: Types.ObjectId;
+  username?: string;
+  email?: string;
+  message?: string;
+  amount: number;
+  streamId?: Types.ObjectId;
+  userPfp?: string; // optional snapshot
+  itemId?: Types.ObjectId;
+  currency: "INR";
+  status: "FAILED" | "SUCCESS" | "PENDING";
+  provider: "RazorPay";
+  orderId: string; // TXN-id
+  providerPaymentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

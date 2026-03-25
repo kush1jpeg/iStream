@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { IStream } from "../types/types";
 
 const StreamSchema = new Schema(
@@ -43,6 +43,11 @@ const StreamSchema = new Schema(
     //   type: String, // HLS/DASH URL
     // },
 
+    thumbnail: {
+      type: String, // url
+      default: "https://in.pinterest.com/pin/345510602689258975/",
+    },
+
     startedAt: {
       type: Date,
     },
@@ -65,6 +70,7 @@ const StreamSchema = new Schema(
       type: Number,
       default: 0,
     },
+    expiresAt: { type: Date, sparse: true, index: { expires: 0 } },
   },
   { timestamps: true },
 );

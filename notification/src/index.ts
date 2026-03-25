@@ -1,7 +1,10 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import { bindExchange, connectToRabbitMQ } from "./config/rabbitmq";
 import { consumeNotifs } from "./consumers/notifs";
-import { consumeMails } from "./consumers/mails";
+import { consumeOTPMails } from "./consumers/mails";
 import { consumePayments } from "./consumers/payments";
 import { dbConnect } from "./config/mongoose";
 import { redisConnect } from "./config/redis";
@@ -15,7 +18,7 @@ const notifyQueue = [
   "follow_queue",
   "like_queue",
   "stream_queue",
-  "chat_queue",
+  "chat_queue", // for pvt chats
 ];
 
 const startServer = async () => {
@@ -23,20 +26,29 @@ const startServer = async () => {
     const { connection } = await connectToRabbitMQ();
 
     const notifyChannel = await connection.createChannel();
+
+    await notifyChannel.assertExchange("notification", "direct", {
+      durable: true,
+    });
     await bindExchange(notifyChannel, "notification", notifyQueue); // binding to routing keys
 
-    await consumeStreamNotifs("stream_queue", notifyChannel);
+    await consumeStreamNotifs("stream_queue", notifyChannel); // notify about stream start to followers
     await consumeNotifs("follow_queue", notifyChannel);
     await consumeNotifs("like_queue", notifyChannel);
     await consumeNotifs("chat_queue", notifyChannel);
 
     const slowChannel = await connection.createChannel();
 
-    await slowChannel.assertQueue("otp_queue", { durable: true });
-    await consumeMails("otp_queue", slowChannel);
+    await slowChannel.assertQueue("otp_queue_mail", { durable: true });
+    await consumeOTPMails("otp_queue", slowChannel);
 
-    await slowChannel.assertQueue("payment_queue", { durable: true });
-    await consumePayments("payment_queue", slowChannel);
+    await slowChannel.assertQueue("payment_success_mail", { durable: true });
+    await slowChannel.bindQueue(
+      "payment_success_mail",
+      "payment",
+      "payment.success",
+    ); // binding to routing keys
+    await consumePayments("payment_success_mail", slowChannel);
 
     await dbConnect();
 

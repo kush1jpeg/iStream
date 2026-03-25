@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { redis } from "./redis";
 import { server } from "..";
+import { getConnection } from "./rabbitmq";
 
 export const gracefulShutdown = async (signal: string) => {
   console.log(`\n💀 Received ${signal}. Shutting down gracefully...`);
@@ -12,6 +13,10 @@ export const gracefulShutdown = async (signal: string) => {
     // close Redis
     await redis.quit();
     console.log("✅ Redis disconnected");
+
+    const connection = await getConnection();
+    await connection.close();
+    console.log("✅ rabbitmq disconnected");
 
     // close Socket.IO
     server.close(() => {

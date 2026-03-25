@@ -13,7 +13,10 @@ export async function consumeNotifs(queueName: string, channel: Channel) {
       try {
         const data = JSON.parse(msg.content.toString()) as INotification;
         switch (data.type) {
-          case "stream_live":
+          case "chat":
+            break;
+
+          case "like":
             break;
 
           default:

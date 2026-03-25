@@ -13,11 +13,20 @@ type NotificationType =
   | "stream_live"
   | "stream_start"
   | "chat"
+  | "log"
   | "like";
 export interface INotification extends Document {
   type: NotificationType;
   userId: Types.ObjectId;
   actorId: Types.ObjectId;
+  createdAt: Date;
+}
+
+export interface IStreamLog {
+  type: NotificationType;
+  msg: string;
+  streamId: Types.ObjectId;
+  userId: Types.ObjectId;
   createdAt: Date;
 }
 
@@ -51,6 +60,7 @@ export interface IStream {
   streamerId: Types.ObjectId;
   title: string;
   description?: string;
+  thumbnail: string;
   tags: Array<string>;
   streamKeyHash: string;
   status?: "pending" | "live" | "ended";
@@ -62,6 +72,7 @@ export interface IStream {
   // playbackUrl:string,
   createdAt?: Date; // from timestamps
   updatedAt?: Date;
+  expiresAt: Date | null;
 }
 
 export interface IPay extends Document {

@@ -3,7 +3,7 @@ import { QueueOTP } from "../types/types";
 import { sendMail } from "../mailer/nodeMailer";
 import { MailTemplates } from "../mailer/mailManager";
 
-export async function consumeMails(queueName: string, channel: Channel) {
+export async function consumeOTPMails(queueName: string, channel: Channel) {
   console.log(`Waiting for messages in ${queueName}...`);
 
   channel.consume(
