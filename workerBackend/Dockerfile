@@ -6,6 +6,6 @@ COPY package.json ./
 RUN npm install
 RUN apk add --no-cache ffmpeg
 
-COPY ./src/index.js .
+COPY ./src/ .
 
 CMD ["node", "index.js"]

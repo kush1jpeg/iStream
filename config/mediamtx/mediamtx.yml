@@ -14,7 +14,7 @@ paths:
   all:
     source: publisher
 
-    runOnReady: 'curl -X POST http://job-server/enqueue -H "Content-Type: application/json" -d "{\"MTX_PATH\":\"$MTX_PATH\"}"'
+    runOnReady: 'curl -X POST http://job-server:3000/enqueue -H "Content-Type: application/json" -d "{\"MTX_PATH\":\"$MTX_PATH\"}"'
     # runOnConnect: curl http://my-custom-server/webhook?conn_type=$MTX_CONN_TYPE&conn_id=$MTX_CONN_ID
     # runOnDisconnect: curl http://my-custom-server/webhook?conn_type=$MTX_CONN_TYPE&conn_id=$MTX_CONN_ID
 
