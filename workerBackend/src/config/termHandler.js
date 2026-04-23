@@ -1,6 +1,6 @@
-import { logger } from "..";
-import { terminateRabbitMQ } from "./rabbitmq";
-import { redis } from "./redis";
+import { logger } from "../index.js";
+import { terminateRabbitMQ } from "./rabbitmq.js";
+import { redis } from "./redis.js";
 
 export async function handleTerm(signal, containerID, busy) {
   logger.info(`[!] Worker shutting down (${signal})`);
