@@ -35,17 +35,6 @@ services:
     networks:
       - istream
 
-  # ffmpeg-worker:
-  #   build: ./workerBackend/
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   volumes:
-  #     - hls_data:/hls
-  #   networks:
-  #     - istream
-  #     replicas: 2          # spawn 2 workers initially
-  #   restart: always
 
   auto-scaler:
     build: ./autoScaler/
@@ -85,6 +74,7 @@ services:
 
 volumes:
   hls_data:
+    name: hls_data  # doing this the name stays hls_data; as docker changes the name based on dir name
   rabbitmq_data:
   redis_data:
 

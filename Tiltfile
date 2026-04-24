@@ -20,6 +20,9 @@ test = cfg.get('test', [])
 if 'stream' in test:
   print("using docker_compose.stream.yml")
   docker_compose("./docker-compose.stream.yml")
+if 'backend' in test:
+  print("using docker_compose.backend.yml")
+  docker_compose("./docker-compose.backend.yml")
 else:
   print("using docker_compose.yml")
   docker_compose("./docker-compose.yml")

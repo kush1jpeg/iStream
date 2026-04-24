@@ -13,10 +13,10 @@ export const docker = new Docker({
   socketPath: "/var/run/docker.sock",
 });
 
-import { deleteWorker, spawnWorker } from "./helpers.js";
+import { deleteWorker, gracefulShutdown, spawnWorker } from "./helpers.js";
 
 const MAX_WORKERS = Number(process.env.MAX_WORKERS);
-const MIN_WORKER = Number(process.env.MIN_WORKERS);
+const MIN_WORKERS = Number(process.env.MIN_WORKERS);
 const WAIT_TIME = Number(process.env.WAIT_TIME);
 const RTMP_URL = process.env.RTMP_URL;
 const IMAGE = process.env.IMAGE;
@@ -24,9 +24,22 @@ const REDIS_PORT = process.env.REDIS_PORT;
 const RABBITMQ_URL = process.env.RABBITMQ_URL;
 const NETWORK = process.env.NETWORK;
 
-console.log("[+] deleting the previous workers");
-await redis.del("workers");
-for (let i = 0; i < MIN_WORKER; i++) {
+const allWorkers = await redis.hgetall("workers");
+if (allWorkers) {
+  console.log("[+] deleting the previous workers");
+  await Promise.all(
+    Object.keys(allWorkers).map((w) => {
+      console.log("cleaning prev worker", w);
+      return docker
+        .getContainer(w)
+        .remove({ force: true })
+        .catch(() => {}); // move on if container removed can put in trycatch too
+    }),
+  );
+  await redis.del("workers");
+}
+
+for (let i = 0; i < MIN_WORKERS; i++) {
   try {
     await spawnWorker(
       IMAGE,
@@ -49,7 +62,7 @@ async function autoscaler() {
     const busyCount = Object.values(allWorkers).filter(
       (state) => state === "busy",
     ).length;
-    console.log("[+]busyCount ", busyCount);
+    console.log("[+] busy ", busyCount);
 
     const idleCount = Object.values(allWorkers).filter(
       (state) => state === "idle",
@@ -62,13 +75,12 @@ async function autoscaler() {
       await spawnWorker(
         IMAGE,
         "stream.jobs",
-        REDIS_NAME,
         RTMP_URL,
         REDIS_PORT,
         RABBITMQ_URL,
         NETWORK,
       );
-    } else if (idleCount > 0 && total > MIN_WORKER) {
+    } else if (idleCount > 0 && total > MIN_WORKERS) {
       if (!idleTimer) {
         idleTimer = setTimeout(async () => {
           // deleteWorker here

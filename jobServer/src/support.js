@@ -1,12 +1,13 @@
 import { redisClient } from "./config/redis.js";
 
 export async function verifyStreamKey(streamKey) {
-  // checking redis;
-  if (await redisClient.exists(`streamKey:${streamKey}`)) {
-    console.log("streamKey is verified", streamKey);
-    return 1;
+  const streamId = await redisClient.get(`streamKey:${streamKey}`);
+
+  if (streamId) {
+    console.log(`streamKey:${streamKey} verified for stream:${streamId}`);
+    return true;
   } else {
-    console.log("streamKey Not verified", streamKey);
-    return 0;
+    console.log(`streamKey NOT verified or stream not available: ${streamKey}`);
+    return false;
   }
 }
