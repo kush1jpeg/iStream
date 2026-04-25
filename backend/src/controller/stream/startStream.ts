@@ -1,9 +1,12 @@
 import type { Request, Response } from "express";
 import { redis } from "../../config/redis";
 import { streamModel } from "../../models/stream";
+import { userModel } from "../../models/user";
+
+const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/live/";
 
 export const startStream = async (req: Request, res: Response) => {
-  const [streamId, streamKey] = req.body;
+  const { streamId } = req.body;
   if (!streamId) {
     return res
       .status(400)
@@ -29,22 +32,43 @@ export const startStream = async (req: Request, res: Response) => {
   stream.startedAt = new Date();
   await stream.save();
 
+  // storing minimal user details
+  const user = await userModel.findById(userId, {
+    username: 1,
+    avatar: 1,
+    currentAnimation: 1,
+  });
+
   // streamer: as the stream starts create redis stream details;
   const redisData = {
-    streamerId: userId,
-    thumbnail: stream.thumbnail,
-    streamKey: streamKey,
+    streamer: {
+      id: userId,
+      username: user?.username,
+      avatar: user?.avatar,
+      frame: user?.currentFrame,
+      animation: user?.currentAnimation,
+    },
+
+    stream: {
+      title: stream.title,
+      description: stream.description,
+      thumbnail: stream.thumbnail,
+      tags: stream.tags,
+      HLS_PATH,
+    },
+
+    viewers: 0,
+    views: 0,
     createdAt: new Date().toISOString(),
-    viewers: "0", // store as string
-    views: "0",
   };
 
   const pipeline = redis.multi();
   pipeline.hset(`stream:${streamId}`, redisData);
-  pipeline.set(`live:user:${userId}`, streamId);
+  pipeline.set(`live:user:${userId}`, streamId); // to track weather a person is streaming or not;
+  pipeline.sadd(`live:streams`, streamId);
 
-  // for MediaMTX auth
-  pipeline.set(`streamKey:${streamKey}`, streamId);
+  // for job-server auth
+  pipeline.set(`streamKey:${stream.streamKeyHash}`, streamId);
 
   await pipeline.exec();
 };

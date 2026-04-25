@@ -4,7 +4,7 @@
   "description": "notification microservice for istream",
   "license": "BSD-3-Clause",
   "author": "kush1jpeg",
-  "type": "module",
+  "type": "commonjs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kush1jpeg/istream.git"

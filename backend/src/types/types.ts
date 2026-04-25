@@ -6,7 +6,7 @@ export interface QueueOTP {
   link?: string;
   otp?: string;
   email: string;
-}
+} // using this for both otp and password reset mail;
 
 type NotificationType =
   | "follow"

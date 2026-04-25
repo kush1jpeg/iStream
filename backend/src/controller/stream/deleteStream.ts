@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
 import { streamModel } from "../../models/stream";
+import { redis } from "../../config/redis";
 
 export const deleteStream = async (req: Request, res: Response) => {
   try {
     const { streamId } = req.params;
     const userId = req.id;
+    const streamKey = req.body;
 
     if (!streamId) {
       return res
@@ -29,6 +31,14 @@ export const deleteStream = async (req: Request, res: Response) => {
 
     // Delete from DB
     await streamModel.findByIdAndDelete(streamId);
+
+    // Delete from redis
+    const pipeline = redis.multi();
+    pipeline.del(`stream:${streamId}`);
+    pipeline.del(`live:user:${userId}`);
+    pipeline.srem(`live:streams`, streamId);
+    pipeline.del(`streamKey:${streamKey}`);
+    await pipeline.exec();
 
     return res.status(200).json({
       success: true,

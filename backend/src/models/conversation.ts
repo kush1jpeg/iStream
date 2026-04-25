@@ -17,7 +17,7 @@ const conversationSchema = new Schema<IConversation>(
     ],
     lastMessage: { type: mongoose.Types.ObjectId, ref: "msgPvt" },
     isGroup: { type: Boolean, default: false },
-    groupName: { type: String, trim: true, sparse: true },
+    groupName: { type: String, trim: true, sparse: false },
     conversationKey: { type: String, trim: true, unique: true },
   },
   { timestamps: true },

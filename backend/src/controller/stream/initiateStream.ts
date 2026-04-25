@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { streamModel } from "../../models/stream";
-const rtmpUrl = Number(process.env.RTMP_PORT) || 1935;
+const rtmpUrl = process.env.RTMP_URL || "rtmp://localhost:1935/live";
 
 export const initiateStream = async (req: Request, res: Response) => {
   const { title, description, tags, thumbnail } = req.body;
@@ -15,7 +15,7 @@ export const initiateStream = async (req: Request, res: Response) => {
     title,
     description,
     tags,
-    streamKey,
+    streamKeyHash: streamKey,
     thumbnail,
     expiresAt: new Date(Date.now() + 0.5 * 60 * 60 * 1000), // 0.5 hour
   });
@@ -26,9 +26,10 @@ export const initiateStream = async (req: Request, res: Response) => {
       "Stream initialized. Copy the stream key now — it will not be shown again.",
     data: {
       title,
+      tags,
       thumbnail,
       streamId: stream.id,
-      streamKey: streamKey,
+      streamKey,
       rtmpUrl,
     },
   });

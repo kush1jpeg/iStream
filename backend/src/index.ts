@@ -49,9 +49,6 @@ const startServer = async () => {
     // connecting to redis
     await redisConnect();
 
-    // await socket.io server connection
-    await initSocket(server);
-
     // rabbitmq Channel + PayExchange(to be asserted in the payment microservice in future)
     const { publishChannel, payChannel } = await connectToRabbitMQ();
     await publishChannel.assertExchange("notification", "direct", {
@@ -61,15 +58,20 @@ const startServer = async () => {
     await payChannel.assertExchange(payExchange, "topic", {
       durable: true,
     });
+    // await payChannel.assertQueue("payment_shop", { durable: true });
+    // await payChannel.bindQueue("payment_shop", payExchange, "payment.shop");  // not useful for now
+
     await payChannel.assertQueue("payment_superchat", { durable: true });
     await payChannel.bindQueue(
       "payment_superchat",
       payExchange,
       "payment.superchat",
-    ); // binding to exchange
-
-    // reconcilliation
+    );
+    // reconcilliation job for cleaning up pending/failed payments
     startSuperchatCron();
+
+    // await socket.io server connection
+    await initSocket(server);
 
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);

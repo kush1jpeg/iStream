@@ -39,16 +39,15 @@ const startServer = async () => {
 
     const slowChannel = await connection.createChannel();
 
-    await slowChannel.assertQueue("otp_queue_mail", { durable: true });
+    await slowChannel.assertQueue("otp_queue", { durable: true });
     await consumeOTPMails("otp_queue", slowChannel);
 
-    await slowChannel.assertQueue("payment_success_mail", { durable: true });
-    await slowChannel.bindQueue(
-      "payment_success_mail",
-      "payment",
-      "payment.success",
-    ); // binding to routing keys
-    await consumePayments("payment_success_mail", slowChannel);
+    await slowChannel.assertQueue("payment_queue", { durable: true });
+    await slowChannel.assertExchange("payment", "topic", {
+      durable: true,
+    });
+    await slowChannel.bindQueue("payment_queue", "payment", "payment.*"); // binding to routing keys
+    await consumePayments("payment_queue", slowChannel);
 
     await dbConnect();
 

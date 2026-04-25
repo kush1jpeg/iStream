@@ -6,7 +6,7 @@ export interface IShopItem extends Document {
   price: number;
   type: "animation" | "frame";
   imageURL?: string;
-  active?: boolean; // defaults to true
+  active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }

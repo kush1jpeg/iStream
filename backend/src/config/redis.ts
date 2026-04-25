@@ -26,8 +26,10 @@ export const redisConnect = async () => {
   }
 };
 
+export const redisSub = new Redis({ host: "redis", port });
+
 export const redisSubNotify = async (io: Namespace) => {
-  redis.subscribe("notifications", (msg) => {
+  redisSub.subscribe("notifications", (ch, msg) => {
     if (!msg) throw new Error("error during registerNotifyHandler");
     try {
       const strMsg = typeof msg === "string" ? msg : msg.toString();
@@ -38,7 +40,7 @@ export const redisSubNotify = async (io: Namespace) => {
     }
   });
 
-  redis.subscribe("stream:log", (msg) => {
+  redisSub.subscribe("stream:log", (ch, msg) => {
     if (!msg) throw new Error("error during registerNotifyHandler");
     try {
       const strMsg = typeof msg === "string" ? msg : msg.toString();

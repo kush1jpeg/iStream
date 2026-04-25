@@ -17,10 +17,7 @@ export const notificationSchema = new Schema<INotification>(
 );
 
 // ( auto-delete after 7 days)
-notificationSchema.index(
-  { createdAt: 1 },
-  { expireAfterSeconds: 7 * 24 * 60 * 60 },
-);
+notificationSchema.index({ createdAt: 1 }, { expires: 7 * 24 * 60 * 60 });
 
 export const notifyModel: mongoose.Model<INotification> =
   mongoose.models.notification ||

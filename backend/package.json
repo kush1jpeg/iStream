@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "type": "module",
+  "type": "commonjs",
   "version": "1.0.0",
   "description": "TypeScript backend for iStream",
   "author": "kush1jpeg",

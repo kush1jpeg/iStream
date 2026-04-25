@@ -8,19 +8,15 @@ import {
 import { registerPvtChatHandler } from "../socket/registerPvtChatHandler";
 import { registerNotifyHandler } from "../socket/registerNotifyHandler";
 import { createAdapter } from "@socket.io/redis-adapter";
-import Redis from "ioredis";
-import { redisSubNotify } from "./redis";
+import { redis, redisSubNotify } from "./redis";
 
 export async function initSocket(server: any) {
   const io = new Server(server, {
     cors: { origin: "*" },
   });
-  const pubClient = new Redis({ host: "redis", port: 6379 });
-  const subClient = pubClient.duplicate();
+  const subClient = redis.duplicate();
 
-  await Promise.all([pubClient.connect(), subClient.connect()]);
-
-  io.adapter(createAdapter(pubClient, subClient));
+  io.adapter(createAdapter(redis, subClient));
 
   // Only apply auth for DM, liveChat & notification
   io.of("/live").use(socketAuthMiddleware);

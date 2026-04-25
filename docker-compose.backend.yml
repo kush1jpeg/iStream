@@ -1,0 +1,62 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - istream
+
+
+  backend:
+    build: ./backend/
+    env_file:
+      - ./backend/.env
+    container_name: main-backend
+    depends_on:
+      - rabbitmq
+      - redis
+    restart: unless-stopped
+    networks:
+      - istream
+
+
+  notification-service:
+    build: ./notification/
+    env_file:
+      - ./notification/.env
+    container_name: notification-service
+    depends_on:
+      - rabbitmq
+      - redis
+      - backend
+    restart: unless-stopped
+    networks:
+      - istream
+
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+    ports:
+      - "6379"
+    networks:
+      - istream
+    volumes:
+      - redis_data:/data
+
+volumes:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  istream:
+    name: istream
+
+

@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import crypto from "crypto";
 import { PaymentModel } from "../../../models/payments";
-import { getPublishChannel } from "../../../config/rabbitmq";
+import { getPayChannel } from "../../../config/rabbitmq";
 import { userModel } from "../../../models/user";
+import { payExchange } from "../../..";
 
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
@@ -64,10 +65,12 @@ export const verifyPayment = async (req: Request, res: Response) => {
     await transaction.save();
 
     //send the mail for the transaction using notif service
-    const channel = await getPublishChannel();
-    channel.sendToQueue(
-      "payment_queue",
+    const channel = await getPayChannel();
+    channel.publish(
+      payExchange,
+      "payment.shop",
       Buffer.from(JSON.stringify(transaction)),
+      { persistent: true },
     );
 
     return res.status(200).json({

@@ -1,9 +1,11 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { userModel } from "../../models/user.js";
-import { sendMail } from "../../services/mailer/nodeMailer.js";
-import { MailTemplates } from "../../services/mailer/mailManager.js";
 import { redis } from "../../config/redis.js";
+import { QueueOTP } from "../../types/types.js";
+import { getPublishChannel } from "../../config/rabbitmq.js";
+
+const FRONTEND_RESET_URL = process.env.FRONTEND_RESET_URL;
 
 //{** outside the app **}
 export const forgotPass = async (req: Request, res: Response) => {
@@ -17,9 +19,14 @@ export const forgotPass = async (req: Request, res: Response) => {
   const resetToken = crypto.randomUUID();
   await redis.set(`reset:${resetToken}`, String(user._id), "EX", 900); // expire in 15 minutes
 
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-  await sendMail(MailTemplates.forgotPassword(resetLink, email));
-  return res.json({ msg: "Reset link sent to email", token: resetToken });
+  const resetLink = `${FRONTEND_RESET_URL}/reset-password?token=${resetToken}`;
+  const config: QueueOTP = {
+    type: "otp_queue",
+    template: "forgotPass_Template",
+    link: resetLink,
+    email: user.email,
+  };
+  await sendMail(config);
 };
 
 export const verifyandChangePass = async (req: Request, res: Response) => {
@@ -33,7 +40,13 @@ export const verifyandChangePass = async (req: Request, res: Response) => {
   user.passwordHash = await bcrypt.hash(newPassword, 10);
   user.isVerified = false;
   await user.save();
-  await sendMail(MailTemplates.passwordChangeSuccess_Template(user.email));
+
+  const config: QueueOTP = {
+    type: "otp_queue",
+    template: "passwordChangeSuccess_Template",
+    email: user.email,
+  };
+  await sendMail(config);
   return res.json({ msg: "Password reset successful" });
 };
 
@@ -64,7 +77,12 @@ export const resetPass = async (req: Request, res: Response) => {
     user.isVerified = false;
     await user.save();
 
-    await sendMail(MailTemplates.passwordChangeSuccess_Template(user.email));
+    const config: QueueOTP = {
+      type: "otp_queue",
+      template: "passwordChangeSuccess_Template",
+      email: user.email,
+    };
+    await sendMail(config);
 
     return res.status(200).json({ msg: "Password updated successfully" });
   } catch (error) {
@@ -72,3 +90,24 @@ export const resetPass = async (req: Request, res: Response) => {
     return res.status(500).json({ msg: "Server error", error });
   }
 };
+
+async function sendMail(config: QueueOTP) {
+  const publishChannel = await getPublishChannel();
+  if (!publishChannel) {
+    throw new Error("Publish channel is empty or undefined!");
+  }
+
+  // queueing into rabbitmq;
+  publishChannel.sendToQueue(
+    "otp_queue",
+    Buffer.from(JSON.stringify(config)),
+    { persistent: true }, // survive restart
+    (err, ok) => {
+      if (err !== null) {
+        console.error("Message nacked! by the broker", err);
+      } else {
+        return console.error("broker could not process");
+      }
+    },
+  );
+}
