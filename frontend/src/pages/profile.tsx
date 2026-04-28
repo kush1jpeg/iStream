@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
-import { Sidebar } from "@/components/sidebar";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
@@ -57,7 +56,6 @@ const Profile = () => {
     <div className="min-h-screen bg-background crt-container film-grain relative overflow-hidden">
 
       <Navigation />
-      <Sidebar followedUsers={followedUsers} />
 
 
       <main className="container px-4 py-4 relative z-10">

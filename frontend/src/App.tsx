@@ -4,14 +4,25 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import StreamPage from "./pages/StreamPage";
+import StreamPage from "./pages/stream/StreamPage";
 import { Auth } from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import ProfileSection from "./pages/profile";
 import ShopLanding from "./pages/shop";
 import Chat from "./pages/Chat";
+import GoLive from "./pages/stream/GoLive";
+
+import axios from "axios";
+export const api = axios.create({
+  baseURL: import.meta.env.BACKEND_URL || "http://localhost:4000",
+  withCredentials: true,
+});
 
 const queryClient = new QueryClient();
+const followedUsers = [
+  { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
+  { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
+];
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,8 +36,8 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={< ProfileSection />} />
           <Route path="/shop" element={<ShopLanding />} />
+          <Route path="/start-stream" element={<GoLive />} />
           <Route path="/chat" element={<Chat />} />
-
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

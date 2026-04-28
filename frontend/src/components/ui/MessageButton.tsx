@@ -6,7 +6,7 @@ export const MessageButton = () => {
 
   return (
     <button
-      onClick={() => navigate(`/direct/inbox`)}
+      onClick={() => navigate(`/chat`)}
       className="
         relative
         w-12 h-12

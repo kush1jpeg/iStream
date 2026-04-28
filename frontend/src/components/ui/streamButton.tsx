@@ -6,7 +6,7 @@ export const LiveStreamButton = () => {
 
   return (
     <button
-      onClick={() => navigate(`/stream/1`)}
+      onClick={() => navigate(`/start-stream`)}
       className="
         relative
         w-12 h-12

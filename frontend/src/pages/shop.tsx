@@ -1,6 +1,5 @@
 import Carousel from "@/components/ui/carousel";
 import { Navigation } from "@/components/Navigation";
-import { Sidebar } from "@/components/sidebar";
 import ProductCard from "@/components/ui/ProductCard";
 import SearchBar from "@/components/ui/SearchBar";
 import { useState } from "react";
@@ -28,7 +27,6 @@ export default function ShopLanding() {
   return (
     <div className="bg-background crt-container film-grain text-zinc-100">
       <Navigation />
-      <Sidebar followedUsers={followedUsers} />
 
       {/* HERO */}
 

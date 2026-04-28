@@ -2,9 +2,8 @@ import { Navigation } from "@/components/Navigation";
 import { StreamCard } from "@/components/StreamCard";
 import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
-import { Signal, Wifi, Terminal, Code, Zap, Sparkles } from "lucide-react";
+import { Signal, Wifi, Terminal, Code, Zap, Sparkles, Github, Linkedin, MessageCircle, Globe } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
-import { Sidebar } from "@/components/sidebar";
 
 const Index = () => {
   // Mock stream data with color accents
@@ -74,7 +73,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background crt-container film-grain flex">
 
-      <Sidebar followedUsers={followedUsers} />
       <div className=" flex flex-col flex-1 overflow-y-auto">
         <Navigation />
         <main className=" container mx-auto px-4 py-8 space-y-8">
@@ -171,9 +169,9 @@ const Index = () => {
                     <span className="text-foreground">cat README.md</span>
                   </div>
                   <div className="text-muted-foreground pl-4 space-y-1">
-                    <p>{'>'} Built by kush1jpeg</p>
+                    <p>{'>'} the frontend is ai slop</p>
                     <p>{'>'} Running on coffee & marlboro</p>
-                    <p>{'>'} <a href="https://github.com/kush1jpeg" className="hover:opacity-80" target="_blank" rel="noopener noreferrer"> github - https://github.com/kush1jpeg</a></p>
+                    <p>{'>'} i need sleep</p>
                     <p className="text-vhs-cyan">
                       {'>'} <a
                         href="mailto:kushuvikas@gmail.com"
@@ -186,28 +184,63 @@ const Index = () => {
                 </div>
               </RetroContainer>
 
-              {/* System Stats */}
-              <RetroContainer className="space-y-2">
-                <div className="font-mono text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Uptime:</span>
-                    <span className="text-terminal-green">847h 23m</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Bandwidth:</span>
-                    <span className="text-vhs-purple">2.4 TB/mo</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Coffee:</span>
-                    <span className="text-vhs-cyan">∞ cups</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Bugs:</span>
-                    <span className="text-vhs-pink">Features*</span>
-                  </div>
+              <RetroContainer className="space-y-3">
+                <div className="font-mono text-xs space-y-3">
+
+                  <a href="https://github.com/kush1jpeg/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex justify-between items-center hover:opacity-80 transition-opacity"
+                  >
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Github className="w-3 h-3" />
+                      Github:
+                    </span>
+                    <span className="text-terminal-green">kush1jpeg</span>
+                  </a>
+
+
+                  <a href="https://www.linkedin.com/in/kushagra-gupta-dystopia/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex justify-between items-center hover:opacity-80 transition-opacity"
+                  >
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Linkedin className="w-3 h-3" />
+                      LinkedIn:
+                    </span>
+                    <span className="text-vhs-purple">kushagra-gupta</span>
+                  </a>
+
+
+                  <a href="https://discord.com/users/841708046799601704"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex justify-between items-center hover:opacity-80 transition-opacity"
+                  >
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <MessageCircle className="w-3 h-3" />
+                      Discord:
+                    </span>
+                    <span className="text-vhs-cyan">kush1jpeg</span>
+                  </a>
+
+
+                  <a href="https://kush1jpeg.github.io/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex justify-between items-center hover:opacity-80 transition-opacity"
+                  >
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Globe className="w-3 h-3" />
+                      Blogs:
+                    </span>
+                    <span className="text-vhs-pink">kush1jpeg.github.io</span>
+                  </a>
                 </div>
               </RetroContainer>
-            </div>
+
+            </div >
 
             <div className="text-center space-y-2 opacity-70">
               <p className="font-mono text-sm text-muted-foreground">
@@ -220,10 +253,10 @@ const Index = () => {
                 </p>
               </div>
             </div>
-          </footer>
-        </main>
-      </div>
-    </div>
+          </footer >
+        </main >
+      </div >
+    </div >
   );
 };
 

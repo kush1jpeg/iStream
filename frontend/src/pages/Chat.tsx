@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { ChatWindow } from "@/components/chat/ChatWindow";
-import { Sidebar } from "@/components/sidebar";
 
 export interface Message {
   id: string;
@@ -96,8 +95,6 @@ const Chat = () => {
     <div className="min-h-screen bg-[#101010] crt-container film-grain">
       {/* <Sidebar followedUsers={} /> */}
       <Navigation />
-      <Sidebar followedUsers={followedUsers} />
-
 
       <main className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 h-[calc(100vh-140px)]">
