@@ -169,15 +169,17 @@ const Index = () => {
                     <span className="text-foreground">cat README.md</span>
                   </div>
                   <div className="text-muted-foreground pl-4 space-y-1">
-                    <p>{'>'} the frontend is ai slop</p>
-                    <p>{'>'} Running on coffee & marlboro</p>
-                    <p>{'>'} i need sleep</p>
+                    <p>{'>'} adaptive bitrate streaming platform — built from scratch</p>
+                    <p>{'>'} <span className="text-terminal-green">stack:</span> node.js, ffmpeg, mediamtx, rabbitmq, redis, docker, nginx</p>
+                    <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, live chat, shop, superchat</p>
+                    <p>{'>'} running on coffee & marlboro at 3am</p>
                     <p className="text-vhs-cyan">
-                      {'>'} <a
-                        href="mailto:kushuvikas@gmail.com"
-                        className="italic hover:opacity-80"
+                      {'>'}{" "}
+
+                      <a href="mailto:kushuvikas@gmail.com"
+                        className="italic hover:opacity-80 underline underline-offset-2"
                       >
-                        pls give me an internship - kushuvikas@gmail.com
+                        hire me before someone else does — kushuvikas@gmail.com
                       </a>
                     </p>
                   </div>

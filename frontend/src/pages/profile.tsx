@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
-import { StatusBar } from "@/components/StatusBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users,

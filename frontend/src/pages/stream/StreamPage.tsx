@@ -7,7 +7,7 @@ import { ChatBox } from "@/components/LiveChatBox";
 
 const StreamPage = () => {
   return (
-    <div className="min-h-screen bg-background crt-container film-grain">
+    <div className="min-h-screen bg-background crt-container film-grain pl-16">
       <Navigation />
 
       <main className=" mx-auto px-4 py-6">

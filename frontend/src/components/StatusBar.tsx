@@ -18,8 +18,7 @@ export const StatusBar = ({ className }: StatusBarProps) => {
   const stats = [
     { label: "ONLINE", value: "847", color: "text-terminal-green" },
     { label: "STREAMS", value: "23", color: "text-vhs-purple" },
-    { label: "VIEWERS", value: "12.4K", color: "text-vhs-cyan" },
-  ];
+    { label: "VIEWERS", value: "12.4K", color: "text-vhs-cyan" },];
 
   return (
     <div className={cn("bg-card border-2 border-primary p-3 font-mono text-xs", className)}>

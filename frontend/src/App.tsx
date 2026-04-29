@@ -13,6 +13,7 @@ import Chat from "./pages/Chat";
 import GoLive from "./pages/stream/GoLive";
 
 import axios from "axios";
+import { Sidebar } from "./components/Sidebar";
 export const api = axios.create({
   baseURL: import.meta.env.BACKEND_URL || "http://localhost:4000",
   withCredentials: true,
@@ -30,6 +31,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Sidebar followedUsers={followedUsers} />
+
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/stream/:id" element={<StreamPage />} />
@@ -37,7 +40,8 @@ const App = () => (
           <Route path="/profile" element={< ProfileSection />} />
           <Route path="/shop" element={<ShopLanding />} />
           <Route path="/start-stream" element={<GoLive />} />
-          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat" element={<Chat myId="xxxx" />} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

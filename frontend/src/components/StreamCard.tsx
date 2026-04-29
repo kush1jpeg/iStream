@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { RetroContainer } from "./RetroContainer";
 import { Radio, Users, Eye } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,15 +14,15 @@ interface StreamCardProps {
   colorAccent?: "green" | "purple" | "cyan" | "pink";
 }
 
-export const StreamCard = ({ 
+export const StreamCard = ({
   id,
-  title, 
-  streamer, 
-  viewers, 
+  title,
+  streamer,
+  viewers,
   thumbnail,
   isLive = true,
   colorAccent = "green",
-  className 
+  className
 }: StreamCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
@@ -41,7 +40,7 @@ export const StreamCard = ({
     cyan: "shadow-[0_0_20px_hsl(var(--vhs-cyan)/0.6)]",
     pink: "shadow-[0_0_20px_hsl(var(--vhs-pink)/0.6)]",
   };
-  
+
   return (
     <div
       onMouseEnter={() => setIsHovered(true)}
@@ -64,7 +63,7 @@ export const StreamCard = ({
           <img src={thumbnail} alt={title} className={cn("w-full h-full object-cover transition-transform duration-300", isHovered && "scale-105")} />
         ) : (
           <div className={cn("w-full h-full flex items-center justify-center scanlines transition-all", isHovered && "animate-pulse")}>
-            <Radio className={cn("w-12 h-12 transition-all", 
+            <Radio className={cn("w-12 h-12 transition-all",
               colorAccent === 'green' && "text-terminal-green",
               colorAccent === 'purple' && "text-vhs-purple",
               colorAccent === 'cyan' && "text-vhs-cyan",
@@ -73,7 +72,7 @@ export const StreamCard = ({
             )} />
           </div>
         )}
-        
+
         {/* Live Badge */}
         {isLive && (
           <div className="absolute top-2 left-2 px-2 py-1 bg-destructive border-2 border-foreground flex items-center gap-1">
@@ -81,7 +80,7 @@ export const StreamCard = ({
             <span className="text-xs font-pixel uppercase">Live</span>
           </div>
         )}
-        
+
         {/* Viewer Count */}
         <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/90 border border-primary flex items-center gap-1">
           <Eye className="w-3 h-3" />
