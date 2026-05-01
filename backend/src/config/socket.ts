@@ -54,7 +54,22 @@ export async function initSocket(server: any) {
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
 
+    // for ping check/ signal strength
+    socket.on("ping:check", (clientTime: number) => {
+      socket.emit("pong:check", clientTime);
+    });
+
     registerStreamHandler(io, socket);
+
+    // broadcast updated count - online + streams + github
+    setInterval(async () => {
+      const clients = io.engine.clientsCount;
+      const streams = await redis.scard("live:streams");
+      io.emit("online:count", {
+        clients,
+        streams,
+      });
+    }, 5000);
 
     socket.on("disconnect", () => {
       console.log("Socket disconnected:", socket.id);

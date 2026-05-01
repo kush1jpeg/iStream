@@ -7,7 +7,7 @@ const paymentSchema = new Schema<IPay>(
     username: { type: String, required: false, sparse: true },
     amount: { type: Number, required: true },
     streamId: { ref: "streams", required: false, type: Schema.Types.ObjectId }, // for superchat
-    itemId: { ref: "shopItem", required: true, type: Schema.Types.ObjectId }, // for shop
+    itemId: { ref: "shopItem", required: false, type: Schema.Types.ObjectId }, // for shop
     currency: { type: String, default: "INR" },
     status: {
       type: String,

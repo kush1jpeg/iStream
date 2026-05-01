@@ -15,7 +15,7 @@ const itemSchema = new mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String },
     price: { type: Number, required: true, min: 0 },
-    type: { type: String, enum: ["role", "emoji", "custom"], required: true },
+    type: { type: String, enum: ["animation", "frame"], required: true },
     imageURL: { type: String },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },

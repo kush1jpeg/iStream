@@ -2,28 +2,52 @@ import Carousel from "@/components/ui/carousel";
 import { Navigation } from "@/components/Navigation";
 import ProductCard from "@/components/ui/ProductCard";
 import SearchBar from "@/components/ui/SearchBar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FilterShop } from "@/components/ui/filter";
+import { api } from "@/App";
+import { ShopItem } from "@/types/types";
 
-
-const followedUsers = [
-  { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
-  { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
-];
-
-const allDrops = Array.from({ length: 12 }).map((_, i) => ({
-  id: i + 10,
-  title: `Drop #${i + 1}`,
-  price: Number((Math.random() * 10 + 2).toFixed(2)),
-  img: `https://picsum.photos/400/300?${i + 10}`,
-  tag: ["avatar", "badge", "overlay"][i % 3],
-}));
 
 export default function ShopLanding() {
 
   const [query, setQuery] = useState("");
-  // const [allDrops, setDrops] = useState("");
+  const [drops, setDrops] = useState<ShopItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+
+    if (query.trim().length < 2) {
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const { data } = await api.get(`/api/shop/search`, {
+          params: {
+            user: query,
+            ...(filter && { type: filter }),
+          },
+          withCredentials: true,
+        });
+        setDrops(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [query, filter]);
+
+  if (loading) return (
+    <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
+      <span className="font-mono text-vhs-purple animate-pulse">loading shop...</span>
+    </div>
+  );
+
   return (
     <div className="bg-background crt-container film-grain text-zinc-100">
       <Navigation />
@@ -45,7 +69,7 @@ export default function ShopLanding() {
           </div>
 
           {/* HERO CAROUSEL */}
-          <Carousel slides={allDrops} />
+          <Carousel slides={drops} />
 
         </div>
       </section>
@@ -60,11 +84,11 @@ export default function ShopLanding() {
               <SearchBar query={query} setQuery={setQuery} />
             </div>
           </div>
-          <FilterShop />
+          <FilterShop filter={filter} setFilter={setFilter} />
 
           <div className="grid md:grid-cols-4 gap-6">
-            {allDrops.map((item) => (
-              <ProductCard key={item.id} item={item} />
+            {drops.map((item) => (
+              <ProductCard item={item} />
             ))}
           </div>
         </section>

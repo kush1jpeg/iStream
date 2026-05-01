@@ -15,7 +15,7 @@ const messageSchema = new Schema(
     conversationKey: {
       type: mongoose.Types.ObjectId,
       ref: "conversation",
-      unique: true,
+      unique: false,
     },
     message: { type: String },
     readBy: [{ type: mongoose.Types.ObjectId, ref: "users" }],

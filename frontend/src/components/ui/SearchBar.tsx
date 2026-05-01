@@ -1,6 +1,4 @@
-import { useState, useMemo } from "react";
 import { Search } from "lucide-react";
-import ProductCard from "./ProductCard";
 
 
 type Props = {
@@ -9,6 +7,7 @@ type Props = {
 }
 
 export default function DropsWithSearch({ setQuery, query }: Props) {
+
   return (
     <section className="space-y-6">
       {/* Header + Search */}

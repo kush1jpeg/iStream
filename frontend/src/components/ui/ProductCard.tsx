@@ -1,16 +1,10 @@
 import { useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { Card } from "./card";
-
-export type Item = {
-  id: string | number;   // unique id
-  title: string;         // product name
-  img: string;           // image URL
-  price: number;         // price in dollars
-};
+import { ShopItem } from "@/types/types";
 
 type ProductCardProps = {
-  item: Item;
+  item: ShopItem;
 };
 
 
@@ -28,21 +22,20 @@ export default function ProductCard({ item }: ProductCardProps) {
         {/* IMAGE WRAPPER */}
         <div className="relative h-48 overflow-hidden">
           <img
-            src={item.img}
-            alt={item.title}
+            src={item.imageURL}
+            alt={item.name}
             className={`h-full w-full object-cover transition-transform duration-500 ease-out ${isHovered ? "scale-125 brightness-75" : ""
               }`}
           />
 
           {/* Title overlay */}
           <div className="absolute flex flex-col bottom-2 left-2 text-white font-semibold text-l px-2 py-2 rounded">
-            <span className="font-normal text-xl">{item.title}</span>
+            <span className="font-normal text-xl">{item.name}</span>
             <span className={`transition-opacity duration-300 ${isHovered ? "opacity-0" : "opacity-100"}`}>
               ${item.price}
             </span>
           </div>
 
-          {/* Buy button (always in DOM) */}
           <button
             /* onClick={} */
             className={`

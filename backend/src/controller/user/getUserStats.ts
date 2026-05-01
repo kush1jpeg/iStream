@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import { userModel } from "../../models/user";
 import mongoose from "mongoose";
 
-export const getProfile = async (req: Request, res: Response) => {
+export const getUserById = async (req: Request, res: Response) => {
   try {
-    const userId = req.id;
+    const { userId } = req.params;
 
     const userData = await userModel.aggregate([
       {

@@ -7,12 +7,13 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Filter } from "lucide-react";
-import { useState } from "react";
 
+type Props = {
+  setFilter: (value: string) => void;
+  filter: string
+}
 
-
-export const FilterShop = () => {
-  const [filter, setFilter] = useState("");
+export const FilterShop = ({ filter, setFilter }: Props) => {
 
   return (
     <Drawer>
@@ -45,7 +46,7 @@ export const FilterShop = () => {
         </DrawerHeader>
 
         <div className="p-6 flex gap-4 flex-wrap">
-          {["avatar", "badge", "overlay"].map((t) => (
+          {["frame", "animation"].map((t) => (
             <Button
               key={t}
               onClick={() => setFilter(t)}

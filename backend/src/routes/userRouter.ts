@@ -9,11 +9,12 @@ import { updateProfile } from "../controller/user/updateProfile";
 import { getProfile } from "../controller/user/getProfile";
 import { createOrder } from "../controller/payment/superchat/createOrder";
 import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
+import { getUserById } from "../controller/user/getUserStats";
 
 export const userRouter: Router = Router();
 
 userRouter.get("/search", search);
-// userRouter.get("/:userId/stats", getUserStats); // full Userinfo;
+userRouter.get("/:userId/stats", getUserById); // full Userinfo;
 userRouter.get("/me", authVerify, getProfile);
 userRouter.patch("/me", authVerify, updateProfile); // partial updates
 userRouter.post("/follow", authVerify, followXUnfollow);

@@ -2,8 +2,10 @@ import { Navigation } from "@/components/Navigation";
 import { StreamCard } from "@/components/StreamCard";
 import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
-import { Signal, Wifi, Terminal, Code, Zap, Sparkles, Github, Linkedin, MessageCircle, Globe } from "lucide-react";
+import { Signal, Wifi, Terminal, Code, Zap, Sparkles, Github, Linkedin, MessageCircle, Globe, Twitter } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
+import { useSignalStrength } from "@/hooks/signalStrength";
+
 
 const Index = () => {
   // Mock stream data with color accents
@@ -64,11 +66,11 @@ const Index = () => {
     { icon: Zap, label: "Late Night Builds", color: "text-vhs-cyan" },
     { icon: Sparkles, label: "Pixel Perfect", color: "text-vhs-pink" },
   ];
+  const { latency, strength } = useSignalStrength();
+  const bars = Math.round(strength / 10); // 0-10
+  const signalBar = "█".repeat(bars) + "░".repeat(10 - bars);
 
-  const followedUsers = [
-    { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
-    { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
-  ];
+  const onlineCount = useOnlineCount();
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain flex">
@@ -101,7 +103,7 @@ const Index = () => {
                   <br />
                   <span className="text-terminal-green">{'>'}</span> Built by indie devs, for indie devs
                   <br />
-                  <span className="text-vhs-cyan">{'>'}</span> <span className="text-accent flicker">Warning:</span> May contain analog artifacts & digital nostalgia
+                  <span className="text-vhs-cyan">{'>'}</span> <span className="text-accent flicker">Warning:</span> operations are subject to availability
                 </p>
               </div>
 
@@ -170,8 +172,8 @@ const Index = () => {
                   </div>
                   <div className="text-muted-foreground pl-4 space-y-1">
                     <p>{'>'} adaptive bitrate streaming platform — built from scratch</p>
-                    <p>{'>'} <span className="text-terminal-green">stack:</span> node.js, ffmpeg, mediamtx, rabbitmq, redis, docker, nginx</p>
-                    <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, live chat, shop, superchat</p>
+                    <p>{'>'} <span className="text-terminal-green">stack:</span> node, ffmpeg, mediamtx, rabbitmq, redis, docker, nginx, Tilt, etc</p>
+                    <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, live chat, shop, superchat, etc</p>
                     <p>{'>'} running on coffee & marlboro at 3am</p>
                     <p className="text-vhs-cyan">
                       {'>'}{" "}
@@ -239,6 +241,19 @@ const Index = () => {
                     </span>
                     <span className="text-vhs-pink">kush1jpeg.github.io</span>
                   </a>
+
+                  <a href="https://x.com/kush1jpeg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex justify-between items-center hover:opacity-80 transition-opacity"
+                  >
+                    <span className="text-muted-foreground flex items-center gap-2">
+                      <Twitter className="w-3 h-3" />
+                      x.com :
+                    </span>
+                    <span className="text-vhs-pink">kush1jpeg</span>
+                  </a>
+
                 </div>
               </RetroContainer>
 
@@ -249,10 +264,14 @@ const Index = () => {
                 iStream v1.0.0 - Analog Broadcast System
               </p>
               <div className="font-mono text-xs text-muted-foreground space-y-1">
-                <p>[ SIGNAL STRENGTH: ████████░░ 80% ] [ LATENCY: ~42ms ] [ STATUS: OPERATIONAL ]</p>
-                <p className="text-vhs-purple text-sm">
-                  "In a world of polished corporate streams, we broadcast the beautifully broken"
+                <p>
+                  [ SIGNAL STRENGTH: {signalBar} {strength}% ]
+                  [ LATENCY: ~{latency ?? "..."}ms ]
+                  [ STATUS: {strength > 40 ? "OPERATIONAL" : "DEGRADED"} ]
                 </p>
+                <p className="text-vhs-purple text-sm">
+                </p>
+                "In a world of polished corporate streams, we broadcast the beautifully broken"
               </div>
             </div>
           </footer >

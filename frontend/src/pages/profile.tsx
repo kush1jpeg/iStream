@@ -1,4 +1,6 @@
-import { useState } from "react";
+const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+import { useEffect, useState } from "react";
 import { Navigation } from "@/components/Navigation";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
@@ -11,45 +13,54 @@ import {
   Camera,
   Calendar,
   Eye,
-  Instagram,
+  Globe,
 } from "lucide-react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import { IPay, IStream, IUser } from "@/types/types";
 
-// Mock data for the profile
-const mockUser = {
-  username: "CyberStreamer_X",
-  bio: "even if he caught him and brought him back to the colony, he would immediately head right back for the mountains, but why?",
-  avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg",
-  bannerUrl: "https://i.pinimg.com/1200x/37/6a/ca/376aca292693fcf304f6ba99ed4341fe.jpg",
-  joinDate: "March 2020",
-  followers: 12847,
-  following: 234,
-  totalStreams: 847,
-  totalHours: 2340,
-  totalViews: 1234567,
-  socials: {
-    instagram: "@cyberstreamer_x",
-    youtube: "CyberStreamerX",
-  }
-};
-
-const mockStreams = [
-  { id: "1", thumbnail: "https://i.pinimg.com/1200x/ef/67/e7/ef67e7d708723b3db2bd284b7e392843.jpg", title: "Late Night Retro Gaming Marathon", duration: "35mins", viewers: 1234, tags: ["#game", "#linux"] },
-  { id: "4", thumbnail: "https://i.pinimg.com/1200x/ef/67/e7/ef67e7d708723b3db2bd284b7e392843.jpg", title: "Viewer Game Night!", duration: "135mins", viewers: 1567, tags: ["#kernel", "#linux"] },
-];
-
-const mockDonations = [
-  { id: 1, from: "NeonGamer42", amount: 50, message: "Amazing stream! Keep it up! 🔥", date: "2024-01-15" },
-  { id: 2, from: "PixelQueen", amount: 25, message: "Love your content!", date: "2024-01-14" },
-];
-
-const followedUsers = [
-  { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
-  { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
-];
 
 
 const Profile = () => {
-  const [user, setUser] = useState(mockUser);
+  const { userId } = useParams();
+  const [user, setUser] = useState<IUser>(null);
+  const [streams, setStreams] = useState<IStream[]>([]);
+  const [donations, setDonations] = useState<IPay[]>([]);
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const url = userId
+          ? `${API}/api/user/${userId}/stats`   // other user's profile
+          : `${API}/api/user/me`;          // own profile
+        const { data } = await axios.get(url, { withCredentials: true });
+        setUser(data.data.user);
+        setStreams(data.data.streams);
+        setDonations(data.data.donations);
+      } catch (err: any) {
+        setError(err.response?.data?.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
+  }, [userId]);
+
+
+  if (loading) return (
+    <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
+      <span className="font-mono text-vhs-purple animate-pulse">loading profile...</span>
+    </div>
+  );
+
+  if (error || !user) return (
+    <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
+      <span className="font-mono text-destructive">[ERROR] {error || "User not found"}</span>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain relative overflow-hidden">
@@ -62,7 +73,7 @@ const Profile = () => {
         <RetroContainer
           variant="terminal"
           className="relative w-full h-80 md:h-96 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${user.bannerUrl})` }}
+          style={{ backgroundImage: `url(${user.banner})` }}
         >
           {/* Gradient overlay for readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/0" />
@@ -71,13 +82,38 @@ const Profile = () => {
           <div className="absolute bottom-4 left-4 right-4 flex flex-col md:flex-row items-start md:items-end gap-6 z-10">
             {/* Avatar */}
             <div className="relative group">
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded border-4 border-vhs-purple shadow-vhs overflow-hidden">
-                {user.avatarUrl ? (
-                  <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-6xl md:text-7xl font-pixel text-white/80">{user.username.charAt(0)}</span>
+              <div className="relative w-32 h-32 md:w-40 md:h-40">
+
+                {/* Frame — sits around the avatar */}
+                {user.currentFrame && (
+                  <img
+                    src={user.currentFrame}
+                    alt="frame"
+                    className="absolute inset-0 w-full h-full object-cover z-20 pointer-events-none"
+                  />
                 )}
+
+                {/* Animation — overlays on top of avatar */}
+                {user.currentAnimation && (
+                  <img
+                    src={user.currentAnimation}
+                    alt="animation"
+                    className="absolute inset-0 w-full h-full object-cover z-10 pointer-events-none"
+                  />
+                )}
+
+                {/* Avatar */}
+                <div className="w-full h-full rounded border-4 border-vhs-purple shadow-vhs overflow-hidden">
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-6xl md:text-7xl font-pixel text-white/80">
+                      {user.username.charAt(0)}
+                    </span>
+                  )}
+                </div>
               </div>
+
               <button className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center border-4 border-vhs-purple bg-black/50 transition-opacity">
                 <Camera className="w-8 h-8 text-vhs-cyan" />
               </button>
@@ -90,15 +126,15 @@ const Profile = () => {
 
               {/* Social Links */}
               <div className="flex gap-4 mt-2">
-                {user.socials.instagram && (
+                {user.websiteId && (
                   <a href="#" className="flex items-center gap-2 text-vhs-cyan hover:text-vhs-pink transition-colors">
-                    <Instagram className="w-4 h-4" /> {user.socials.instagram}
+                    <Globe className="w-4 h-4" /> {user.websiteId}
                   </a>
                 )}
               </div>
 
               <p className="mt-2 text-xs md:text-sm flex items-center gap-2 text-muted-foreground">
-                <Calendar className="w-4 h-4" /> Joined {user.joinDate}
+                <Calendar className="w-4 h-4" /> Joined {user.createdAt}
               </p>
             </div>
           </div>
@@ -106,12 +142,9 @@ const Profile = () => {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4  m-6 gap-4">
-          <StatCard icon={Users} label="Followers" value={user.followers.toLocaleString()} color="vhs-purple" />
-          <StatCard icon={Heart} label="Following" value={user.following.toLocaleString()} color="vhs-pink" />
-          <StatCard icon={Video} label="Total Streams" value={user.totalStreams.toLocaleString()} color="vhs-cyan" />
-          <StatCard icon={Eye} label="Total Views" value={formatNumber(user.totalViews)} color="terminal-green" />
+          <StatCard icon={Users} label="Followers" value={user.followerCount.toLocaleString()} color="vhs-purple" />
+          <StatCard icon={Heart} label="Following" value={user.followCount.toLocaleString()} color="vhs-pink" />
         </div>
-
 
         {/* Content Tabs */}
         <RetroContainer
@@ -142,32 +175,61 @@ const Profile = () => {
                 <h3 className="font-pixel text-vhs-pink text-sm">RECENT STREAMS</h3>
               </div>
               <div className="space-y-3">
-                {mockStreams.map((stream) => (
-                  <div
-                    key={stream.id}
-                    className="flex items-center gap-4 p-4 border border-vhs-pink/30 rounded-l bg-black/30 hover:bg-vhs-pink/10 transition-colors"
-                  >
-                    <div className="w-12 h-12 bg-gradient-to-br from-vhs-purple to-vhs-pink flex items-center justify-center border border-vhs-pink/50">
-                      <span className="font-pixel text-white text-lg">
+                {streams.map((stream) => {
+                  const duration =
+                    stream.startedAt && stream.endedAt
+                      ? Math.floor(
+                        (new Date(stream.endedAt).getTime() -
+                          new Date(stream.startedAt).getTime()) /
+                        1000 /
+                        60
+                      ) + " min"
+                      : "Live";
+
+                  return (
+                    <div
+                      key={stream._id}
+                      className="flex items-center gap-4 p-4 border border-vhs-pink/30 rounded-l bg-black/30 hover:bg-vhs-pink/10 transition-colors"
+                    >
+                      {/* Thumbnail */}
+                      <div className="w-12 h-12 border border-vhs-pink/50 overflow-hidden">
                         <img
                           src={stream.thumbnail}
                           alt={stream.title}
+                          className="w-full h-full object-cover"
                         />
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-5">
+                          <span className="font-mono text-vhs-cyan">
+                            {stream.title}
+                          </span>
+
+                          <div className="flex gap-1 items-center">
+                            <Eye className="w-4 h-4" />
+                            <span className="font-mono text-vhs-cyan">
+                              {stream.viewers}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Tags */}
+                        {stream.tags?.length > 0 && (
+                          <p className="text-foreground/80 font-mono text-sm mt-1">
+                            {stream.tags.join(", ")}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Duration */}
+                      <span className="text-muted-foreground font-mono text-xs">
+                        {duration}
                       </span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-5">
-                        <span className="font-mono text-vhs-cyan ">{stream.title}</span>
-                        <div className="flex gap-1 items-center">
-                          <Eye className="w-4 h-4 " />
-                          <span className="font-mono text-vhs-cyan">   {stream.viewers}</span>
-                        </div>
-                      </div>
-                      <p className="text-foreground/80 font-mono text-sm mt-1">{stream.tags.join(", ")}</p>
-                    </div>
-                    <span className="text-muted-foreground font-mono text-xs">{stream.duration}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </TabsContent>
 
@@ -177,22 +239,40 @@ const Profile = () => {
                 <h3 className="font-pixel text-vhs-pink text-sm">RECENT DONATIONS</h3>
               </div>
               <div className="space-y-3">
-                {mockDonations.map((donation) => (
+                {donations.map((donation) => (
                   <div
-                    key={donation.id}
+                    key={donation._id}
                     className="flex items-center gap-4 p-4 border border-vhs-pink/30 bg-black/30 hover:bg-vhs-pink/10 transition-colors"
                   >
+                    {/* Avatar */}
                     <div className="w-12 h-12 bg-gradient-to-br from-vhs-purple to-vhs-pink flex items-center justify-center border border-vhs-pink/50">
-                      <span className="font-pixel text-white text-lg">{donation.from.charAt(0)}</span>
+                      <span className="font-pixel text-white text-lg">
+                        {donation.username?.charAt(0) || "?"}
+                      </span>
                     </div>
+
+                    {/* Content */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-vhs-cyan">{donation.from}</span>
-                        <span className="font-pixel text-vhs-pink">${donation.amount}</span>
+                        <span className="font-mono text-vhs-cyan">
+                          {donation.username || "Anonymous"}
+                        </span>
+                        <span className="font-pixel text-vhs-pink">
+                          ₹{donation.amount}
+                        </span>
                       </div>
-                      <p className="text-foreground/80 font-mono text-sm mt-1">"{donation.message}"</p>
+
+                      {donation.message && (
+                        <p className="text-foreground/80 font-mono text-sm mt-1">
+                          "{donation.message}"
+                        </p>
+                      )}
                     </div>
-                    <span className="text-muted-foreground font-mono text-xs">{donation.date}</span>
+
+                    {/* Date */}
+                    <span className="text-muted-foreground font-mono text-xs">
+                      {new Date(donation.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -230,13 +310,6 @@ const StatCard = ({ icon: Icon, label, value, color }: StatCardProps) => {
       </div>
     </RetroContainer>
   );
-};
-
-// Helper function
-const formatNumber = (num: number): string => {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-  return num.toString();
 };
 
 export default Profile;

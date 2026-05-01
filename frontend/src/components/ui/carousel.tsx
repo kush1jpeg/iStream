@@ -1,16 +1,10 @@
+import { ShopItem } from "@/types/types";
 import { IconArrowNarrowRight } from "@tabler/icons-react";
 import { useState, useRef, useId, useEffect } from "react";
 
-interface SlideData {
-  id: Object
-  title: string;
-  price: Number;
-  img: string;
-  tag: string;
-}
 
 interface SlideProps {
-  slide: SlideData;
+  slide: ShopItem;
   index: number;
   current: number;
   handleSlideClick: (index: number) => void;
@@ -64,11 +58,11 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
   };
 
   const {
-    id,
+    _id,
     price,
-    img,
-    tag,
-    title } = slide;
+    imageURL,
+    description,
+    name } = slide;
 
   return (
     <div className=" [perspective:600px] [transform-style:preserve-3d]">
@@ -115,8 +109,8 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
             style={{
               opacity: current === index ? 1 : 0.5,
             }}
-            alt={title}
-            src={img}
+            alt={name}
+            src={imageURL}
             onLoad={imageLoaded}
             loading="eager"
             decoding="sync"
@@ -131,11 +125,11 @@ const Slide = ({ slide, index, current, handleSlideClick }: SlideProps) => {
             }`}
         >
           <h2 className="text-lg md:text-2xl lg:text-4xl font-semibold  relative">
-            {title}
+            {name}
           </h2>
           <div className="flex justify-center">
             <button className="mt-6  px-4 py-2 w-fit mx-auto sm:text-sm text-black bg-white h-12 border border-transparent text-xs flex justify-center items-center rounded-2xl hover:shadow-lg transition duration-200 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)]">
-              {title}
+              {description}
             </button>
           </div>
         </article>
@@ -173,7 +167,7 @@ export const CarouselControl = ({ type, title, handleClick }: CarouselControlPro
   );
 };
 interface CarouselProps {
-  slides: SlideData[];
+  slides: ShopItem[];
 }
 
 export default function Carousel({ slides }: CarouselProps) {
