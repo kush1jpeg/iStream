@@ -61,11 +61,11 @@ export async function initSocket(server: any) {
 
     registerStreamHandler(io, socket);
 
-    // broadcast updated count - online + streams + github
+    // broadcast updated count - online + active_streams + github
     setInterval(async () => {
       const clients = io.engine.clientsCount;
       const streams = await redis.scard("live:streams");
-      io.emit("online:count", {
+      io.emit("statusbar:count", {
         clients,
         streams,
       });

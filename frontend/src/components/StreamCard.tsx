@@ -1,3 +1,4 @@
+import { useStreamDuration } from "@/hooks/use-StreamDuration";
 import { cn } from "@/lib/utils";
 import { Radio, Users, Eye } from "lucide-react";
 import { useState } from "react";
@@ -10,9 +11,12 @@ interface StreamCardProps {
   viewers: number;
   thumbnail?: string;
   isLive?: boolean;
+  startedAt: string | Date;
   className?: string;
   colorAccent?: "green" | "purple" | "cyan" | "pink";
 }
+
+
 
 export const StreamCard = ({
   id,
@@ -22,6 +26,7 @@ export const StreamCard = ({
   thumbnail,
   isLive = true,
   colorAccent = "green",
+  startedAt,
   className
 }: StreamCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
@@ -40,6 +45,8 @@ export const StreamCard = ({
     cyan: "shadow-[0_0_20px_hsl(var(--vhs-cyan)/0.6)]",
     pink: "shadow-[0_0_20px_hsl(var(--vhs-pink)/0.6)]",
   };
+
+  const duration = useStreamDuration(startedAt);
 
   return (
     <div
@@ -85,6 +92,7 @@ export const StreamCard = ({
         <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/90 border border-primary flex items-center gap-1">
           <Eye className="w-3 h-3" />
           <span className="text-xs">{viewers}</span>
+          <p>[ UPTIME: {duration} ]</p>
         </div>
       </div>
 

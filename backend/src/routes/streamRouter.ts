@@ -13,7 +13,7 @@ import { endStream } from "../controller/stream/endStream";
 export const streamRouter: Router = Router();
 
 // user: payments + hls serve
-streamRouter.get("/istreams", getLiveStreams); // returns all active live streams
+streamRouter.get("/live", getLiveStreams); // returns all active live streams
 streamRouter.get("/:streamId", getIStream);
 streamRouter.post("/:streamId/superchat-initiate", createOrder);
 streamRouter.post("/:streamId/superchat", verifyPayment);

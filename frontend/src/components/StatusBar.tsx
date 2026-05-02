@@ -3,9 +3,11 @@ import { cn } from "@/lib/utils";
 
 interface StatusBarProps {
   className?: string;
+  count: number;
+  streamCount: number;
 }
 
-export const StatusBar = ({ className }: StatusBarProps) => {
+export const StatusBar = ({ className, count, streamCount }: StatusBarProps) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -16,9 +18,8 @@ export const StatusBar = ({ className }: StatusBarProps) => {
   }, []);
 
   const stats = [
-    { label: "ONLINE", value: "847", color: "text-terminal-green" },
-    { label: "STREAMS", value: "23", color: "text-vhs-purple" },
-    { label: "VIEWERS", value: "12.4K", color: "text-vhs-cyan" },];
+    { label: "ONLINE", value: `${count}`, color: "text-terminal-green" },
+    { label: "STREAMS", value: `${streamCount}`, color: "text-vhs-purple" },];
 
   return (
     <div className={cn("bg-card border-2 border-primary p-3 font-mono text-xs", className)}>

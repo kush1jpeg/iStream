@@ -36,27 +36,6 @@ app.post("/enqueue", async (req, res) => {
   res.send({ status: "ok" });
 });
 
-// app.post("/auth", async (req, res) => {
-// read [../../config/mediamtx.yml]
-
-//   try {
-//     const { user, pass } = req.body;
-//
-//     if (!user || !pass) {
-//       return res.status(400).json({ error: "Missing keys" });
-//     }
-//     const isValid = await verifyStreamKey(user, pass);
-//
-//     if (!isValid) {
-//       return res.status(403).json({ error: "Invalid stream key" });
-//     }
-//     return res.status(200).json({ ok: true });
-//   } catch (err) {
-//     console.error("Verification failed:", err);
-//     return res.status(500).json({ error: "Internal error" });
-//   }
-// });
-
 await redisConnect();
 // for just debugging
 console.log("created a test streamkey in redis");
