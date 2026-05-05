@@ -16,7 +16,7 @@ export const authVerify = async (
   next: NextFunction,
 ) => {
   try {
-    const token = req.cookies?.token;
+    const token = req.cookies?.accessToken;
     if (!token) {
       return res
         .status(401)

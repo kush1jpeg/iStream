@@ -33,7 +33,7 @@ export const authRouter = (): Router => {
     passport.authenticate("google", { failureRedirect: "/api/auth" }),
     loginXgoogle,
   );
-  authRouter.post("/logout", authVerify, logout);
+  authRouter.post("/logout", logout);
   authRouter.post("/delete", authVerify, deleteAcc);
 
   // password reset on authpage -> those  who forgot the password

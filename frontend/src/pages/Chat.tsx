@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
-import { Navigation } from "@/components/Navigation";
 import { RetroContainer } from "@/components/RetroContainer";
 import { Users, MessageCircle, Send, Loader, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Footer } from "@/components/Footer";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
 const TOKEN = localStorage.getItem("token") || "";
@@ -219,8 +219,7 @@ export default function ChatPage({ myId }: { myId: string }) {
   const dms = conversations.filter((c) => !c.isGroup);
 
   return (
-    <div className="min-h-screen bg-background crt-container film-grain flex flex-col">
-      <Navigation />
+    <div className="h-[95vh] bg-background crt-container film-grain flex flex-col">
       <div className="flex flex-1 overflow-hidden container mx-auto px-4 py-4 gap-4">
 
         {/* ── LEFT PANEL ── */}

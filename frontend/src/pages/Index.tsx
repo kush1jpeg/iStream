@@ -1,4 +1,3 @@
-import { Navigation } from "@/components/Navigation";
 import { StreamCard } from "@/components/StreamCard";
 import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
@@ -6,8 +5,8 @@ import { Signal, Wifi } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
 import { useOnlineCount } from "@/hooks/updateStatusbar";
 import { api } from "@/App";
-import { useEffect, useMemo, useState } from "react";
-import { IStream } from "@/types/types";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { IStreamRedis } from "@/types/types";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
 
@@ -15,32 +14,61 @@ import { Footer } from "@/components/Footer";
 const Index = () => {
   const [loading, setLoading] = useState(true);
   const [activeTag, setActiveTag] = useState("");
-  const [streams, setStreams] = useState<IStream[]>([]);
-  // Mock stream data with color accents
+  const [streams, setStreams] = useState<IStreamRedis[]>([]);
+  const [cursor, setCursor] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
+  const fetchStreams = async (cur: number) => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/api/stream/live", {
+        params: { limit: 6, cursor: cur }
+      });
+      setStreams(prev => cur === 0 ? data.streams : [...prev, ...data.streams]);
+      setHasMore(data.hasMore);
+      setCursor(data.nextCursor ?? cur);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // initial fetch
+  useEffect(() => { fetchStreams(0); }, []);
+
+  // intersection observer for infinite scroll
   useEffect(() => {
-    api.get("/api/stream/live")
-      .then(({ data }) => setStreams(data.streams))
-      .catch(console.error).finally(() => setLoading(false));
-  }, []);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          fetchStreams(cursor);
+        }
+      },
+      { threshold: 1.0 }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, cursor]);
+
 
   // derive tags from live streams
   const liveTags = useMemo(() => {
-    const all = streams.flatMap(s => s.tags || []);
+    const all = streams.flatMap(s => s.stream.tags || []);
     const unique = [...new Set(all)];
     return unique.slice(0, 4); // show max 4
   }, [streams]);
 
 
-
+  // to display no of active people + streams
   const { count, streamCount } = useOnlineCount();
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain flex">
 
       <div className=" flex flex-col flex-1 overflow-y-auto">
-        <Navigation />
-        <main className=" container mx-auto px-4 py-8 space-y-8">
+        <main className=" container mx-auto px-4 py-8  mb-12 space-y-8">
           {/* Status Bar */}
           <StatusBar count={count} streamCount={streamCount} className="animate-slide-in" />
 
@@ -64,7 +92,7 @@ const Index = () => {
                 <p className="text-muted-foreground text-base md:text-lg font-mono leading-relaxed">
                   <span className="text-vhs-pink">{'>'}</span> Streaming from basements, garages & forgotten server racks
                   <br />
-                  <span className="text-terminal-green">{'>'}</span> Built by indie devs, for indie devs
+                  <span className="text-terminal-green">{'>'}</span> Built by an indie dev, for indie devs
                   <br />
                   <span className="text-vhs-cyan">{'>'}</span> <span className="text-accent flicker">Warning:</span> operations are subject to availability
                 </p>
@@ -121,30 +149,37 @@ const Index = () => {
               </div>
             ) : (
               <>
+                {!hasMore && streams.length > 0 && (
+                  <p className="font-mono text-xs text-muted-foreground opacity-50 uppercase tracking-widest">
+                    {'>'} end of broadcasts
+                  </p>
+                )}
+
                 {streams
-                  .filter(s => activeTag ? s.tags?.includes(activeTag) : true)
+                  .filter(s => activeTag ? s.stream.tags?.includes(activeTag) : true)
                   .map((stream, i) => (
                     <div
-                      key={stream._id}
+                      key={stream.streamer.id}
                       className="animate-slide-in"
                       style={{ animationDelay: `${i * 100}ms` }}
                     >
                       <StreamCard
-                        id={stream._id}
-                        title={stream.title}
-                        streamer={stream.streamerId}
-                        viewers={stream.viewers}
-                        thumbnail={stream.thumbnail}
-                        startedAt={stream.updatedAt}
-                        isLive={stream.status === "live"}
+                        id={stream.streamer.id}
+                        title={stream.stream.title}
+                        streamer={stream.streamer.username}
+                        viewers={String(stream.viewers)}
+                        thumbnail={stream.stream.thumbnail}
+                        startedAt={stream.createdAt}
                       />
                     </div>
                   ))}
               </>
             )}
           </div>
-          <Footer />
         </main >
+
+        <Footer />
+
       </div >
     </div >
   );

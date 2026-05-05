@@ -10,37 +10,48 @@ export const Footer = () => {
 
   return (<>
     {/* Footer */}
-    <footer className="mt-16 pt-8 border-t-2 border-primary">
+    <footer className=" pt-8 border-t-2 border-primary ml-10 scale-95">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Terminal Prompt */}
         <RetroContainer variant="terminal" className="col-span-1 md:col-span-2">
-          <div className="font-mono text-sm space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-terminal-green">kushuvikas@gmail.com</span>
-              <span className="text-muted-foreground">~</span>
-              <span className="text-vhs-purple">$</span>
-              <span className="text-foreground">cat README.md</span>
-            </div>
-            <div className="text-muted-foreground pl-4 space-y-1">
-              <p>{'>'} adaptive bitrate streaming platform — built from scratch</p>
-              <p>{'>'} <span className="text-terminal-green">stack:</span> node, ffmpeg, mediamtx, rabbitmq, redis, docker, nginx, Tilt, etc</p>
-              <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, live chat, shop, superchat, etc</p>
-              <p>{'>'} running on coffee & marlboro at 3am</p>
-              <p className="text-vhs-cyan">
-                {'>'}{" "}
+          <div className="flex items-center gap-6">
+            {/* Terminal content */}
+            <div className="font-mono text-sm space-y-1 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-terminal-green">kushuvikas@gmail.com</span>
+                <span className="text-muted-foreground">~</span>
+                <span className="text-vhs-purple">$</span>
+                <span className="text-foreground">cat README.md</span>
+              </div>
+              <div className="text-muted-foreground pl-4 space-y-1">
+                <p>{'>'} adaptive bitrate streaming platform — built from scratch</p>
+                <p>{'>'} <span className="text-terminal-green">stack:</span> node, ffmpeg, mediamtx, rabbitmq, redis, docker, nginx, Tilt, etc</p>
+                <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, live chat, shop, superchat, etc</p>
+                <p>{'>'} running on coffee & marlboro at 3am</p>
+                <p className="text-vhs-cyan">
+                  {'>'}{" "}
 
-                <a href="mailto:kushuvikas@gmail.com"
-                  className="italic hover:opacity-80 underline underline-offset-2"
-                >
-                  hire me before someone else does — kushuvikas@gmail.com
-                </a>
-              </p>
+                  <a href="mailto:kushuvikas@gmail.com"
+                    className="italic hover:opacity-80 underline underline-offset-2"
+                  >
+                    hire me before someone else does — kushuvikas@gmail.com
+                  </a>
+                </p>
+
+              </div>
             </div>
+
+            {/* Avatar */}
+            <img
+              src="/icon.png"
+              alt="kush1jpeg"
+              className="w-48 h-48 shrink-0 p-0 m-0"
+            />
           </div>
         </RetroContainer>
 
         <RetroContainer className="space-y-3">
-          <div className="font-mono text-xs space-y-3">
+          <div className="font-mono text-xs space-y-5">
 
             <a href="https://github.com/kush1jpeg/"
               target="_blank"

@@ -34,6 +34,28 @@ export interface IStream {
   updatedAt: Date;
 }
 
+export interface IStreamRedis {
+  streamer: {
+    id: string;
+    username: string;
+    avatar: string;
+    frame: string;
+    animation: string;
+  },
+
+  stream: {
+    title: string;
+    description: string;
+    thumbnail: string;
+    tags: string[];
+    HLS_PATH: string;
+  },
+  viewers: Number;
+  views: Number;
+  createdAt: Date;
+}
+
+
 export interface IPay {
   _id: string;
   userId: string;
@@ -63,4 +85,13 @@ export interface ShopItem {
   active?: boolean;
   type: "animation" | "frame"
 }
+
+export interface FollowedUser {
+  _id: string;
+  frame?: string;
+  name: string;
+  avatarUrl: string;
+  StreamURL?: string;
+}
+
 

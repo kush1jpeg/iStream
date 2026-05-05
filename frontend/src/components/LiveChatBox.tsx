@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { RetroContainer } from "./RetroContainer";
 import { Send, Smile, Terminal } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Picker from "emoji-picker-react";
 import { SuperChatSelector } from "./ui/superchat";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -110,7 +110,7 @@ export const ChatBox = () => {
 
         {/* Emoji Picker */}
         {showEmoji && (
-          <div className="absolute mb-2 bottom-8 z-50">
+          <div className="absolute  bottom-8 right-0 mb-5">
             <Picker onEmojiClick={handleEmojiClick} />
           </div>
         )}

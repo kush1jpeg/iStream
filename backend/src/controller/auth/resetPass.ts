@@ -27,6 +27,8 @@ export const forgotPass = async (req: Request, res: Response) => {
     email: user.email,
   };
   await sendMail(config);
+
+  return res.status(200).json({ message: "Mail sent successfully" });
 };
 
 export const verifyandChangePass = async (req: Request, res: Response) => {

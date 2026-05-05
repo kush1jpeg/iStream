@@ -1,7 +1,7 @@
 import { IPay } from "../../types/types";
 
 export const purchaseNotification_Template = (data: IPay) => ({
-  from: `"iStream" <${process.env.STREAMAIL}>`,
+  from: `"iStream" <kush1jpeg>`,
   to: data.email,
   subject: data.streamId
     ? "Your SuperChat was sent successfully 🎉"

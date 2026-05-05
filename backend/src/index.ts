@@ -25,11 +25,11 @@ export const instance = new Razorpay({
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-export const exchange = "notification";
 export const payExchange = "payment";
 export const server = http.createServer(app); // sharing the same port for now
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({ credentials: true }));
 app.use(cookieParser());
 
@@ -58,8 +58,6 @@ const startServer = async () => {
     await payChannel.assertExchange(payExchange, "topic", {
       durable: true,
     });
-    // await payChannel.assertQueue("payment_shop", { durable: true });
-    // await payChannel.bindQueue("payment_shop", payExchange, "payment.shop");  // not useful for now
 
     await payChannel.assertQueue("payment_superchat", { durable: true });
     await payChannel.bindQueue(

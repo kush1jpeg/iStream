@@ -1,7 +1,4 @@
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
-
 import { useEffect, useState } from "react";
-import { Navigation } from "@/components/Navigation";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,8 +31,8 @@ const Profile = () => {
     const fetchUser = async () => {
       try {
         const url = userId
-          ? `${API}/api/user/${userId}/stats`   // other user's profile
-          : `${API}/api/user/me`;          // own profile
+          ? `/api/user/${userId}/stats`   // other user's profile
+          : `/api/user/me`;          // own profile
         const { data } = await axios.get(url, { withCredentials: true });
         setUser(data.data.user);
         setStreams(data.data.streams);
@@ -64,9 +61,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain relative overflow-hidden">
-
-      <Navigation />
-
 
       <main className="container px-4 py-4 relative z-10">
         {/* Profile Header Section */}
@@ -113,6 +107,8 @@ const Profile = () => {
                   )}
                 </div>
               </div>
+
+              {/* add a follow button  */}
 
               <button className="absolute inset-0 opacity-0 group-hover:opacity-100 flex items-center justify-center border-4 border-vhs-purple bg-black/50 transition-opacity">
                 <Camera className="w-8 h-8 text-vhs-cyan" />
@@ -247,7 +243,7 @@ const Profile = () => {
                     {/* Avatar */}
                     <div className="w-12 h-12 bg-gradient-to-br from-vhs-purple to-vhs-pink flex items-center justify-center border border-vhs-pink/50">
                       <span className="font-pixel text-white text-lg">
-                        {donation.username?.charAt(0) || "?"}
+                        {donation.userPfp ?? donation.username.charAt(0)}
                       </span>
                     </div>
 
@@ -255,10 +251,13 @@ const Profile = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-vhs-cyan">
-                          {donation.username || "Anonymous"}
+                          {donation.username}
+                        </span>
+                        <span className="font-mono text-vhs-cyan">
+                          {donation.streamId}
                         </span>
                         <span className="font-pixel text-vhs-pink">
-                          ₹{donation.amount}
+                          {donation.currency}{donation.amount}
                         </span>
                       </div>
 

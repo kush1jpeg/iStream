@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Navigation } from "@/components/Navigation";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
 import { Signal, Copy, Check, Radio, ChevronRight, Loader } from "lucide-react";
 import { api } from "@/App";
+import { Footer } from "@/components/Footer";
 
 
 type Step = "initiate" | "ready" | "live";
@@ -14,14 +14,6 @@ interface StreamData {
   rtmpUrl: string;
   title: string;
   tags: string[]; thumbnail?: string;
-}
-const fakedata = {
-  streamId: "sdf",
-  streamKey: "sdf",
-  rtmpUrl: "sdf",
-  title: "sdf",
-  tags: ["sdf"],
-  thumbnail: "https://in.pinterest.com/pin/956311302130637265/",
 }
 
 export default function GoLive() {
@@ -46,13 +38,13 @@ export default function GoLive() {
     setError(null);
     setLoading(true);
     try {
-      // const { data } = await api.post("/api/stream/initiate", {
-      //    title: form.title,
-      //    description: form.description,
-      //    tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
-      //    thumbnail: form.thumbnail || undefined,
-      //  });
-      setStreamData(fakedata);
+      const { data } = await api.post("/api/stream/initiate", {
+        title: form.title,
+        description: form.description,
+        tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+        thumbnail: form.thumbnail || undefined,
+      });
+      setStreamData(data);
       setStep("ready");
     } catch (err: any) {
       setError(err.message);
@@ -83,8 +75,7 @@ export default function GoLive() {
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain">
-      <Navigation />
-      <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
+      <main className="container mx-auto px-4 mb-10 py-10 max-w-2xl space-y-6">
 
         {/* Header */}
         <div className="flex items-center gap-3">
@@ -185,7 +176,7 @@ export default function GoLive() {
             <button
               onClick={handleInitiate}
               disabled={loading}
-              className="w-full border-2 border-terminal-green text-terminal-green font-mono text-sm py-3 uppercase tracking-wider hover:bg-terminal-green hover:text-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full border-2 border-terminal-green text-terminal-green font-mono text-sm py-3 uppercase tracking-wider hover:text-purple-100 hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <><Loader className="w-4 h-4 animate-spin" /> Initializing...</>
@@ -303,6 +294,8 @@ export default function GoLive() {
         )}
 
       </main>
+
+      <Footer />
     </div>
   );
 }

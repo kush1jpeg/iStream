@@ -1,5 +1,5 @@
 export const forgotPass_Template = (resetLink: string, email: string) => ({
-  from: `"iStream Support" <${process.env.STREAMAIL}>`,
+  from: `"iStream" <kush1jpeg>`,
   to: email,
   subject: "Reset Your iStream Password",
   text: `Hello!\n\nWe received a request to reset your iStream account password.\n\nYou can reset your password by clicking the link below:\n${resetLink}\n\nThis link is valid for 10 minutes.\n\nIf you did not request a password reset, please ignore this email.\n\n— iStream Team`,

@@ -14,6 +14,7 @@ import GoLive from "./pages/stream/GoLive";
 
 import axios from "axios";
 import { Sidebar } from "./components/Sidebar";
+import { Navigation } from "./components/Navigation";
 
 export const api = axios.create({
   baseURL: import.meta.env.BACKEND_URL || "http://localhost:4000",
@@ -22,13 +23,14 @@ export const api = axios.create({
 
 const queryClient = new QueryClient();
 const followedUsers = [
-  { id: "1", name: "Alice", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: true },
-  { id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", isStreaming: false },
+  { _id: "1", name: "Alice", frame: "/frame.png", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", StreamURL: "dsf" },
+  { _id: "2", name: "Bob", avatarUrl: "https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg", StreamURL: "" },
 ];
 
 const MainLayout = () => (
   <>
     <Sidebar followedUsers={followedUsers} />
+    <Navigation />
     <Outlet />
   </>
 );
@@ -43,7 +45,8 @@ const App = () => (
           <Route element={<MainLayout />}>
             <Route path="/" element={<Index />} />
             <Route path="/stream/:id" element={<StreamPage />} />
-            <Route path="/profile" element={<ProfileSection />} />
+            <Route path="/profile/me" element={<ProfileSection />} />
+            <Route path="/profile/:userId" element={<ProfileSection />} />
             <Route path="/shop" element={<ShopLanding />} />
             <Route path="/start-stream" element={<GoLive />} />
             <Route path="/chat" element={<Chat myId="xxxx" />} />

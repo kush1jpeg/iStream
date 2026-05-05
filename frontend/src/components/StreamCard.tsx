@@ -8,7 +8,7 @@ interface StreamCardProps {
   id: string;
   title: string;
   streamer: string;
-  viewers: number;
+  viewers: string;
   thumbnail?: string;
   isLive?: boolean;
   startedAt: string | Date;

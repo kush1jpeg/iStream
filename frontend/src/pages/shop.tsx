@@ -1,11 +1,11 @@
 import Carousel from "@/components/ui/carousel";
-import { Navigation } from "@/components/Navigation";
 import ProductCard from "@/components/ui/ProductCard";
 import SearchBar from "@/components/ui/SearchBar";
 import { useEffect, useState } from "react";
 import { FilterShop } from "@/components/ui/filter";
 import { api } from "@/App";
 import { ShopItem } from "@/types/types";
+import { Footer } from "@/components/Footer";
 
 
 export default function ShopLanding() {
@@ -50,7 +50,6 @@ export default function ShopLanding() {
 
   return (
     <div className="bg-background crt-container film-grain text-zinc-100">
-      <Navigation />
 
       {/* HERO */}
 
@@ -93,6 +92,7 @@ export default function ShopLanding() {
           </div>
         </section>
       </div>
+      <Footer />
     </div>
   );
 }

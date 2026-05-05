@@ -1,5 +1,5 @@
 import { GlitchText } from "./GlitchText";
-import { Radio, Tv, User } from "lucide-react";
+import { GithubIcon, Radio, Tv, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 
@@ -31,6 +31,7 @@ export const Navigation = () => {
         <div className="flex gap-6">
           <NavItem href="/shop" icon={Tv} label="Shop" active={location.pathname === "/shop"} />
           <NavItem href="/auth" icon={User} label="Login" active={location.pathname === "/auth"} />
+          <NavItem href="" icon={GithubIcon} label="Repo" active={location.pathname === "/auth"} />
         </div>
       </div>
     </nav>

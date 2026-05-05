@@ -55,7 +55,7 @@ export const login = async (req: Request, res: Response) => {
 
       await user.save();
 
-      return res.json({ msg: "logged in successfully", error: "res" });
+      return res.json({ msg: "logged in successfully" });
     }
   } catch (error) {
     return res.json({ msg: "Missing details", error: "error" });

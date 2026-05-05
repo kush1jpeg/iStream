@@ -112,3 +112,12 @@
   scrollbar-width: thin;
   scrollbar-color: #9f7aea #1e1e2f; /* thumb color / track color */
 }
+
+.volume-slider {
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  width: 4px;
+  height: 80px;
+  accent-color: var(--vhs-purple);
+  cursor: pointer;
+}

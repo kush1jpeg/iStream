@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { userModel } from "../../models/user";
 import { redis } from "../../config/redis";
 import { getPublishChannel } from "../../config/rabbitmq";
-import { exchange } from "../..";
 import { QueueOTP } from "../../types/types";
 
 export const sendFirstStreamOTP = async (req: Request, res: Response) => {
@@ -31,15 +30,16 @@ export const sendFirstStreamOTP = async (req: Request, res: Response) => {
       otp: String(otpgen),
       email: user.email,
     };
+    console.log("OTP :", OTPconfig);
 
     const publishChannel = await getPublishChannel();
     if (!publishChannel) {
       throw new Error("Publish channel is empty or undefined!");
     }
-
+    await publishChannel.assertQueue("otp_queue", { durable: true });
+    console.log("sending OTP :", OTPconfig);
     // queueing into rabbitmq;
-    publishChannel.publish(
-      exchange,
+    publishChannel.sendToQueue(
       "otp_queue",
       Buffer.from(JSON.stringify(OTPconfig)),
       { persistent: true }, // survive restart

@@ -40,6 +40,7 @@ const startServer = async () => {
     const slowChannel = await connection.createChannel();
 
     await slowChannel.assertQueue("otp_queue", { durable: true });
+    console.log("otp_queue is init");
     await consumeOTPMails("otp_queue", slowChannel);
 
     await slowChannel.assertQueue("payment_queue", { durable: true });
@@ -48,6 +49,9 @@ const startServer = async () => {
     });
     await slowChannel.bindQueue("payment_queue", "payment", "payment.*"); // binding to routing keys
     await consumePayments("payment_queue", slowChannel);
+
+    slowChannel.prefetch(1);
+    notifyChannel.prefetch(10);
 
     await dbConnect();
 

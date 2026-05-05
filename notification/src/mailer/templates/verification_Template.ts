@@ -1,5 +1,5 @@
 export const firstStreamOTP_Template = (otp: string, email: string) => ({
-  from: `"iStream Security" <${process.env.STREAMAIL}>`,
+  from: `"iStream" <kush1jpeg>`,
   to: email,
   subject: "Verify to Go Live on iStream",
   text: `You're almost live!\n\nTo start streaming on iStream for the first time, please verify your identity using the OTP below:\n\n${otp}\n\nThis OTP is valid for 5 minutes.\n\nIf you did not attempt to start a stream, please secure your account immediately.\n\n— iStream Security`,

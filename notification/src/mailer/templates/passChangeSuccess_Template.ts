@@ -1,5 +1,5 @@
 export const passwordChangeSuccess_Template = (email: string) => ({
-  from: `"iStream Security" <${process.env.STREAMAIL}>`,
+  from: `"iStream" <kush1jpeg>`,
   to: email,
   subject: "Your iStream Password Was Changed",
   text: `Your iStream password has been successfully changed.\n\nIf you did not perform this action, contact support immediately.\n\n— iStream Security`,
