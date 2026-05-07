@@ -96,6 +96,10 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    isLive: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

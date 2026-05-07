@@ -1,3 +1,4 @@
+import { getPublishChannel } from "./helper/connectRabbitMq.js";
 import { docker, redis } from "./index.js";
 
 const logsDir = process.env.LOGS_DIR;
@@ -50,6 +51,16 @@ export async function deleteWorker() {
       await c.remove({ force: true });
     }
   }
+}
+
+export async function terminateStream(streamId, userId) {
+  const channel = await getPublishChannel();
+  channel.publish(
+    "stream",
+    "stream.end",
+    Buffer.from(JSON.stringify({ streamId, userId })),
+    { persistent: true },
+  );
 }
 
 export const gracefulShutdown = async (signal) => {

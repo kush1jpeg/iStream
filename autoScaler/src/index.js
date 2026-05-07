@@ -4,16 +4,19 @@ dotenv.config();
 import Redis from "ioredis";
 import Docker from "dockerode";
 
-export const redis = new Redis({
-  host: "redis",
-  port: 6379,
-});
+export const redis = new Redis({ host: "redis", port: 6379 });
 
 export const docker = new Docker({
   socketPath: "/var/run/docker.sock",
 });
 
-import { deleteWorker, gracefulShutdown, spawnWorker } from "./helpers.js";
+import {
+  deleteWorker,
+  gracefulShutdown,
+  spawnWorker,
+  terminateStream,
+} from "./helpers.js";
+import { connectToRabbitMQ } from "./helper/connectRabbitMq.js";
 
 const MAX_WORKERS = Number(process.env.MAX_WORKERS);
 const MIN_WORKERS = Number(process.env.MIN_WORKERS);
@@ -95,9 +98,34 @@ async function autoscaler() {
   } catch (err) {
     console.error("Autoscaler failed:", err);
   }
+
+  // stopping the inactive streams
+  const streams = await redis.smembers("live:streams");
+  for (const streamId of streams) {
+    const data = await redis.hgetall(`stream:${streamId}`);
+
+    if (!data) continue;
+    if (data.status === "inactive") {
+      const inactiveSince = Number(data.inactiveSince);
+      const elapsed = Date.now() - inactiveSince;
+
+      if (elapsed > 60000) {
+        // streamer didn't came back after a min
+        await terminateStream(streamId);
+      }
+    }
+    //pending streams, OBS never connected
+    if (data.status === "pending") {
+      const age = Date.now() - new Date(data.createdAt).getTime();
+      if (age > 2 * 60000) {
+        await terminateStream(streamId);
+      }
+    }
+  }
 }
 
-setInterval(autoscaler, 4000);
+connectToRabbitMQ;
+setInterval(autoscaler, 5000);
 
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));

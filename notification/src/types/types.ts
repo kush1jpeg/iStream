@@ -8,15 +8,10 @@ export interface QueueOTP {
   email: string;
 }
 
-type NotificationType =
-  | "follow"
-  | "stream_start"
-  | "stream_live"
-  | "chat"
-  | "like";
+type NotificationType = "follow" | "stream" | "chat" | "like";
 export interface INotification extends Document {
   userId: Types.ObjectId;
-  actorId: Types.ObjectId;
+  actorId?: Types.ObjectId;
   type: NotificationType;
   createdAt: Date;
 }

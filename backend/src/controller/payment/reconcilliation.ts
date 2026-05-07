@@ -2,7 +2,7 @@ import cron from "node-cron";
 import { instance } from "../..";
 import { PaymentModel } from "../../models/payments";
 
-export function startSuperchatCron() {
+export function startCron() {
   cron.schedule("0 */3 * * *", async () => {
     try {
       console.log("[+] running the reconciliation service");

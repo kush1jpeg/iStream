@@ -16,6 +16,22 @@ export default function ShopLanding() {
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
+    const fetchShopItems = async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get(`/api/shop/`);
+        setDrops(data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShopItems();
+  }, []);
+
+
+  useEffect(() => {
 
     if (query.trim().length < 2) {
       return;

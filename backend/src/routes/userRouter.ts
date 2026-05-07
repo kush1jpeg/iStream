@@ -4,12 +4,16 @@ import { authVerify } from "../middlewares/jwtVerify";
 import { search } from "../controller/user/search";
 import { getFollowers } from "../controller/user/followers";
 import { getFollowing } from "../controller/user/follows";
-import { getNotifications } from "../controller/user/getNotifs";
+import {
+  getNotifications,
+  updateLastReadNotification,
+} from "../controller/user/getNotifs";
 import { updateProfile } from "../controller/user/updateProfile";
 import { getProfile } from "../controller/user/getProfile";
 import { createOrder } from "../controller/payment/superchat/createOrder";
 import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
 import { getUserById } from "../controller/user/getUserStats";
+import { followingLiveSSE } from "../controller/user/sidebarSSE";
 
 export const userRouter: Router = Router();
 
@@ -22,6 +26,12 @@ userRouter.get("/:userId/followers", getFollowers);
 userRouter.get("/:userId/following", getFollowing);
 // userRouter.get("/:streamId/like", authVerify, likeXUnlike);
 userRouter.get("/notify", authVerify, getNotifications);
+userRouter.get("/sidebar/update", authVerify, followingLiveSSE);
+userRouter.post(
+  "/update/lastReadNotif",
+  authVerify,
+  updateLastReadNotification,
+);
 
 // superchat
 userRouter.post("/superchat", authVerify, createOrder);

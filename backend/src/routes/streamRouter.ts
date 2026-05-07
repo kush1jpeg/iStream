@@ -15,8 +15,8 @@ export const streamRouter: Router = Router();
 // user: payments + hls serve
 streamRouter.get("/live", getLiveStreams); // returns all active live streams
 streamRouter.get("/:streamId", getIStream);
-streamRouter.post("/:streamId/superchat-initiate", createOrder);
-streamRouter.post("/:streamId/superchat", verifyPayment);
+streamRouter.post("/:streamId/superchat-initiate", authVerify, createOrder);
+streamRouter.post("/:streamId/superchat-verify", verifyPayment);
 
 streamRouter.post("/initiate", authVerify, isVerified, initiateStream);
 streamRouter.post("/start", authVerify, isVerified, startStream);

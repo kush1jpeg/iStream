@@ -21,8 +21,9 @@ export async function bindExchange(
 ) {
   try {
     for (let q of queues) {
+      const routingKey = q.split("_")[0];
       await channel.assertQueue(q, { durable: true });
-      await channel.bindQueue(q, exchange, q);
+      await channel.bindQueue(q, exchange, routingKey);
     }
     console.log("Bindings done!");
   } catch (error) {

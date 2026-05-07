@@ -1,11 +1,13 @@
 import amqp from "amqplib";
 
+let conn = null;
+let channel = null;
+
 export async function connectRabbitMQ(RABBITMQ_URL) {
   while (true) {
-    let conn = null;
     try {
       conn = await amqp.connect(RABBITMQ_URL);
-      const channel = await conn.createChannel();
+      channel = await conn.createChannel();
       await channel.assertQueue("stream.jobs", { durable: true });
       console.log("[*] Connected to RabbitMQ");
       return channel;
@@ -15,4 +17,11 @@ export async function connectRabbitMQ(RABBITMQ_URL) {
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
+}
+
+export async function getChannel() {
+  if (!channel) {
+    throw new Error("RabbitMQ channel is not initialized yet.");
+  }
+  return channel;
 }

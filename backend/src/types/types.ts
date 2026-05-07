@@ -8,18 +8,12 @@ export interface QueueOTP {
   email: string;
 } // using this for both otp and password reset mail;
 
-type NotificationType =
-  | "follow"
-  | "stream_live"
-  | "stream_start"
-  | "chat"
-  | "log"
-  | "like";
-export interface INotification extends Document {
+type NotificationType = "follow" | "stream" | "chat" | "like";
+export interface INotification {
   type: NotificationType;
   userId: Types.ObjectId;
-  actorId: Types.ObjectId;
-  createdAt: Date;
+  actorId?: Types.ObjectId;
+  createdAt: Number;
 }
 
 export interface IStreamLog {
@@ -40,6 +34,7 @@ export interface IUser extends Document {
   banner: string;
   isVerified: boolean; // true if is mail or oauth verified and can stream
   followers?: string[];
+  isLive: boolean;
   following?: string[];
   createdAt: Date;
   updatedAt: Date;

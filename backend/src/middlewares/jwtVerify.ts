@@ -61,3 +61,16 @@ export const socketAuthMiddleware = (
     return next(new Error("AUTH_INVALID"));
   }
 };
+
+// verifyInternalSecret middleware to call bw microservices
+// export const verifyInternalSecret = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ) => {
+//   const secret = req.headers["x-internal-secret"];
+//   if (secret !== process.env.INTERNAL_SECRET) {
+//     return res.status(403).json({ error: "forbidden Request" });
+//   }
+//   next();
+// };

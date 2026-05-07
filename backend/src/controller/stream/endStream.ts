@@ -11,22 +11,31 @@ export const endStream = async (req: Request, res: Response) => {
   }
 
   const userId = req.id;
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "userId required" });
+  }
+
+  try {
+    await terminateStream(streamId, userId);
+    return res.status(200).json({ success: true, message: "Stream ended" });
+  } catch (err: any) {
+    const statusMap: Record<string, number> = {
+      "Stream not found": 404,
+      Unauthorized: 403,
+      "Stream is not live": 400,
+    };
+    return res
+      .status(statusMap[err.message] || 500)
+      .json({ success: false, message: err.message });
+  }
+};
+
+export const terminateStream = async (streamId: string, userId: string) => {
   const stream = await streamModel.findById(streamId);
-  if (!stream) {
-    return res
-      .status(404)
-      .json({ success: false, message: "Stream not found" });
-  }
-  if (stream.streamerId.toString() !== userId) {
-    return res
-      .status(403)
-      .json({ success: false, message: "Unauthorized personnel" });
-  }
-  if (stream.status !== "live") {
-    return res
-      .status(400)
-      .json({ success: false, message: "Stream is not live" });
-  }
+
+  if (!stream) throw new Error("Stream not found");
+  if (stream.streamerId.toString() !== userId) throw new Error("Unauthorized");
+  if (stream.status !== "live") throw new Error("Stream is not live");
 
   const redisStream = await redis.hgetall(`stream:${streamId}`);
 
@@ -36,13 +45,10 @@ export const endStream = async (req: Request, res: Response) => {
   stream.views = Number(redisStream?.views) || 0;
   await stream.save();
 
-  // cleanup redis
   const pipeline = redis.multi();
   pipeline.del(`stream:${streamId}`);
   pipeline.del(`live:user:${userId}`);
   pipeline.srem(`live:streams`, streamId);
   pipeline.del(`streamKey:${stream.streamKeyHash}`);
   await pipeline.exec();
-
-  return res.status(200).json({ success: true, message: "Stream ended" });
 };

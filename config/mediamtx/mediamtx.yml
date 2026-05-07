@@ -18,6 +18,8 @@ paths:
     # runOnConnect: curl http://my-custom-server/webhook?conn_type=$MTX_CONN_TYPE&conn_id=$MTX_CONN_ID
     # runOnDisconnect: curl http://my-custom-server/webhook?conn_type=$MTX_CONN_TYPE&conn_id=$MTX_CONN_ID
 
+    runOnNotReady: 'curl -X POST http://job-server:3000/stream-inactive -H "Content-Type: application/json" -d "{\"MTX_PATH\":\"$MTX_PATH\"}"'
+
     runOnReadyRestart: yes
 
 

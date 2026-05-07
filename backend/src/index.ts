@@ -17,7 +17,8 @@ import { initPassport } from "./services/passportAuth";
 import passport from "passport";
 
 import Razorpay from "razorpay";
-import { startSuperchatCron } from "./controller/payment/reconcilliation";
+import { startCron } from "./controller/payment/reconcilliation";
+import { start_deadStreamConsumer } from "./controller/stream/deadStreamConsumer";
 export const instance = new Razorpay({
   key_id: process.env.KEY_ID,
   key_secret: process.env.KEY_SECRET,
@@ -26,6 +27,7 @@ export const instance = new Razorpay({
 const app = express();
 const PORT = process.env.PORT || 4000;
 export const payExchange = "payment";
+export const streamExchange = "stream";
 export const server = http.createServer(app); // sharing the same port for now
 
 app.use(express.json());
@@ -49,16 +51,21 @@ const startServer = async () => {
     // connecting to redis
     await redisConnect();
 
-    // rabbitmq Channel + PayExchange(to be asserted in the payment microservice in future)
+    // rabbitmq Channel + streamExchange + PayExchange(to be asserted inside the payment microservice in future)
     const { publishChannel, payChannel } = await connectToRabbitMQ();
     await publishChannel.assertExchange("notification", "direct", {
       durable: true,
     });
 
+    await publishChannel.assertExchange(streamExchange, "topic", {
+      durable: true,
+    });
+    await payChannel.assertQueue("stream_end", { durable: true });
+    await publishChannel.bindQueue("stream_end", streamExchange, "stream.end");
+
     await payChannel.assertExchange(payExchange, "topic", {
       durable: true,
     });
-
     await payChannel.assertQueue("payment_superchat", { durable: true });
     await payChannel.bindQueue(
       "payment_superchat",
@@ -66,7 +73,8 @@ const startServer = async () => {
       "payment.superchat",
     );
     // reconcilliation job for cleaning up pending/failed payments
-    startSuperchatCron();
+    startCron();
+    await start_deadStreamConsumer();
 
     // await socket.io server connection
     await initSocket(server);
