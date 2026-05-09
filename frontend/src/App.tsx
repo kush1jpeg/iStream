@@ -15,6 +15,7 @@ import GoLive from "./pages/stream/GoLive";
 import axios from "axios";
 import { Sidebar } from "./components/Sidebar";
 import { Navigation } from "./components/Navigation";
+import ChangePass from "./components/changePassword";
 
 export const api = axios.create({
   baseURL: import.meta.env.BACKEND_URL || "http://localhost:4000",
@@ -30,7 +31,7 @@ const followedUsers = [
 const MainLayout = () => (
   <>
     <Sidebar followedUsers={followedUsers} />
-    <Navigation />
+    <Navigation logged={false} />
     <Outlet />
   </>
 );
@@ -53,6 +54,7 @@ const App = () => (
           </Route>
 
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ChangePass />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

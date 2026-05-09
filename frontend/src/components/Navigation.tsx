@@ -2,40 +2,54 @@ import { GlitchText } from "./GlitchText";
 import { GithubIcon, Radio, Tv, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
+import NotifDropdown from "./notifications";
 
-export const Navigation = () => {
+interface NavigationProps {
+  logged: boolean;
+}
+export const Navigation = ({ logged }: NavigationProps) => {
   const location = useLocation();
 
+
   return (
-    <nav className="border-b-4 border-primary bg-card p-2 relative overflow-hidden">
-      {/* Background Effect */}
-      <div className="absolute inset-0 bg-gradient-terminal opacity-50" />
+    <>
+      <nav className="border-b-4 border-primary bg-card p-2 relative overflow-hidden">
+        {/* Background Effect */}
+        <div className="absolute inset-0 bg-gradient-terminal opacity-50" />
 
-      <div className="container mx-auto flex items-center justify-between relative z-10">
-        {/* Logo */}
-        <Link to="/" className="flex items-center gap-3">
-          <div className="relative">
-            <Radio className="w-8 h-8 text-primary animate-pulse" />
-            <div className="absolute inset-0 animate-ping opacity-20">
-              <Radio className="w-8 h-8 text-primary" />
+        <div className="container mx-auto flex items-center justify-between relative z-10">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3">
+            <div className="relative">
+              <Radio className="w-8 h-8 text-primary animate-pulse" />
+              <div className="absolute inset-0 animate-ping opacity-20">
+                <Radio className="w-8 h-8 text-primary" />
+              </div>
             </div>
-          </div>
-          <GlitchText
-            text="iSTREAM"
-            as="h1"
-            className="text-2xl font-pixel text-primary"
-          />
-        </Link>
+            <GlitchText
+              text="iSTREAM"
+              as="h1"
+              className="text-2xl font-pixel text-primary"
+            />
+          </Link>
 
-        {/* Navigation Items */}
-        <div className="flex gap-6">
-          <NavItem href="/shop" icon={Tv} label="Shop" active={location.pathname === "/shop"} />
-          <NavItem href="/auth" icon={User} label="Login" active={location.pathname === "/auth"} />
-          <NavItem href="" icon={GithubIcon} label="Repo" active={location.pathname === "/auth"} />
+          {/* Navigation Items */}
+          <div className="flex gap-6">
+            <NavItem icon={GithubIcon} label="Repo" href="https://github.com/kush1jpeg/istream" />
+
+            <NavItem href="/shop" icon={Tv} label="Shop" active={location.pathname === "/shop"} />
+            {logged ? (
+              <NavItem href="/auth" icon={User} label="Login" active={location.pathname === "/auth"} />
+            ) : (
+              <>
+                <NotifDropdown />
+              </>)}
+
+          </div>
         </div>
-      </div>
-    </nav>
-  );
+      </nav>
+
+    </>);
 };
 
 interface NavItemProps {

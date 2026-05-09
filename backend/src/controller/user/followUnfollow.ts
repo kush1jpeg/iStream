@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { followModel } from "../../models/follow";
+import { publishNotifs } from "../../services/otp/publishNotif";
+import { INotification } from "../../types/types";
 
 export const followXUnfollow = async (req: Request, res: Response) => {
   try {
@@ -33,6 +35,14 @@ export const followXUnfollow = async (req: Request, res: Response) => {
     }
 
     const newFollow = await followModel.create({ userId, followedId });
+    const notify: INotification = {
+      type: "follow",
+      actorId: userId,
+      userId: followedId,
+      createdAt: Date.now(),
+    };
+    await publishNotifs(notify);
+
     return res
       .status(201)
       .json({ message: "Followed successfully.", follow: newFollow });

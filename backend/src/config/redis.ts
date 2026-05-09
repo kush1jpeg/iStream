@@ -40,12 +40,12 @@ export const redisSubNotify = async (io: Namespace) => {
     }
   });
 
-  redisSub.subscribe("stream:log", (ch, msg) => {
+  redisSub.subscribe("stream:log", (msg) => {
     if (!msg) throw new Error("error during registerNotifyHandler");
     try {
       const strMsg = typeof msg === "string" ? msg : msg.toString();
       const payload = JSON.parse(strMsg) as IStreamLog;
-      io.to(JSON.stringify(payload.userId)).emit("notifications", msg);
+      io.to(JSON.stringify(payload.userId)).emit("stream-logs", msg);
     } catch (err) {
       console.error("Invalid notification payload", err);
     }

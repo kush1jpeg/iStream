@@ -9,20 +9,22 @@ import { getIStream } from "../controller/stream/getIStream";
 import { createOrder } from "../controller/payment/superchat/createOrder";
 import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
 import { endStream } from "../controller/stream/endStream";
+import { uploadThumbnail } from "../controller/stream/uploadStreamCloudinary";
 
 export const streamRouter: Router = Router();
 
 // user: payments + hls serve
 streamRouter.get("/live", getLiveStreams); // returns all active live streams
 streamRouter.get("/:streamId", getIStream);
+streamRouter.post("/:streamId/end", authVerify, isVerified, endStream);
+streamRouter.delete("/:streamId/delete", authVerify, isVerified, deleteStream);
+
 streamRouter.post("/:streamId/superchat-initiate", authVerify, createOrder);
 streamRouter.post("/:streamId/superchat-verify", verifyPayment);
 
 streamRouter.post("/initiate", authVerify, isVerified, initiateStream);
 streamRouter.post("/start", authVerify, isVerified, startStream);
-
-streamRouter.post("/:streamId/end", authVerify, isVerified, endStream);
-streamRouter.delete("/:streamId/delete", authVerify, isVerified, deleteStream);
+streamRouter.post("/upload/thumbnail", authVerify, isVerified, uploadThumbnail);
 
 // *** make FFmpeg write using streamId instead of streamKey: to not expose streamkey in the hls url ,
 // and also hash the stream key; for further shite protection

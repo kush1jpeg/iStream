@@ -16,6 +16,9 @@ export async function consumeStreamNotifs(queueName: string, channel: Channel) {
         const streamerId = data.userId;
         let lastId: any = null;
         const BATCH_SIZE = 500;
+        if (!(await redisConnect())) {
+          throw new Error("redisClient not connected");
+        }
 
         while (true) {
           const query = lastId
@@ -40,10 +43,6 @@ export async function consumeStreamNotifs(queueName: string, channel: Channel) {
             notifications,
             { ordered: false }, // continue even if some fail
           );
-
-          if (!(await redisConnect())) {
-            throw new Error("redisClient not connected");
-          }
           const pipeline = redisClient.multi();
           for (const notif of inserted) {
             pipeline.publish(`notifications`, JSON.stringify(notif));
@@ -55,9 +54,25 @@ export async function consumeStreamNotifs(queueName: string, channel: Channel) {
         channel.ack(msg);
       } catch (err) {
         console.error("Consumer error:", err);
-        channel.nack(msg, false, true);
+        const retryCount = msg.properties.headers?.["x-retry-count"] ?? 0;
+        if (retryCount >= 3) {
+          channel.nack(msg, false, false);
+        } else {
+          setTimeout(
+            () => {
+              channel.publish("", queueName, msg.content, {
+                headers: { "x-retry-count": retryCount + 1 },
+                persistent: true,
+              });
+            },
+            Math.pow(2, retryCount) * 5000,
+          ); // 5s, 10s, 20s
+          channel.nack(msg, false, false);
+        }
       }
     },
     { noAck: false },
   );
 }
+
+// could have added a dlq and dlx but tooo lazy..

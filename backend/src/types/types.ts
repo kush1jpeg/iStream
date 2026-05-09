@@ -12,7 +12,7 @@ type NotificationType = "follow" | "stream" | "chat" | "like";
 export interface INotification {
   type: NotificationType;
   userId: Types.ObjectId;
-  actorId?: Types.ObjectId;
+  actorId?: string;
   createdAt: Number;
 }
 

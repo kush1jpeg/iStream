@@ -14,6 +14,8 @@ const StreamPage = () => {
   const [loading, setLoading] = useState(true);
   const [stream, setStream] = useState<IStreamRedis | null>(null);
 
+  // check for the istreamer to show the additional logs of redis pubsub
+
   useEffect(() => {
     api.get(`/api/stream/${streamId}`)
       .then(({ data }) => setStream(data.stream))

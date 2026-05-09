@@ -14,6 +14,11 @@ import { createOrder } from "../controller/payment/superchat/createOrder";
 import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
 import { getUserById } from "../controller/user/getUserStats";
 import { followingLiveSSE } from "../controller/user/sidebarSSE";
+import { getSignedLink } from "../controller/user/getSignedLink";
+import {
+  uploadAvatar,
+  uploadBanner,
+} from "../controller/user/uploadUserCloudinary";
 
 export const userRouter: Router = Router();
 
@@ -26,6 +31,15 @@ userRouter.get("/:userId/followers", getFollowers);
 userRouter.get("/:userId/following", getFollowing);
 // userRouter.get("/:streamId/like", authVerify, likeXUnlike);
 userRouter.get("/notify", authVerify, getNotifications);
+
+userRouter.post("/upload/avatar", authVerify, uploadAvatar);
+userRouter.get(
+  "/get/signed-link?type=avatar|banner|thumbnail",
+  authVerify,
+  getSignedLink,
+);
+userRouter.post("/upload/banner", authVerify, uploadBanner);
+
 userRouter.get("/sidebar/update", authVerify, followingLiveSSE);
 userRouter.post(
   "/update/lastReadNotif",

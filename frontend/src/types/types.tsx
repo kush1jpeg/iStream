@@ -17,6 +17,16 @@ export interface IUser {
   websiteId?: string;
 }
 
+type NotificationType = "follow" | "stream" | "chat" | "like";
+export interface INotification {
+  type: NotificationType;
+  userId: string;
+  actorId?: string;
+  createdAt: Number;
+  _id: string;
+}
+
+
 export interface IStream {
   _id: string;
   streamerId: string;

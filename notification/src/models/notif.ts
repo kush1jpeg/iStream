@@ -8,7 +8,7 @@ export const notificationSchema = new Schema<INotification>(
     type: {
       type: String,
       required: true,
-      enum: ["follow", "stream_live", "stream_start", "chat", "like"],
+      enum: ["follow", "stream_live", "chat", "like"],
     },
   },
   {

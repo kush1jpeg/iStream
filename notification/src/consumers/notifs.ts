@@ -1,6 +1,6 @@
 import { Channel } from "amqplib";
 import { notifyModel } from "../models/notif";
-import { redisClient } from "../config/redis";
+import { redisClient, redisConnect } from "../config/redis";
 import { INotification } from "../types/types";
 
 export async function consumeNotifs(queueName: string, channel: Channel) {
@@ -12,23 +12,14 @@ export async function consumeNotifs(queueName: string, channel: Channel) {
       if (!msg) return;
       try {
         const data = JSON.parse(msg.content.toString()) as INotification;
-        switch (data.type) {
-          case "chat":
-            break;
-
-          case "like":
-            break;
-
-          default:
-            break;
+        if (!(await redisConnect())) {
+          throw new Error("redisClient not connected");
         }
         await notifyModel.create({
           userId: data.userId,
           actorId: data.actorId,
           type: data.type,
         });
-
-        await redisClient.publish("notifications", JSON.stringify(msg.content));
 
         channel.ack(msg);
       } catch (err) {
