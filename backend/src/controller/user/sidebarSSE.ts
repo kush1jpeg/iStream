@@ -12,29 +12,26 @@ export const followingLiveSSE = async (req: Request, res: Response) => {
   res.setHeader("Connection", "keep-alive");
 
   const initialData = await getFollowingLiveStatus(userId!, page);
-  res.write(`data: ${JSON.stringify(initialData)}\n\n`);
+  res.json(`data: ${JSON.stringify(initialData)}\n\n`);
 
-  const sub = new Redis();
-  await sub.subscribe("notifications");
-
-  sub.on("message", (_, message) => {
-    try {
-      const payload = JSON.parse(message);
-      if (
-        payload.type === "stream_live" &&
-        payload.userId.toString() === userId
-      ) {
-        res.write(`data: ${JSON.stringify(payload)}\n\n`);
-      }
-    } catch (err) {
-      console.error("SSE parse error:", err);
-    }
-  });
-
-  req.on("close", () => {
-    sub.unsubscribe();
-    sub.disconnect();
-  });
+  // const sub = new Redis();
+  // await sub.subscribe("notifications");
+  //
+  // sub.on("message", (_, message) => {
+  //   try {
+  //     const payload = JSON.parse(message);
+  //     if (payload.type === "stream" && payload.userId.toString() === userId) {
+  //       res.write(`data: ${JSON.stringify(payload)}\n\n`);
+  //     }
+  //   } catch (err) {
+  //     console.error("SSE parse error:", err);
+  //   }
+  // });
+  //
+  // req.on("close", () => {
+  //   sub.unsubscribe();
+  //   sub.disconnect();
+  // });
 };
 
 const getFollowingLiveStatus = async (userId: string, page: number) => {
@@ -61,11 +58,22 @@ const getFollowingLiveStatus = async (userId: string, page: number) => {
   if (!results || results.length === 0)
     return { success: true, data: [], hasMore: false };
 
-  const data = followingIds.map((id, i) => ({
-    userId: id,
-    streamId: results[i][1] || null,
-    isLive: !!results[i][1],
-  }));
+  const data = results.map((res, i) => {
+    const raw = res?.[1];
+    if (!raw) {
+      return {
+        userId: followingIds[i],
+        isLive: false,
+      };
+    }
 
-  return { success: true, data, hasMore: following.length === LIMIT, page };
+    return JSON.parse(raw as string);
+  });
+
+  return {
+    success: true,
+    data,
+    hasMore: following.length === LIMIT,
+    page,
+  };
 };

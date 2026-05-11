@@ -16,7 +16,7 @@ import {
   spawnWorker,
   terminateStream,
 } from "./helpers.js";
-import { connectToRabbitMQ } from "./helper/connectRabbitMq.js";
+import { connectToRabbitMQ } from "./config/connectRabbitMq.js";
 
 const MAX_WORKERS = Number(process.env.MAX_WORKERS);
 const MIN_WORKERS = Number(process.env.MIN_WORKERS);
@@ -124,7 +124,7 @@ async function autoscaler() {
   }
 }
 
-connectToRabbitMQ;
+await connectToRabbitMQ();
 setInterval(autoscaler, 5000);
 
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));

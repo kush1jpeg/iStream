@@ -8,6 +8,7 @@ import { IUser } from "../../types/types.js";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
+  console.log(email, password);
   if (!(email && password)) {
     return res.json({ msg: "Missing details", error: "error" });
   }
@@ -19,7 +20,7 @@ export const login = async (req: Request, res: Response) => {
     if (!user.passwordHash) {
       return res.json({ msg: "saved password not found", error: "Not found" });
     }
-    const match = await bcrypt.compare(password, user.passwordHash);
+    const match = await bcrypt.compare(password.trim(), user.passwordHash);
     if (!match) {
       return res.json({ msg: "Wrong password", error: "error" });
     } else {
@@ -58,7 +59,7 @@ export const login = async (req: Request, res: Response) => {
       return res.json({ msg: "logged in successfully" });
     }
   } catch (error) {
-    return res.json({ msg: "Missing details", error: "error" });
+    return res.json({ msg: "FAILURE", error: "error" });
   }
 };
 

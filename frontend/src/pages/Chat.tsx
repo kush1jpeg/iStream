@@ -4,9 +4,10 @@ import axios from "axios";
 import { RetroContainer } from "@/components/RetroContainer";
 import { Users, MessageCircle, Send, Loader, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Footer } from "@/components/Footer";
+import { socket } from "@/lib/socket";
+import { api } from "@/App";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const TOKEN = localStorage.getItem("token") || "";
 
 interface Conversation {
@@ -69,11 +70,6 @@ export default function ChatPage({ myId }: { myId: string }) {
 
   // socket  
   useEffect(() => {
-    const socket = io(`${API}/dm`, {
-      auth: { token: TOKEN },
-      transports: ["websocket"],
-    });
-    socketRef.current = socket;
 
     socket.on("connect", () => setSocketReady(true));
     socket.on("disconnect", () => setSocketReady(false));
@@ -102,8 +98,7 @@ export default function ChatPage({ myId }: { myId: string }) {
   }, [myId]);
 
   useEffect(() => {
-    axios
-      .get(`${API}/api/chat/`, { withCredentials: true })
+    api.get(`chat/`, { withCredentials: true })
       .then(({ data }) => setConversations(data.conversations || []))
       .catch(console.error)
       .finally(() => setLoadingConvs(false));
@@ -142,7 +137,7 @@ export default function ChatPage({ myId }: { myId: string }) {
       );
 
       try {
-        const { data } = await axios.get(`${API}/api/chat/getConvo`, {
+        const { data } = await api.get(`/chat/getConvo`, {
           params: { conversationKey: conv.conversationKey, page: 1, limit: PAGE_SIZE },
           withCredentials: true,
         });
@@ -163,7 +158,7 @@ export default function ChatPage({ myId }: { myId: string }) {
     const nextPage = page + 1;
     setLoadingMsgs(true);
     try {
-      const { data } = await axios.get(`${API}/api/chat/getConvo`, {
+      const { data } = await api.get(`/chat/getConvo`, {
         params: { conversationKey: activeConv.conversationKey, page: nextPage, limit: PAGE_SIZE },
         withCredentials: true,
       });

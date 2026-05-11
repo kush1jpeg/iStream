@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { FollowedUser, IUser } from "@/types/types";
 import { useEffect, useState } from "react";
 import { api } from "@/App";
+import LogoutButton from "./logout";
+import { useAuthStore } from "./zustand/zustand";
 
 interface SidebarProps {
   followedUsers: FollowedUser[];
@@ -13,27 +15,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ followedUsers }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<IUser>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const url = `/api/user/me`;          // own profile
-        const { data } = await api.get(url, { withCredentials: true });
-        setUser(data.data.user);
-      } catch (err: any) {
-        setError(err.response?.data?.message || "Failed to load profile");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
-
-
+  const user = useAuthStore((s) => s.user);
 
   return (
     <div className="z-50 w-15 bg-zinc-900 text-foreground fixed h-screen flex flex-col items-center gap-3 p-2 py-4 border-purple-500 border-r-2 left-0 top-0  ">
@@ -92,13 +74,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ followedUsers }) => {
         className="group focus:outline-none"
       >
         <img
-          src="https://i.pinimg.com/736x/2f/59/16/2f5916f5dd6f4d529506298ea82050d5.jpg"
+          src={user.avatar}
           alt="live stream"
           className=
           "w-12 h-12 rounded-full object-cover brightness-125 opacity-100 border-2 hover:scale-105 transition-transform duration-150"
         />
       </button>
 
+      {/* Divider */}
+      <div className="border-t border-border w-full mb-2" />
+
+      <LogoutButton />
 
 
 

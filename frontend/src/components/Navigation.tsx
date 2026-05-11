@@ -3,17 +3,16 @@ import { GithubIcon, Radio, Tv, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "react-router-dom";
 import NotifDropdown from "./notifications";
+import { useAuthStore } from "./zustand/zustand";
 
-interface NavigationProps {
-  logged: boolean;
-}
-export const Navigation = ({ logged }: NavigationProps) => {
+export const Navigation = () => {
   const location = useLocation();
+  const user = useAuthStore((state) => state.user);
 
 
   return (
     <>
-      <nav className="border-b-4 border-primary bg-card p-2 relative overflow-hidden">
+      <nav className="border-b-4 border-primary bg-card p-2 relative">
         {/* Background Effect */}
         <div className="absolute inset-0 bg-gradient-terminal opacity-50" />
 
@@ -38,7 +37,7 @@ export const Navigation = ({ logged }: NavigationProps) => {
             <NavItem icon={GithubIcon} label="Repo" href="https://github.com/kush1jpeg/istream" />
 
             <NavItem href="/shop" icon={Tv} label="Shop" active={location.pathname === "/shop"} />
-            {logged ? (
+            {!user ? (
               <NavItem href="/auth" icon={User} label="Login" active={location.pathname === "/auth"} />
             ) : (
               <>

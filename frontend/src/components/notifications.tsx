@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { IconNotification } from "@tabler/icons-react";
 import axios from "axios";
-import { Loader2, Bell, BellOff, X } from "lucide-react";
+import { Loader2, Bell, BellOff, X, BellRingIcon } from "lucide-react";
 import { INotification } from "@/types/types";
 
 const TYPE_META: Record<string, { symbol: string; label: string }> = {
@@ -75,9 +74,9 @@ const NotifDropdown = () => {
       {/* Bell trigger */}
       <button
         onClick={handleToggle}
-        className="relative flex items-center justify-center w-9 h-9 border border-vhs-purple/30 hover:border-vhs-cyan/60 hover:bg-vhs-cyan/5 transition-all duration-200 group"
+        className="relative flex items-center justify-center w-10 h-9 border-2 border-muted text-muted-foreground hover:border-primary hover:text-primary transition-all duration-200 group"
       >
-        <IconNotification className="w-4 h-4 text-muted-foreground group-hover:text-vhs-cyan transition-colors" />
+        <BellRingIcon className="w-4 h-4 border-primary  text-primary-foreground group-hover:text-vhs-cyan transition-colors" />
 
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 bg-pink-700 border border-background flex items-center justify-center font-pixel text-[10px] text-white">
@@ -91,7 +90,7 @@ const NotifDropdown = () => {
         <div className="absolute right-0 top-11 z-50 w-80 border-2 border-vhs-purple/60 bg-card/95 backdrop-blur-md shadow-vhs overflow-hidden">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-vhs-purple/30 bg-vhs-purple/10">
+          <div className="flex items-center z-50 justify-between px-4 py-2.5 border-2 border-v text-muted-foreground hover:border-primary hover:text-primary">
             <div className="flex items-center gap-2">
               <Bell className="w-3 h-3 text-vhs-cyan" />
               <span className="font-pixel text-[10px] text-vhs-cyan tracking-widest">

@@ -3,9 +3,11 @@ import { Eye, EyeOff, Zap } from 'lucide-react';
 import styles from '../auth.module.css';
 import 'ldrs/react/Pinwheel.css'
 import { api } from '@/App';
-
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export function Auth() {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,7 +15,6 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,10 +28,11 @@ export function Auth() {
         email,
         password,
       });
-      console.log("SUCCESS:", response.data);
+      toast(response.data.msg);
+      if (response.data.msg === "logged in successfully") navigate("/");
     } catch (err: any) {
-      console.error(err);
-
+      toast.error(err);
+      navigate("/auth");
       setError(
         err.response?.data?.message ||
         err.message ||
@@ -51,7 +53,7 @@ export function Auth() {
   const handleGoogleLogin = () => {
     setOauthLoading("google");
     window.location.href =
-      "http://localhost:8000/api/auth/login/google";
+      "http://localhost:8888/api/auth/login/google";
   }
 
   return (<>

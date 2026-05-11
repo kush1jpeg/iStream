@@ -1,15 +1,12 @@
+import { socket } from "@/lib/socket";
 import { useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
 
-const API = import.meta.env.BACKEND_URL || "http://localhost:4000";
 
 export function useSignalStrength() {
   const [latency, setLatency] = useState<number | null>(null);
   const [strength, setStrength] = useState(100);
 
   useEffect(() => {
-    const socket: Socket = io(API, { transports: ["websocket"] });
-
     const measure = () => {
       socket.emit("ping:check", Date.now());
     };

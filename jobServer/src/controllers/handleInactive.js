@@ -1,4 +1,4 @@
-import { redisClient } from "../config/redis";
+import { redisClient } from "../config/redis.js";
 
 export const handleInactive = async (req, res) => {
   const { MTX_PATH } = req.body;

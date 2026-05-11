@@ -1,4 +1,4 @@
-import { getPublishChannel } from "./helper/connectRabbitMq.js";
+import { getPublishChannel } from "./config/connectRabbitMq.js";
 import { docker, redis } from "./index.js";
 
 const logsDir = process.env.LOGS_DIR;

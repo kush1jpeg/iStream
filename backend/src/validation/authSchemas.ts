@@ -5,8 +5,8 @@ export const loginSchema = z.object({
   email: z.email({ message: "Invalid email format" }),
   password: z
     .string()
-    .min(4, { message: "Password must be at least 4 characters" })
-    .max(30, { message: "Password too long" })
+    .min(6, { message: "Password must be at least 6 characters" })
+    .max(10, { message: "Password too long" })
     .regex(/[A-Za-z0-9!@#$%^&*]/, {
       message: "Password contains invalid characters",
     }),

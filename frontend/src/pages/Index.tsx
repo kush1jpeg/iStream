@@ -22,7 +22,7 @@ const Index = () => {
   const fetchStreams = async (cur: number) => {
     setLoading(true);
     try {
-      const { data } = await api.get("/api/stream/live", {
+      const { data } = await api.get("stream/live", {
         params: { limit: 6, cursor: cur }
       });
       setStreams(prev => cur === 0 ? data.streams : [...prev, ...data.streams]);

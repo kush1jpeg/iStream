@@ -12,6 +12,8 @@ export interface IUser {
   Inventory?: string[];
   lastReadNotificationId?: string;
   isVerified: boolean;
+  donations: IPay[];
+  streams: IStream[];
   createdAt: string;
   updatedAt: string;
   websiteId?: string;

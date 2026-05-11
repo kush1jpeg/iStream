@@ -32,7 +32,7 @@ export const server = http.createServer(app); // sharing the same port for now
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ credentials: true }));
+app.use(cors({ origin: "http://localhost:8080", credentials: true }));
 app.use(cookieParser());
 
 initPassport();
@@ -79,7 +79,7 @@ const startServer = async () => {
     // await socket.io server connection
     await initSocket(server);
 
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
     });
   } catch (err) {

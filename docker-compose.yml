@@ -5,20 +5,25 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - hls_data:/hls:ro
-
-  mediamtx:
-    image: bluenviron/mediamtx:1
-    container_name: mediamtx
-    ports:
-    - "1935:1935"    #OBS RTMP
-    volumes:
-      - ./config/mediamtx.yml:/mediamtx.yml:ro
     restart: unless-stopped
     networks:
       - istream
 
+
+  mediamtx:
+    build: ./config/mediamtx/
+    container_name: mediamtx
+    depends_on:
+    - rabbitmq
+    ports:
+    - "1935:1935"    #OBS RTMP
+    volumes:
+      - ./config/mediamtx/mediamtx.yml:/mediamtx.yml:ro
+    restart: unless-stopped
+    networks:
+      - istream
 
   rabbitmq:
     image: rabbitmq:3-management
