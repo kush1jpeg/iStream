@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { userModel } from "../../models/user";
 import mongoose from "mongoose";
+import { getFullLink } from "./getSignedLink";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
@@ -11,6 +12,8 @@ export const getUserById = async (req: Request, res: Response) => {
         $match: {
           _id: new mongoose.Types.ObjectId(userId),
         },
+      },
+      {
         $lookup: {
           from: "streams",
           localField: "_id",
@@ -61,7 +64,11 @@ export const getUserById = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      user: userData[0],
+      user: {
+        ...userData[0],
+        banner: getFullLink(userData[0].banner),
+        avatar: getFullLink(userData[0].avatar),
+      },
     });
   } catch (err) {
     return res.status(500).json({ success: false, message: "Server error" });

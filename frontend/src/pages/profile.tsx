@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { GlitchText } from "@/components/GlitchText";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Users, Heart, Video, DollarSign, Camera, Calendar,
+  Users, Heart, Video, DollarSign, Calendar,
   Eye, Globe, Pencil, X, Check, Upload, Loader2, Signal,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
@@ -177,6 +177,7 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: React.ElementType
 const Profile = () => {
   const { userId } = useParams();
   const isOwnProfile = !userId;
+  console.log(userId)
 
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
@@ -201,6 +202,7 @@ const Profile = () => {
           setDonations(data.data?.donations ?? []);
         } else {
           const { data } = await api.get(`user/${userId}/stats`, { withCredentials: true });
+          console.log(data)
           setOtherUser(data.user);
           setStreams(data.user?.streams ?? []);
           setDonations(data.user?.donations ?? []);
@@ -307,9 +309,17 @@ const Profile = () => {
 
             {/* Info */}
             <div className="flex-1 pb-1">
-              <GlitchText text={displayUser.username} as="h1" className="text-2xl md:text-4xl font-pixel text-white" />
+              <div className="flex gap-3">
+                <GlitchText text={displayUser.username} as="h1" className="text-2xl md:text-4xl font-pixel text-white" />
+                {!isOwnProfile && (
+                  <button
+                    className=" bottom-15 left-45 z-30 flex items-center  px-3  font-pixel text-[10px]  text-vhs-cyan border border-vhs-cyan/60 bg-black/70 hover:bg-vhs-cyan/10 transition-colors">
+                    Follow
+                  </button>
+                )}
+              </div>
               <p className="mt-1 text-xs md:text-sm font-mono text-white/70 max-w-xl line-clamp-2">{displayUser.bio}</p>
-              <div className="flex items-center gap-4 mt-2 flex-wrap">
+              <div className="flex items-center gap-5 mt-2 flex-wrap">
                 {displayUser.websiteId && (
                   <a href={displayUser.websiteId} target="_blank" rel="noreferrer"
                     className="flex items-center gap-1 text-vhs-cyan hover:text-vhs-pink transition-colors text-xs font-mono">

@@ -10,9 +10,11 @@ import { registerNotifyHandler } from "../socket/registerNotifyHandler";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { redis, redisSubNotify } from "./redis";
 
+const frontend_url = process.env.FRONTEND_URL || "http://localhost:8080";
+
 export async function initSocket(server: any) {
   const io = new Server(server, {
-    cors: { origin: "*" },
+    cors: { origin: frontend_url, credentials: true },
   });
   const subClient = redis.duplicate();
 
@@ -50,6 +52,16 @@ export async function initSocket(server: any) {
     registerNotifyHandler(notify, socket);
   });
 
+  // broadcast updated count - online + active_streams + github
+  setInterval(async () => {
+    const clients = io.engine.clientsCount;
+    const streams = await redis.scard("live:streams");
+    io.emit("statusbar:count", {
+      clients,
+      streams,
+    });
+  }, 5000);
+
   // visible to all users;
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
@@ -60,16 +72,6 @@ export async function initSocket(server: any) {
     });
 
     registerStreamHandler(io, socket);
-
-    // broadcast updated count - online + active_streams + github
-    setInterval(async () => {
-      const clients = io.engine.clientsCount;
-      const streams = await redis.scard("live:streams");
-      io.emit("statusbar:count", {
-        clients,
-        streams,
-      });
-    }, 5000);
 
     socket.on("disconnect", () => {
       console.log("Socket disconnected:", socket.id);

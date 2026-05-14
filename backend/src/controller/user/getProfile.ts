@@ -6,8 +6,6 @@ import { getFullLink } from "./getSignedLink";
 export const getProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.id;
-    console.log(userId);
-
     const userData = await userModel.aggregate([
       {
         $match: {

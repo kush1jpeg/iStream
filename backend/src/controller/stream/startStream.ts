@@ -67,19 +67,7 @@ export const startStream = async (req: Request, res: Response) => {
 
   const pipeline = redis.multi();
   pipeline.hset(`stream:${streamId}`, redisData);
-
-  pipeline.set(
-    `live:user:${userId}`,
-    JSON.stringify({
-      userId,
-      username: user.username,
-      avatar: user.avatar,
-      frame: user.currentFrame,
-      streamId,
-      isLive: true,
-    }),
-  ); // to track weather a person is streaming or not;
-
+  pipeline.set(`live:user:${userId}`, streamId); // to track weather a person is streaming or not;
   pipeline.sadd(`live:streams`, streamId);
 
   // for job-server auth

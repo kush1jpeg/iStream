@@ -1,4 +1,4 @@
-import { socket } from "@/lib/socket";
+import { Rootsocket } from "@/lib/socket";
 import { useEffect, useState } from "react";
 
 export function useOnlineCount() {
@@ -7,13 +7,13 @@ export function useOnlineCount() {
 
   useEffect(() => {
 
-    socket.on("statusbar:count", (data) => {
+    Rootsocket.on("statusbar:count", (data) => {
       setCount(data.clients);
       setStreams(data.streams);
     });
 
     return () => {
-      socket.disconnect();
+      Rootsocket.disconnect();
     };
   }, []);
 

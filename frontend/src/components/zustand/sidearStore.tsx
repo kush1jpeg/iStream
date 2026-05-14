@@ -1,18 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-interface LiveUser {
-  userId: string;
-  avatar: string;
-  streamId: string | null;
-  isLive: boolean;
-}
+import { FollowedUser } from "@/types/types";
 
 interface SidebarStore {
-  followingLive: LiveUser[];
+  followingLive: FollowedUser[];
 
   setFollowingLive: (
-    data: LiveUser[] | ((prev: LiveUser[]) => LiveUser[])
+    data: FollowedUser[] | ((prev: FollowedUser[]) => FollowedUser[])
   ) => void;
 }
 

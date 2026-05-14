@@ -1,4 +1,4 @@
-import { socket } from "@/lib/socket";
+import { Rootsocket } from "@/lib/socket"
 import { useEffect, useState } from "react";
 
 
@@ -8,11 +8,12 @@ export function useSignalStrength() {
 
   useEffect(() => {
     const measure = () => {
-      socket.emit("ping:check", Date.now());
+      Rootsocket.emit("ping:check", Date.now());
     };
 
-    socket.on("pong:check", (clientTime: number) => {
+    Rootsocket.on("pong:check", (clientTime: number) => {
       const ms = Date.now() - clientTime;
+      console.log(ms);
       setLatency(ms);
       // map latency to signal strength
       if (ms < 50) setStrength(100);
@@ -27,7 +28,7 @@ export function useSignalStrength() {
 
     return () => {
       clearInterval(interval);
-      socket.disconnect();
+      Rootsocket.disconnect();
     };
   }, []);
 

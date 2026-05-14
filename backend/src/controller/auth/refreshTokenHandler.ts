@@ -5,7 +5,7 @@ import { jwtkey, refreshKey } from "./register";
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
-
+  console.log("refreshing the cookies");
   if (!refreshToken) return res.status(401).json({ msg: "No token" });
 
   try {
@@ -21,7 +21,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       expiresIn: "15m",
     });
 
-    res.cookie("token", accessToken, {
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: false,
       maxAge: 15 * 60 * 1000,

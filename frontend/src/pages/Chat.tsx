@@ -1,14 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { io, Socket } from "socket.io-client";
-import axios from "axios";
+import { Socket } from "socket.io-client";
 import { RetroContainer } from "@/components/RetroContainer";
 import { Users, MessageCircle, Send, Loader, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { socket } from "@/lib/socket";
 import { api } from "@/App";
-
-
-const TOKEN = localStorage.getItem("token") || "";
+import { dmSocket, groupSocket } from "@/lib/socket";
 
 interface Conversation {
   _id: string;
@@ -68,34 +64,71 @@ export default function ChatPage({ myId }: { myId: string }) {
   const activeConvRef = useRef<Conversation | null>(null);
   activeConvRef.current = activeConv;
 
-  // socket  
   useEffect(() => {
+    const currentSocket =
+      activeConv?.isGroup
+        ? groupSocket
+        : dmSocket;
+    currentSocket.off("connect");
+    currentSocket.off("disconnect");
+    currentSocket.off("dm:message");
+    currentSocket.off("message:read");
 
-    socket.on("connect", () => setSocketReady(true));
-    socket.on("disconnect", () => setSocketReady(false));
+    currentSocket.on("connect", () =>
+      setSocketReady(true)
+    );
 
-    socket.on("dm:message", (msg: Message) => {
-      setMessages((prev) => [...prev, msg]);
-      // mark unread if not in active conv
-      setConversations((prev) =>
-        prev.map((c) => {
-          const other = getOther(c, myId);
-          if (other?._id === msg.senderId && c._id !== activeConvRef.current?._id) {
-            return { ...c, unreadCount: (c.unreadCount || 0) + 1 };
-          }
-          return c;
-        })
-      );
-    });
+    currentSocket.on("disconnect", () =>
+      setSocketReady(false)
+    );
 
-    socket.on("message:read", ({ conversationKey }: { conversationKey: string; readerId: string }) => {
-      setConversations((prev) =>
-        prev.map((c) => (c.conversationKey === conversationKey ? { ...c, unreadCount: 0 } : c))
-      );
-    });
+    currentSocket.on(
+      "dm:message",
+      (msg: Message) => {
+        setMessages((prev) => [...prev, msg]);
 
-    return () => { socket.disconnect(); };
-  }, [myId]);
+        setConversations((prev) =>
+          prev.map((c) => {
+            const other = getOther(c, myId);
+
+            if (
+              other?._id === msg.senderId &&
+              c._id !== activeConvRef.current?._id
+            ) {
+              return {
+                ...c,
+                unreadCount:
+                  (c.unreadCount || 0) + 1,
+              };
+            }
+
+            return c;
+          })
+        );
+      }
+    );
+
+    currentSocket.on(
+      "message:read",
+      ({ conversationKey }) => {
+        setConversations((prev) =>
+          prev.map((c) =>
+            c.conversationKey === conversationKey
+              ? { ...c, unreadCount: 0 }
+              : c
+          )
+        );
+      }
+    );
+
+    return () => {
+      currentSocket.off("connect");
+      currentSocket.off("disconnect");
+      currentSocket.off("dm:message");
+      currentSocket.off("message:read");
+    };
+  }, [myId, activeConv?.isGroup]);
+
 
   useEffect(() => {
     api.get(`chat/`, { withCredentials: true })

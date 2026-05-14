@@ -5,6 +5,7 @@ import 'ldrs/react/Pinwheel.css'
 import { api } from '@/App';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuthStore } from '@/components/zustand/zustand';
 
 export function Auth() {
   const navigate = useNavigate();
@@ -15,6 +16,9 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const setProfile = useAuthStore(
+    (state) => state.setUser
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,17 +26,17 @@ export function Auth() {
     try {
       setLoading(true);
       setError("");
-
       const endpoint = isLogin ? "/auth/login" : "/auth/register";
       const response = await api.post(endpoint, {
         email,
         password,
       });
       toast(response.data.msg);
-      if (response.data.msg === "logged in successfully") navigate("/");
+      const data = await api.get("/user/me");
+      console.log(data);
+      setProfile(data.data.user);
+      if (response.data.type === "SUCCESS") navigate("/");
     } catch (err: any) {
-      toast.error(err);
-      navigate("/auth");
       setError(
         err.response?.data?.message ||
         err.message ||

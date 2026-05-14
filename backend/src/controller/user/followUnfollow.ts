@@ -6,7 +6,7 @@ import { INotification } from "../../types/types";
 
 export const followXUnfollow = async (req: Request, res: Response) => {
   try {
-    const followedId = req.body;
+    const { followedId } = req.body;
     const userId = req.id;
 
     if (!userId || !followedId)
@@ -25,7 +25,10 @@ export const followXUnfollow = async (req: Request, res: Response) => {
     )
       return res.status(400).json({ error: "Invalid user ID format." });
 
-    const existing = await followModel.findOne({ userId, followedId });
+    const existing = await followModel.findOne({
+      followerId: userId,
+      followedId,
+    });
 
     // unfollow if a req is made again
 
@@ -34,7 +37,10 @@ export const followXUnfollow = async (req: Request, res: Response) => {
       return res.status(200).json({ message: "Unfollowed successfully." });
     }
 
-    const newFollow = await followModel.create({ userId, followedId });
+    const newFollow = await followModel.create({
+      followerId: userId,
+      followedId,
+    });
     const notify: INotification = {
       type: "follow",
       actorId: userId,
@@ -43,9 +49,11 @@ export const followXUnfollow = async (req: Request, res: Response) => {
     };
     await publishNotifs(notify);
 
-    return res
-      .status(201)
-      .json({ message: "Followed successfully.", follow: newFollow });
+    return res.status(201).json({
+      message: "Followed successfully.",
+      follow: newFollow,
+      type: "SUCCESS",
+    });
   } catch (err: any) {
     console.error(err);
     return res.status(500).json({ error: "Internal server error." });

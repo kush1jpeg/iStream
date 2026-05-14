@@ -4,7 +4,6 @@ import { persist } from "zustand/middleware";
 
 interface AuthState {
   user: IUser | null;
-
   setUser: (
     updater:
       | IUser
@@ -17,24 +16,19 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
-
-      setUser: (updater) =>
-        set((state) => ({
-          user:
-            typeof updater === "function"
-              ? updater(state.user)
-              : updater,
-        })),
-
-      logout: () =>
-        set({
-          user: null,
-        }),
+      setUser: (updater) => {
+        const newUser = typeof updater === "function" ? updater(get().user) : updater;
+        set({ user: newUser });
+      },
+      logout: () => {
+        console.trace("logout called");
+        set({ user: null })
+      },
     }),
     {
-      name: "auth-storage",
+      name: "auth-storage", // localStorage key
     }
   )
 );

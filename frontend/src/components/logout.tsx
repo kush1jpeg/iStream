@@ -6,23 +6,15 @@ import { api } from "@/App";
 
 const LogoutButton = () => {
   const [open, setOpen] = useState(false);
-
   const navigate = useNavigate();
-
   const setUser = useAuthStore((s) => s.setUser);
-
   const handleLogout = async () => {
     try {
       await api.post(
         "auth/logout",
-        {
-          withCredentials: true,
-        }
       );
-
       // clear zustand auth
       setUser(null);
-
       navigate("/auth");
     } catch (err) {
       console.error(err);

@@ -8,7 +8,6 @@ import { IUser } from "../../types/types.js";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  console.log(email, password);
   if (!(email && password)) {
     return res.json({ msg: "Missing details", error: "error" });
   }
@@ -56,17 +55,18 @@ export const login = async (req: Request, res: Response) => {
 
       await user.save();
 
-      return res.json({ msg: "logged in successfully" });
+      return res.json({ msg: "logged in successfully", type: "SUCCESS" });
     }
   } catch (error) {
-    return res.json({ msg: "FAILURE", error: "error" });
+    return res.json({ type: "FAILURE", msg: error });
   }
 };
 
 export const loginXgoogle = async (req: Request, res: Response) => {
   const passportUser = req.user as IUser; // callback gives user in req
   const user = await userModel.findById(passportUser._id);
-  if (!user) return res.status(404).json({ msg: "User not found" });
+  if (!user)
+    return res.status(404).json({ msg: "User not found", type: "FAILURE" });
   req.id = user.id;
   console.log("User = ", user);
 
@@ -102,5 +102,5 @@ export const loginXgoogle = async (req: Request, res: Response) => {
 
   await user.save();
 
-  return res.json({ msg: "logged in successfully" });
+  return res.json({ msg: "logged in successfully", type: "SUCCESS" });
 };

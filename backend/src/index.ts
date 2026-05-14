@@ -77,6 +77,8 @@ const startServer = async () => {
     await start_deadStreamConsumer();
 
     // await socket.io server connection
+    console.log("💻Server started of sOCKET");
+
     await initSocket(server);
 
     server.listen(PORT, () => {
