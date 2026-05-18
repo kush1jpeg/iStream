@@ -13,7 +13,6 @@ async function getNewNotifs(userId: string, lastReadId: Types.ObjectId | null) {
     .limit(40); // avoid flooding
   return newNotifications;
 }
-// make a route inorder to update the lastReadNotificationId
 
 export const getNotifications = async (req: Request, res: Response) => {
   const userId = req.id;

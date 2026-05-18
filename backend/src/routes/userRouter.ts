@@ -13,7 +13,6 @@ import { getProfile } from "../controller/user/getProfile";
 import { createOrder } from "../controller/payment/superchat/createOrder";
 import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
 import { getUserById } from "../controller/user/getUserStats";
-// import { followingLiveSSE } from "../controller/user/sidebarSSE";
 import { getSignedLink } from "../controller/user/getSignedLink";
 import { uploadImage } from "../controller/user/uploadUserCloudinary";
 
@@ -32,7 +31,6 @@ userRouter.get("/notify", authVerify, getNotifications);
 userRouter.post("/upload", authVerify, uploadImage);
 userRouter.get("/get/signed-link", authVerify, getSignedLink);
 
-// userRouter.get("/sidebar/update", authVerify, followingLiveSSE);
 userRouter.post(
   "/update/lastReadNotif",
   authVerify,

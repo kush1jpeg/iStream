@@ -32,6 +32,7 @@ export const search = async (req: Request, res: Response) => {
       {
         $project: {
           username: 1,
+          followerCount: 1,
           isLive: 1,
           avatar: 1,
           isStreaming: 1,

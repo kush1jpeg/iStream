@@ -1,19 +1,23 @@
-import mongoose, { model, Schema, Types } from "mongoose";
+import mongoose, { model, Schema } from "mongoose";
 import { IUser } from "../types/types";
 
 const pfpDefaults = [
-  "https://i.pinimg.com/736x/14/12/1e/14121e4fc25bf3087435eb608fc717eb.jpg",
-  "https://i.pinimg.com/736x/b9/2a/0f/b92a0f162d14844ce4fa7ab233f97dc8.jpg",
-  "https://i.pinimg.com/1200x/f2/b1/18/f2b1186b3a7dea42ec93364674cf0f29.jpg",
-  "https://i.pinimg.com/736x/45/7a/07/457a07d796872e64b2447c13fc7adb6a.jpg",
-  "https://i.pinimg.com/736x/ee/8e/50/ee8e50595f217b35bdf417969e4663dd.jpg",
+  "/banner/reze.jpg",
+  "/banner/monster.jpg",
+  "/banner/mikasa.jpg",
+  "/banner/ido.jpg",
+  "/banner/guts.jpg",
+  "/banner/griff.jpg",
+  "/banner/baldaurs.jpg",
 ];
 const bannerDefaults = [
-  "https://i.pinimg.com/736x/14/12/1e/14121e4fc25bf3087435eb608fc717eb.jpg",
-  "https://i.pinimg.com/736x/b9/2a/0f/b92a0f162d14844ce4fa7ab233f97dc8.jpg",
-  "https://i.pinimg.com/1200x/f2/b1/18/f2b1186b3a7dea42ec93364674cf0f29.jpg",
-  "https://i.pinimg.com/736x/45/7a/07/457a07d796872e64b2447c13fc7adb6a.jpg",
-  "https://i.pinimg.com/736x/ee/8e/50/ee8e50595f217b35bdf417969e4663dd.jpg",
+  "/banner/angel.jpg",
+  "/banner/eren.jpg",
+  "/banner/goth.jpg",
+  "/banner/goth1.jpg",
+  "/banner/goth2.jpg",
+  "/banner/reze.jpg",
+  "/banner/retro.jpg",
 ];
 
 function pickRandom(arr: string[]) {
@@ -61,11 +65,11 @@ const userSchema = new Schema<IUser>(
     },
     avatar: {
       type: String,
-      default: pickRandom(pfpDefaults),
+      default: () => pickRandom(pfpDefaults),
     },
     banner: {
       type: String,
-      default: pickRandom(bannerDefaults),
+      default: () => pickRandom(bannerDefaults),
     },
     currentAnimation: {
       type: String,
@@ -105,9 +109,22 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    usingCloud: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
+  },
+);
+
+// auto-delete unverified users after 0.5 hour
+userSchema.index(
+  { createdAt: 1 },
+  {
+    expireAfterSeconds: 1800,
+    partialFilterExpression: { isVerified: false },
   },
 );
 

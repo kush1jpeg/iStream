@@ -18,6 +18,7 @@ export const uploadImage = async (req: Request, res: Response) => {
 
     await userModel.findByIdAndUpdate(req.id, {
       [type as string]: publicId,
+      usingCloud: true,
     });
 
     return res.status(200).json({

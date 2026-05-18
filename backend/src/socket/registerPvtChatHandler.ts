@@ -8,10 +8,17 @@ function getRoomId(userId: string, receiverId: string) {
 
 export function registerPvtChatHandler(io: Namespace, socket: Socket) {
   socket.on("dm:join", async ({ receiverId }) => {
+    console.log("📥 dm:join received:", { receiverId, userId: socket.data.userId });
     try {
       const userId = socket.data.userId;
-      if (receiverId == userId) return;
-      if (!receiverId) return;
+      if (receiverId == userId) {
+        console.log("❌ dm:join: receiverId === userId");
+        return;
+      }
+      if (!receiverId) {
+        console.log("❌ dm:join: receiverId missing");
+        return;
+      }
 
       const roomId = getRoomId(userId, receiverId);
       await conversationModel.findOneAndUpdate(
@@ -33,16 +40,35 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
   });
 
   socket.on("dm:send", async ({ receiverId, message }) => {
+    console.log("🔍 dm:send received:", { receiverId, message, userId: socket.data.userId });
     try {
       const userId = socket.data.userId;
-      if (!receiverId || !message) return;
+      if (!receiverId) {
+        console.log("❌ dm:send: receiverId missing");
+        return;
+      }
+      if (!message) {
+        console.log("❌ dm:send: message missing");
+        return;
+      }
 
       const roomId = getRoomId(userId, receiverId);
+      console.log("📍 roomId:", roomId);
+      
       const conversation = await conversationModel.findOne({
         conversationKey: roomId,
       });
-      if (!conversation) return;
-      if (!conversation.participants.some((id) => id.equals(userId))) return;
+      
+      if (!conversation) {
+        console.log("❌ dm:send: conversation not found for roomId:", roomId);
+        return;
+      }
+      
+      console.log("✅ Found conversation, participants:", conversation.participants);
+      if (!conversation.participants.some((id) => id.equals(userId))) {
+        console.log("❌ dm:send: userId not in participants");
+        return;
+      }
 
       const msg = await msgModel.create({
         senderId: userId,

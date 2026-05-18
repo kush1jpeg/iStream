@@ -35,7 +35,7 @@ export const authVerify = async (
 };
 
 import { Socket } from "socket.io";
-import cookie from "cookie";
+import { parse as parseCookie } from "cookie";
 
 export const socketAuthMiddleware = (
   socket: Socket,
@@ -43,18 +43,35 @@ export const socketAuthMiddleware = (
 ) => {
   try {
     const rawCookie = socket.handshake.headers.cookie;
-    if (!rawCookie) return next(new Error("AUTH_MISSING"));
+    console.log("🔐 Socket Auth - checking cookie:", { rawCookie: !!rawCookie });
+    
+    if (!rawCookie) {
+      console.log("❌ AUTH_MISSING: No cookie header");
+      return next(new Error("AUTH_MISSING"));
+    }
 
-    const cookies = cookie.parse(rawCookie);
+    const cookies = parseCookie(rawCookie);
+    console.log("🔐 Parsed cookies keys:", Object.keys(cookies));
+    
     const token = cookies.accessToken;
-    if (!token) return next(new Error("AUTH_MISSING"));
+    if (!token) {
+      console.log("❌ AUTH_MISSING: No accessToken in cookies");
+      return next(new Error("AUTH_MISSING"));
+    }
 
+    console.log("🔐 Token found, verifying...");
     const decoded = jwt.verify(token, jwtkey) as JwtPayload;
-    if (!decoded.id) return next(new Error("AUTH_INVALID"));
+    
+    if (!decoded.id) {
+      console.log("❌ AUTH_INVALID: No id in decoded token");
+      return next(new Error("AUTH_INVALID"));
+    }
 
+    console.log("✅ Socket auth successful, userId:", decoded.id);
     socket.data.userId = decoded.id;
     next();
-  } catch (err) {
+  } catch (err: any) {
+    console.error("❌ Socket Auth Error:", err.message);
     return next(new Error("AUTH_INVALID"));
   }
 };

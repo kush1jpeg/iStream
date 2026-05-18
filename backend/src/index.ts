@@ -19,6 +19,7 @@ import passport from "passport";
 import Razorpay from "razorpay";
 import { startCron } from "./controller/payment/reconcilliation";
 import { start_deadStreamConsumer } from "./controller/stream/deadStreamConsumer";
+import { chatRouter } from "./routes/chatRouter";
 export const instance = new Razorpay({
   key_id: process.env.KEY_ID,
   key_secret: process.env.KEY_SECRET,
@@ -42,6 +43,7 @@ app.use(passport.initialize());
 app.use("/api/auth", authRouter());
 app.use("/api/user", userRouter);
 app.use("/api/stream", streamRouter);
+app.use("/api/chat", chatRouter);
 
 const startServer = async () => {
   try {
@@ -77,7 +79,7 @@ const startServer = async () => {
     await start_deadStreamConsumer();
 
     // await socket.io server connection
-    console.log("💻Server started of sOCKET");
+    console.log("💻Server started of SOCKET.io");
 
     await initSocket(server);
 

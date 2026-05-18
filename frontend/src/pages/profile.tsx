@@ -5,11 +5,12 @@ import {
   Users, Heart, Video, DollarSign, Calendar,
   Eye, Globe, Pencil, X, Check, Upload, Loader2, Signal,
 } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IPay, IStream, IUser } from "@/types/types";
 import { useAuthStore } from "@/components/zustand/zustand";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
+import { toast } from "react-toastify";
 
 // ─── EditModal ─────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,6 @@ const EditModal = ({ user, onClose, onSave }: { user: IUser; onClose: () => void
         <div className="flex items-center justify-between px-5 py-3 border-b border-vhs-purple/40 bg-vhs-purple/10">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-vhs-cyan animate-pulse" />
-            <span className="font-pixel text-vhs-cyan text-xs tracking-widest">EDIT PROFILE</span>
           </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-vhs-pink transition-colors">
             <X className="w-4 h-4" />
@@ -190,7 +190,7 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-
+  const navigate = useNavigate();
   const displayUser = isOwnProfile ? user : otherUser;
 
   useEffect(() => {
@@ -278,8 +278,8 @@ const Profile = () => {
           {/* Edit button */}
           {isOwnProfile && (
             <button onClick={() => setShowEditModal(true)}
-              className="absolute top-4 right-4 z-30 flex items-center gap-2 px-3 py-1.5 font-pixel text-[10px] tracking-widest text-vhs-cyan border border-vhs-cyan/60 bg-black/70 hover:bg-vhs-cyan/10 transition-colors">
-              <Pencil className="w-3 h-3" /> EDIT PROFILE
+              className="absolute top-4 right-4  flex items-center gap-2 px-2 py-1.5 font-pixel text-[13px] tracking-widest text-vhs-cyan bg-purple-400 border-x-2 border-vhs-cyan hover:bg-purple-500 active:translate-y-[2px] transition-all duration-150">
+              <Pencil className="w-3 h-3" /> EDIT
             </button>
           )}
 
@@ -288,25 +288,38 @@ const Profile = () => {
             {/* Avatar */}
             <div className="relative shrink-0">
               {isOwnProfile ? (
-                <ImageUploadOverlay onUpload={handleAvatarUpload} uploading={uploadingAvatar}
-                  className="w-28 h-28 md:w-36 md:h-36 border-4 border-vhs-purple overflow-hidden" hint="CHANGE PFP">
-                  {displayUser.avatar
-                    ? <img src={displayUser.avatar} alt={displayUser.username} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-vhs-purple/20 flex items-center justify-center">
-                      <span className="font-pixel text-4xl text-white/80">{displayUser.username.charAt(0)}</span>
-                    </div>}
+                <ImageUploadOverlay
+                  onUpload={handleAvatarUpload}
+                  uploading={uploadingAvatar}
+                  className="w-28 h-28 md:w-36 md:h-36 border-x-4 border-y-2 border-vhs-purple overflow-hidden relative"
+                  hint="CHANGE PFP"
+                >
+                  {displayUser.avatar ? (
+                    <img
+                      src={displayUser.avatar}
+                      alt={displayUser.username}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-vhs-purple/20 flex items-center justify-center">
+                      <span className="font-pixel text-4xl text-white/80">
+                        {displayUser.username.charAt(0)}
+                      </span>
+                    </div>
+                  )}
                 </ImageUploadOverlay>
               ) : (
-                <div className="w-28 h-28 md:w-36 md:h-36 border-vhs-purple overflow-hidden">
-                  {displayUser.avatar
-                    ? <img src={displayUser.avatar} alt={displayUser.username} className="w-full h-full object-cover" />
-                    : <div className="w-full h-full bg-vhs-purple/20 flex items-center justify-center">
-                      <span className="font-pixel text-4xl text-white/80">{displayUser.username.charAt(0)}</span>
-                    </div>}
+                <div className="w-28 h-28 md:w-36 md:h-36 overflow-hidden relative">
+                  {displayUser.avatar && (
+                    <img
+                      src={displayUser.avatar}
+                      alt={displayUser.username}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
               )}
             </div>
-
             {/* Info */}
             <div className="flex-1 pb-1">
               <div className="flex gap-3">
@@ -321,15 +334,35 @@ const Profile = () => {
               <p className="mt-1 text-xs md:text-sm font-mono text-white/70 max-w-xl line-clamp-2">{displayUser.bio}</p>
               <div className="flex items-center gap-5 mt-2 flex-wrap">
                 {displayUser.websiteId && (
-                  <a href={displayUser.websiteId} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1 text-vhs-cyan hover:text-vhs-pink transition-colors text-xs font-mono">
-                    <Globe className="w-3 h-3" /> {displayUser.websiteId}
+                  <a
+                    href={
+                      displayUser.websiteId.startsWith("http")
+                        ? displayUser.websiteId
+                        : `https://${displayUser.websiteId}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-vhs-cyan hover:text-vhs-pink transition-colors text-xs font-mono"
+                  >
+                    <Globe className="w-3 h-3" />
+                    {displayUser.websiteId}
                   </a>
                 )}
                 <span className="flex items-center gap-1 text-muted-foreground text-xs font-mono">
                   <Calendar className="w-3 h-3" />
                   Joined {new Date(displayUser.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                 </span>
+
+                {isOwnProfile ? (
+                  displayUser.isVerified && (
+                    <div className="bg-blue-500 rounded-full p-1">
+                      <Check className="w-3 h-3 text-white stroke-[3]" />
+                    </div>
+                  )) : displayUser.isVerified && (
+                    <div className="bg-blue-500 rounded-full p-1">
+                      <Check className="w-3 h-3 text-white stroke-[3]" />
+                    </div>
+                  )}
               </div>
             </div>
           </div>

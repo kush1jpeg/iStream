@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { userModel } from "../../models/user";
+import { sendOTP } from "../../services/otp/otp";
 
 export const jwtkey = process.env.JWT_SECRET!;
 export const refreshKey = process.env.REFRESH_SECRET!;
@@ -10,12 +11,14 @@ export const register = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!(email && password)) {
-    return res.json({ msg: "Missing details", error: "error" });
+    return res.json({ msg: "MISSING", error: "error" });
   }
   try {
     const exists = await userModel.findOne({ email });
     if (exists) {
-      return res.json({ msg: "login instead", error: "already present" });
+      return res
+        .status(409)
+        .json({ msg: "LOGIN_INSTEAD", error: "already present" });
     }
     const hashpassword = await bcrypt.hash(password, 10);
     const username = email.split("@")[0].slice(0, 20); // limited to 20 chars;
@@ -42,6 +45,7 @@ export const register = async (req: Request, res: Response) => {
     );
 
     newUser.refreshToken = refreshToken;
+    await newUser.save();
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -55,10 +59,20 @@ export const register = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    await newUser.save();
+    await sendOTP(newUser.id);
 
-    return res.json({ msg: "user created" });
-  } catch (error) {
-    return res.json({ msg: "Missing details", error });
+    return res.json({ msg: "OTP_SENT", type: "OTP" });
+  } catch (err: any) {
+    const statusMap: Record<string, number> = {
+      USER_NOT_FOUND: 404,
+      MISSING: 404,
+      LOGIN_INSTEAD: 401,
+      OTP_ALREADY_SENT: 429,
+      CHANNEL_UNAVAILABLE: 503,
+    };
+    return res.status(statusMap[err.message] || 500).json({
+      type: "FAILURE",
+      message: err.message,
+    });
   }
 };

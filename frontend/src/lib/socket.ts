@@ -1,51 +1,41 @@
-import { io } from "socket.io-client";
+// socket.ts
+import { io, Socket } from "socket.io-client";
 
-export const liveSocket = io("http://localhost:8888/live", {
-  withCredentials: true,
-});
+const URL = "http://localhost:8888";
+const namespaces = ["/sidebar", "/notify", "/live", "/dm", "/group", "/"];
 
-export const Rootsocket = io("http://localhost:8888", {
-  withCredentials: true,
-});
+let sockets: Record<string, Socket> = {};
 
-export const dmSocket = io("http://localhost:8888/dm", {
-  withCredentials: true,
-});
+export const connectAllSockets = () => {
+  namespaces.forEach((ns) => {
+    if (!sockets[ns]) {
+      sockets[ns] = io(`${URL}${ns}`, {
+        withCredentials: true,
+        autoConnect: false,
+      });
 
-export const notifySocket = io("http://localhost:8888/notify", {
-  withCredentials: true,
-});
+      // Add connection event listeners for debugging
+      sockets[ns].on("connect", () => {
+        console.log(`✅ Connected to ${ns}:`, sockets[ns].id);
+      });
 
-export const groupSocket = io("http://localhost:8888/group", {
-  withCredentials: true,
-});
+      sockets[ns].on("disconnect", () => {
+        console.log(`❌ Disconnected from ${ns}`);
+      });
 
-Rootsocket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR:");
-  console.log(err.message);
-  console.log(err);
-});
+      sockets[ns].on("connect_error", (error: any) => {
+        console.error(`❌ Connection error on ${ns}:`, error);
+      });
+    }
+    if (!sockets[ns].connected) sockets[ns].connect();
+  });
+};
 
-notifySocket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR:");
-  console.log(err.message);
-  console.log(err);
-});
+export const disconnectAllSockets = () => {
+  Object.values(sockets).forEach((s) => s.disconnect());
+  sockets = {};
+};
 
-groupSocket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR:");
-  console.log(err.message);
-  console.log(err);
-});
-
-dmSocket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR:");
-  console.log(err.message);
-  console.log(err);
-});
-
-liveSocket.on("connect_error", (err) => {
-  console.log("SOCKET ERROR:");
-  console.log(err.message);
-  console.log(err);
-});
+export const getSocket = (ns: string): Socket | null => {
+  return sockets[ns] ?? null; // never throw
+};

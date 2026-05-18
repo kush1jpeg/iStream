@@ -1,19 +1,23 @@
-import { Rootsocket } from "@/lib/socket"
+import { useAuthStore } from "@/components/zustand/zustand";
+import { getSocket } from "@/lib/socket";
 import { useEffect, useState } from "react";
 
 
 export function useSignalStrength() {
   const [latency, setLatency] = useState<number | null>(null);
   const [strength, setStrength] = useState(100);
+  const Rootsocket = getSocket("/");
+  const socketsReady = useAuthStore((s) => s.socketsReady);
+
 
   useEffect(() => {
+    if (!Rootsocket || !socketsReady) return;
     const measure = () => {
       Rootsocket.emit("ping:check", Date.now());
     };
 
     Rootsocket.on("pong:check", (clientTime: number) => {
       const ms = Date.now() - clientTime;
-      console.log(ms);
       setLatency(ms);
       // map latency to signal strength
       if (ms < 50) setStrength(100);

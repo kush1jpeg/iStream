@@ -4,82 +4,95 @@ import { redis } from "../../config/redis";
 import { getPublishChannel } from "../../config/rabbitmq";
 import { QueueOTP } from "../../types/types";
 
-export const sendFirstStreamOTP = async (req: Request, res: Response) => {
-  try {
-    const id = req.id;
-    if (!id) {
-      return res.status(400).json({ error: "Signup required" });
-    }
+// services/otp.service.ts
+export const sendOTP = async (userId: string): Promise<void> => {
+  const user = await userModel.findById(userId).select("email").lean();
+  if (!user) throw new Error("USER_NOT_FOUND");
 
-    const user = await userModel.findById(id).select("email").lean();
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+  const existing = await redis.exists(`otp:${userId}`);
+  if (existing) throw new Error("OTP_ALREADY_SENT");
 
-    const existingOtp = await redis.exists(`otp:${user._id}`);
-    if (existingOtp) {
-      return res.status(400).json({ error: "OTP already sent" });
-    }
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  await redis.set(`otp:${userId}`, otp, "EX", 300);
 
-    const otpgen = Math.floor(100000 + Math.random() * 900000);
-    await redis.set(`otp:${user._id}`, otpgen.toString(), "EX", 300); // expiry in 5mins
+  const publishChannel = await getPublishChannel();
+  if (!publishChannel) throw new Error("CHANNEL_UNAVAILABLE");
 
-    const OTPconfig: QueueOTP = {
-      type: "otp_queue",
-      template: "firstStreamOTP",
-      otp: String(otpgen),
-      email: user.email,
-    };
-    console.log("OTP :", OTPconfig);
+  await publishChannel.assertQueue("otp_queue", { durable: true });
 
-    const publishChannel = await getPublishChannel();
-    if (!publishChannel) {
-      throw new Error("Publish channel is empty or undefined!");
-    }
-    await publishChannel.assertQueue("otp_queue", { durable: true });
-    console.log("sending OTP :", OTPconfig);
-    // queueing into rabbitmq;
-    publishChannel.sendToQueue(
-      "otp_queue",
-      Buffer.from(JSON.stringify(OTPconfig)),
-      { persistent: true }, // survive restart
-      (err, ok) => {
-        if (err !== null) {
-          console.error("Message nacked! by the broker", err);
-        } else {
-          return res.status(200).json({ message: "OTP sent successfully" });
-        }
-      },
-    );
-  } catch (error) {
-    console.error("Error in sendOTP:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
+  const payload: QueueOTP = {
+    type: "otp_queue",
+    template: "firstStreamOTP",
+    otp,
+    email: user.email,
+  };
+
+  publishChannel.sendToQueue(
+    "otp_queue",
+    Buffer.from(JSON.stringify(payload)),
+    { persistent: true },
+  );
 };
 
+export const sendOTPController = async (req: Request, res: Response) => {
+  const userId = req.id;
+
+  if (!userId) {
+    return res.status(400).json({ success: false, message: "signup required" });
+  }
+
+  try {
+    await sendOTP(userId);
+    return res
+      .status(200)
+      .json({ success: true, message: "OTP sent successfully" });
+  } catch (err: any) {
+    const statusMap: Record<string, number> = {
+      USER_NOT_FOUND: 404,
+      OTP_ALREADY_SENT: 429,
+      CHANNEL_UNAVAILABLE: 503,
+    };
+    return res.status(statusMap[err.message] || 500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
 export const verifyOTP = async (req: Request, res: Response) => {
   try {
     const { otp } = req.body;
-    if (!otp) {
-      return res.status(500).json({ error: "missing fields" });
-    }
     const id = req.id;
+
+    if (!otp) {
+      return res.status(400).json({ success: false, message: "OTP required" });
+    }
+
     if (!id) {
-      return res.status(400).json({ error: "Signup required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "signup required" });
     }
-    const orig_otp = await redis.get(`otp:${id}`);
-    if (!orig_otp) {
-      return res.status(400).json({ error: "OTP never sent" });
+
+    const storedOTP = await redis.get(`otp:${id}`);
+
+    if (!storedOTP) {
+      return res
+        .status(400)
+        .json({ success: false, message: "OTP expired or never sent" });
     }
-    if (Number(otp) == Number(orig_otp)) {
-      await userModel.updateOne({ id }, { isVerified: true });
-      await redis.del(`otp:${id}`);
-      return res.status(200).json({ message: "OTP verification successfull" });
-    } else {
-      return res.status(200).json({ message: "wrong OTP " });
+
+    if (otp !== storedOTP) {
+      return res.status(400).json({ success: false, message: "invalid OTP" });
     }
-  } catch (error) {
-    console.error("Error in verifyOTP:", error);
-    return res.status(500).json({ error: "Internal server error" });
+
+    await userModel.updateOne({ _id: id }, { isVerified: true });
+    await redis.del(`otp:${id}`);
+
+    return res.status(200).json({ type: "SUCCESS", message: "email verified" });
+  } catch (err) {
+    console.error("verifyOTP error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" });
   }
 };

@@ -68,7 +68,6 @@ export const loginXgoogle = async (req: Request, res: Response) => {
   if (!user)
     return res.status(404).json({ msg: "User not found", type: "FAILURE" });
   req.id = user.id;
-  console.log("User = ", user);
 
   const refreshToken = jwt.sign(
     {
@@ -102,5 +101,5 @@ export const loginXgoogle = async (req: Request, res: Response) => {
 
   await user.save();
 
-  return res.json({ msg: "logged in successfully", type: "SUCCESS" });
+  return res.redirect(`${process.env.FRONTEND_URL}`);
 };

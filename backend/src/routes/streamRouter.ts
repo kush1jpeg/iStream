@@ -10,11 +10,13 @@ import { createOrder } from "../controller/payment/superchat/createOrder";
 import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
 import { endStream } from "../controller/stream/endStream";
 import { uploadThumbnail } from "../controller/stream/uploadStreamCloudinary";
+import { getStreamId } from "../controller/stream/getStreamId";
 
 export const streamRouter: Router = Router();
 
 // user: payments + hls serve
 streamRouter.get("/live", getLiveStreams); // returns all active live streams
+streamRouter.get("/getId", getStreamId);
 streamRouter.get("/:streamId", getIStream);
 streamRouter.post("/:streamId/end", authVerify, isVerified, endStream);
 streamRouter.delete("/:streamId/delete", authVerify, isVerified, deleteStream);

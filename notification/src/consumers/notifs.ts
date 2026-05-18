@@ -21,7 +21,9 @@ export async function consumeNotifs(queueName: string, channel: Channel) {
           type: data.type,
         });
 
-        channel.ack(msg);
+        // // sending thru sockets for instant update
+        // (await redisClient.publish("notifications", String(data)),
+        //   channel.ack(msg));
       } catch (err) {
         console.error("Consumer error:", err);
         channel.nack(msg, false, true);

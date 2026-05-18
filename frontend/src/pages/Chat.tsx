@@ -4,17 +4,21 @@ import { RetroContainer } from "@/components/RetroContainer";
 import { Users, MessageCircle, Send, Loader, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
-import { dmSocket, groupSocket } from "@/lib/socket";
+import { getSocket } from "@/lib/socket";
+import { useAuthStore } from "@/components/zustand/zustand";
+import { IUser } from "@/types/types";
 
 interface Conversation {
   _id: string;
-  conversationKey: string;
-  participants: { _id: string; username: string; avatar?: string }[];
-  lastMessage?: { message: string; createdAt: string };
+  avatar?: string; conversationKey: string;
+  participants: { _id: string; username: string; avatar?: string }[]; lastMessage?: { message: string; createdAt: string };
   isGroup: boolean;
   groupName?: string;
   unreadCount?: number;
 }
+type SuggestionUser = IUser & {
+  status: "offline" | "streaming";
+};
 
 interface Message {
   _id?: string;
@@ -56,6 +60,7 @@ export default function ChatPage({ myId }: { myId: string }) {
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
   const [socketReady, setSocketReady] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestionUser[]>([])
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -64,18 +69,29 @@ export default function ChatPage({ myId }: { myId: string }) {
   const activeConvRef = useRef<Conversation | null>(null);
   activeConvRef.current = activeConv;
 
+  const dmSocket = getSocket("/dm");
+  const groupSocket = getSocket("/group");
+  const socketsReady = useAuthStore((s) => s.socketsReady);
+
+
   useEffect(() => {
+    if (!dmSocket || !groupSocket || !socketsReady) return;
+
+
     const currentSocket =
       activeConv?.isGroup
         ? groupSocket
         : dmSocket;
+    socketRef.current = currentSocket;
     currentSocket.off("connect");
     currentSocket.off("disconnect");
     currentSocket.off("dm:message");
     currentSocket.off("message:read");
 
-    currentSocket.on("connect", () =>
+    currentSocket.on("connect", () => {
+      console.log("connected");
       setSocketReady(true)
+    }
     );
 
     currentSocket.on("disconnect", () =>
@@ -127,14 +143,20 @@ export default function ChatPage({ myId }: { myId: string }) {
       currentSocket.off("dm:message");
       currentSocket.off("message:read");
     };
-  }, [myId, activeConv?.isGroup]);
+  }, [myId, activeConv?.isGroup, dmSocket, groupSocket, socketsReady]);
 
 
   useEffect(() => {
-    api.get(`chat/`, { withCredentials: true })
-      .then(({ data }) => setConversations(data.conversations || []))
-      .catch(console.error)
-      .finally(() => setLoadingConvs(false));
+    const fetch = async () => {
+      const data = await api.get(`chat/convo/all`, { withCredentials: true })
+        .then(({ data }) => setConversations(data.conversations || []))
+        .catch(console.error)
+        .finally(() => setLoadingConvs(false));
+      console.log(data);
+      console.log(conversations);
+
+    }
+    fetch();
   }, []);
 
   // ── scroll to bottom on new messages
@@ -170,10 +192,11 @@ export default function ChatPage({ myId }: { myId: string }) {
       );
 
       try {
-        const { data } = await api.get(`/chat/getConvo`, {
+        const { data } = await api.get(`/chat/get/convo`, {
           params: { conversationKey: conv.conversationKey, page: 1, limit: PAGE_SIZE },
           withCredentials: true,
         });
+        console.log(data)
         setMessages(data.messages || []);
         setHasMore((data.messages?.length || 0) === PAGE_SIZE);
       } catch (err) {
@@ -191,7 +214,7 @@ export default function ChatPage({ myId }: { myId: string }) {
     const nextPage = page + 1;
     setLoadingMsgs(true);
     try {
-      const { data } = await api.get(`/chat/getConvo`, {
+      const { data } = await api.get(`/chat/get/convo`, {
         params: { conversationKey: activeConv.conversationKey, page: nextPage, limit: PAGE_SIZE },
         withCredentials: true,
       });
@@ -214,6 +237,7 @@ export default function ChatPage({ myId }: { myId: string }) {
 
   // send message  
   const sendMessage = useCallback(() => {
+    console.log("sending msg");
     if (!input.trim() || !activeConv || !socketRef.current) return;
     const other = getOther(activeConv, myId);
     if (!other) return;
@@ -245,6 +269,51 @@ export default function ChatPage({ myId }: { myId: string }) {
   // groups / dm  
   const groups = conversations.filter((c) => c.isGroup);
   const dms = conversations.filter((c) => !c.isGroup);
+
+  const createConvo = async (id: string) => {
+    try {
+      const { data } = await api.post(
+        "/chat/create/convo",
+        { receiverId: id },
+        { withCredentials: true }
+      );
+
+      const convo = data.conversation;
+
+      setConversations((prev) => {
+        const exists = prev.some((c) => c._id === convo._id);
+        if (exists) return prev;
+        return [convo, ...prev];
+      });
+
+      setActiveConv(data.conversation);
+      // join socket room - use dmSocket directly since it's available
+      dmSocket?.emit("dm:join", {
+        receiverId: id,
+      });
+
+      inputRef.current?.focus();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (conversations.length === 0) {
+        const data = await api.get("/chat/suggest")
+        const live = data.data.data.live;
+        const offline = data.data.data.offline;
+        const merged = [
+          ...live.map((u: IUser) => ({ ...u, status: "streaming" })),
+          ...offline.map((u: IUser) => ({ ...u, status: "offline" })),
+        ];
+
+        setSuggestions(merged);
+      }
+    }
+    fetchData()
+  }, [conversations])
 
   return (
     <div className="h-[95vh] bg-background crt-container film-grain flex flex-col">
@@ -296,7 +365,28 @@ export default function ChatPage({ myId }: { myId: string }) {
                     <div className="h-px flex-1 bg-primary opacity-30" />
                   </div>
                   {dms.length === 0 && (
-                    <p className="font-mono text-xs text-muted-foreground px-4 py-2 opacity-50">no conversations yet</p>
+                    <div className="p-3 font-mono">
+                      <p className="text-center text-[12px] text-purple-600 m-4 mb-10">_ no active conversations</p>
+
+                      <p className="text-[13px] tracking-widest text-purple-500 mb-3 border-t-2">// start a conversation</p>
+                      {suggestions.map((user) => (
+                        <div key={user._id} className="flex items-center gap-3 px-3 py-2 border-l-2 border-purple-700 border-y border-y-purple-950 bg-purple-950/20 cursor-pointer mb-1.5 transition-colors">
+                          <div className="w-8 h-8 rounded-full bg-indigo-900 border border-purple-700 flex items-center justify-center text-[11px] text-purple-300 shrink-0">
+                            <img src={user.avatar} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[12px] text-purple-100 truncate">{user.username}</p>
+                            <p className="text-[10px] text-purple-600">{user.status}</p>
+                          </div>
+                          <button
+                            onClick={() => createConvo(user._id)}
+                            className="text-[9px] uppercase tracking-widest text-purple-500 border border-purple-700 px-2 py-1  hover:text-white transition-colors"
+                          >
+                            msg
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                   {dms.map((conv) => (
                     <ConvItem
@@ -315,8 +405,8 @@ export default function ChatPage({ myId }: { myId: string }) {
           {/* Socket status */}
           <div className="px-4 py-2 border-t border-primary flex items-center gap-2">
             <div className={cn("w-2 h-2 rounded-full", socketReady ? "bg-terminal-green animate-pulse" : "bg-destructive")} />
-            <span className="font-mono text-[10px] text-muted-foreground uppercase">
-              {socketReady ? "connected" : "disconnected"} | socket.io
+            <span className="font-mono text-[12px] text-muted-foreground uppercase">
+              {socketReady ? "connected" : "select a chat to connect"} | socket.io
             </span>
           </div>
         </RetroContainer>
@@ -338,8 +428,8 @@ export default function ChatPage({ myId }: { myId: string }) {
               <div className="px-4 py-3 border-b-2 border-primary flex items-center gap-3">
                 <div className="w-7 h-7 border border-vhs-purple flex items-center justify-center font-mono text-xs text-vhs-purple uppercase">
                   {activeConv.isGroup
-                    ? (activeConv.groupName?.[0] || "G")
-                    : (getOther(activeConv, myId)?.username?.[0] || "?")}
+                    ? <img src={activeConv.avatar} alt="avatar" />
+                    : <img src={getOther(activeConv, myId)?.avatar} alt="avatar" />}
                 </div>
                 <span className="font-mono text-sm text-foreground">
                   @{activeConv.isGroup ? activeConv.groupName : getOther(activeConv, myId)?.username}
@@ -391,7 +481,7 @@ export default function ChatPage({ myId }: { myId: string }) {
                           {!isMe && (
                             <div className="flex items-center gap-2">
                               <div className="w-5 h-5 border border-vhs-purple flex items-center justify-center font-mono text-[9px] text-vhs-purple uppercase">
-                                {getOther(activeConv, myId)?.username?.[0] || "?"}
+                                {getOther(activeConv, myId)?.avatar || "?"}
                               </div>
                               <span className="font-mono text-[10px] text-vhs-purple">
                                 {getOther(activeConv, myId)?.username}
@@ -484,7 +574,7 @@ function ConvItem({
         "w-7 h-7 shrink-0 border flex items-center justify-center font-mono text-xs uppercase mt-0.5",
         active ? "border-vhs-purple text-vhs-purple" : "border-primary text-muted-foreground"
       )}>
-        {name?.[0] || "?"}
+        <img src={other.avatar || "?"} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">

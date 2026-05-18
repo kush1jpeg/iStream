@@ -25,6 +25,7 @@ export interface IStreamLog {
 }
 
 export interface IUser extends Document {
+  usingCloud: boolean;
   _id: Types.ObjectId;
   username: string;
   email: string;

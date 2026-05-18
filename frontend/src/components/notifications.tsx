@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { Loader2, Bell, BellOff, X, BellRingIcon } from "lucide-react";
 import { INotification } from "@/types/types";
+import { api } from "@/App";
+import { getSocket } from "@/lib/socket";
 
 const TYPE_META: Record<string, { symbol: string; label: string }> = {
   follow: { symbol: "👤", label: "followed you" },
@@ -19,6 +20,18 @@ const NotifDropdown = () => {
   // unread count is persisted across opens so the badge doesn't vanish after marking read
   const [unreadCount, setUnreadCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const notifySocket = getSocket("/notify");
+
+  useEffect(() => {
+    if (!notifySocket) return;
+    notifySocket.on("connect", () => {
+      console.log("connected");
+    });
+
+    return () => {
+      notifySocket.disconnect();
+    };
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -29,16 +42,17 @@ const NotifDropdown = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+
   const fetchNotifs = async () => {
     setLoading(true);
     setError(null);
     try {
       // Backend only returns notifs AFTER lastReadId — so every item here is unread
-      const { data } = await axios.get<INotification[]>(
+      const { data } = await api.get<INotification[]>(
         "/user/notify",
         { withCredentials: true }
       );
-
+      console.log("notifs - ", data)
       setNotifs(data);
       setUnreadCount(data.length);
 
@@ -46,9 +60,9 @@ const NotifDropdown = () => {
       // Backend sorts by _id asc, so last item = most recent
       if (data.length > 0) {
         const lastId = data[data.length - 1]._id;
-        axios
+        api
           .post(
-            "/user/update/lastReadNotif",
+            "user/update/lastReadNotif",
             { notifId: lastId },
             { withCredentials: true }
           )

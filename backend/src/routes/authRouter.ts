@@ -17,7 +17,7 @@ import {
 import { register } from "../controller/auth/register";
 import { refreshAccessToken } from "../controller/auth/refreshTokenHandler";
 import passport from "passport";
-import { sendFirstStreamOTP, verifyOTP } from "../services/otp/otp";
+import { sendOTPController, verifyOTP } from "../services/otp/otp";
 
 export const authRouter = (): Router => {
   const authRouter = Router();
@@ -26,11 +26,17 @@ export const authRouter = (): Router => {
   authRouter.post("/login", validate(loginSchema), login);
   authRouter.get(
     "/login/google",
-    passport.authenticate("google", { scope: ["profile", "email"] }),
+    passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session: false,
+    }),
   );
   authRouter.get(
     "/login/google/callback",
-    passport.authenticate("google", { failureRedirect: "/api/auth" }),
+    passport.authenticate("google", {
+      failureRedirect: "/api/auth",
+      session: false,
+    }),
     loginXgoogle,
   );
   authRouter.post("/logout", logout);
@@ -47,8 +53,8 @@ export const authRouter = (): Router => {
   // password reset inside the app -> those who want to change their password
   authRouter.post("/reset", validate(resetPassSchema), authVerify, resetPass);
 
-  // to be eligible for streaming;
-  authRouter.post("/sendOtp", authVerify, sendFirstStreamOTP);
+  // to be eligible for streaming during/after auth;
+  authRouter.post("/sendOtp", sendOTPController);
   authRouter.post("/verifyOtp", authVerify, verifyOTP);
 
   return authRouter;

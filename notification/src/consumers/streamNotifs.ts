@@ -36,7 +36,7 @@ export async function consumeStreamNotifs(queueName: string, channel: Channel) {
           const notifications = followers.map((f) => ({
             userId: f.followerId,
             actorId: data.actorId,
-            type: "stream_live",
+            type: "stream",
             createdAt: new Date(),
           }));
           const inserted = await notifyModel.insertMany(

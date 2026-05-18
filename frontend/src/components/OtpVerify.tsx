@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Loader2 } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
+import { api } from "@/App";
+import { useAuthStore } from "./zustand/zustand";
 
 const OTP_LENGTH = 6;
 
 const OtpVerify = () => {
+  const setProfile = useAuthStore(
+    (state) => state.setUser
+  );
+
   const navigate = useNavigate();
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [loading, setLoading] = useState(false);
@@ -70,9 +75,18 @@ const OtpVerify = () => {
     }
     setLoading(true);
     setError(null);
+
+
     try {
-      await axios.post("/api/auth/verify-otp", { otp: code }, { withCredentials: true });
-      navigate("/");
+      const data = await api.post("/auth/verifyOtp", { otp: code }, { withCredentials: true });
+      console.log(data);
+
+      if (data.data.type === "SUCCESS") {
+        const data = await api.get("/user/me");
+        console.log(data);
+        setProfile(data.data.user);
+        navigate("/");
+      }
     } catch (err: any) {
       setError(err.response?.data?.message?.toUpperCase() || "INVALID OTP");
       // Shake & clear on error

@@ -16,10 +16,6 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const setProfile = useAuthStore(
-    (state) => state.setUser
-  );
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -32,10 +28,10 @@ export function Auth() {
         password,
       });
       toast(response.data.msg);
-      const data = await api.get("/user/me");
-      console.log(data);
-      setProfile(data.data.user);
-      if (response.data.type === "SUCCESS") navigate("/");
+      if (response.data.type === "OTP") navigate("/otp/verify");
+      else if (response.data.type === "SUCCESS") {
+        navigate("/");
+      }
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
