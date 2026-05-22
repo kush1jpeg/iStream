@@ -58,10 +58,14 @@ export const getProfile = async (req: Request, res: Response) => {
         .json({ success: false, message: "User not found" });
     }
     const user = userData[0];
-    user.avatar = user.usingCloud ? getFullLink(user.avatar) : user.avatar;
+    user.avatar = user.avatar.isCloud
+      ? getFullLink(user.avatar.value)
+      : user.avatar.value;
+    user.banner = user.banner.isCloud
+      ? getFullLink(user.banner.value)
+      : user.banner.value;
 
-    user.banner = user.usingCloud ? getFullLink(user.banner) : user.banner;
-
+    console.log("getProfile - ", user);
     return res.status(200).json({
       success: true,
       user,

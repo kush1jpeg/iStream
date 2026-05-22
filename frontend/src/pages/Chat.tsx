@@ -83,6 +83,7 @@ export default function ChatPage({ myId }: { myId: string }) {
         ? groupSocket
         : dmSocket;
     socketRef.current = currentSocket;
+    console.log(currentSocket);
     currentSocket.off("connect");
     currentSocket.off("disconnect");
     currentSocket.off("dm:message");
@@ -170,9 +171,26 @@ export default function ChatPage({ myId }: { myId: string }) {
       if (activeConv?._id === conv._id) return;
 
       // leave old room
-      if (activeConv) {
-        const other = getOther(activeConv, myId);
-        if (other) socketRef.current?.emit("dm:leave", { receiverId: other._id });
+      if (activeConv.isGroup) {
+        socketRef.current?.emit(
+          "group:leave",
+          {
+            conversationKey:
+              activeConv.conversationKey
+          }
+        );
+      } else {
+        const other =
+          getOther(activeConv, myId);
+
+        if (other) {
+          socketRef.current?.emit(
+            "dm:leave",
+            {
+              receiverId: other._id
+            }
+          );
+        }
       }
 
       setActiveConv(conv);
@@ -182,8 +200,12 @@ export default function ChatPage({ myId }: { myId: string }) {
       setLoadingMsgs(true);
 
       // join new room
-      const other = getOther(conv, myId);
-      if (other) socketRef.current?.emit("dm:join", { receiverId: other._id });
+      if (!conv.isGroup) {
+        const other = getOther(conv, myId);
+        console.log(other);
+        socketRef.current?.emit("dm:join", { receiverId: other._id });
+      } else socketRef.current?.emit("dm:join", { conversationKey: conv.conversationKey });
+
 
       // mark read
       socketRef.current?.emit("dm:read", { conversationKey: conv.conversationKey });
@@ -249,7 +271,31 @@ export default function ChatPage({ myId }: { myId: string }) {
       pending: true,
     };
     setMessages((prev) => [...prev, optimistic]);
-    socketRef.current.emit("dm:send", { receiverId: other._id, message: input.trim() });
+
+    if (activeConv.isGroup) {
+      socketRef.current.emit(
+        "group:send",
+        {
+          conversationKey:
+            activeConv.conversationKey,
+          message: input.trim(),
+        }
+      );
+    } else {
+      const other =
+        getOther(activeConv, myId);
+
+      if (!other) return;
+
+      socketRef.current.emit(
+        "dm:send",
+        {
+          receiverId: other._id,
+          message: input.trim(),
+        }
+      );
+    }
+
     socketRef.current.once("dm:sent", () => {
       setMessages((prev) =>
         prev.map((m) => (m.pending && m.message === optimistic.message ? { ...m, pending: false } : m))
@@ -346,6 +392,7 @@ export default function ChatPage({ myId }: { myId: string }) {
                     {groups.map((conv) => (
                       <ConvItem
                         key={conv._id}
+                        avatar={conv.avatar}
                         conv={conv}
                         myId={myId}
                         active={activeConv?._id === conv._id}
@@ -551,11 +598,13 @@ function ConvItem({
   conv,
   myId,
   active,
+  avatar,
   onClick,
 }: {
   conv: Conversation;
   myId: string;
   active: boolean;
+  avatar?: string;
   onClick: () => void;
 }) {
   const other = getOther(conv, myId);
@@ -571,10 +620,10 @@ function ConvItem({
       )}
     >
       <div className={cn(
-        "w-7 h-7 shrink-0 border flex items-center justify-center font-mono text-xs uppercase mt-0.5",
+        "w-9 h-9 shrink-0 border flex items-center justify-center font-mono text-xs uppercase mt-0.5",
         active ? "border-vhs-purple text-vhs-purple" : "border-primary text-muted-foreground"
       )}>
-        <img src={other.avatar || "?"} />
+        <img src={avatar ? avatar : other.avatar} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">

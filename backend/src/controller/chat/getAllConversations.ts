@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { conversationModel } from "../../models/conversation";
+import { getFullLink } from "../user/getSignedLink";
 
 export const getAllConversations = async (req: Request, res: Response) => {
   const userId = req.id;
@@ -17,12 +18,23 @@ export const getAllConversations = async (req: Request, res: Response) => {
         path: "participants",
         select: "username avatar isVerified isLive",
       })
-      .sort({ updatedAt: -1 });
-    console.log("bkend", conversations);
+      .sort({ updatedAt: -1 })
+      .lean();
 
+    const data = conversations.map((conv) => ({
+      ...conv,
+      participants: conv.participants.map((user: any) => ({
+        ...user,
+        avatar: user.avatar?.isCloud
+          ? getFullLink(user.avatar.value)
+          : user.avatar?.value,
+      })),
+    }));
+
+    console.log("allConve", data);
     return res.status(200).json({
       success: true,
-      conversations,
+      conversations: data,
     });
   } catch (err) {
     console.error(err);

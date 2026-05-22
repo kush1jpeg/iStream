@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { followModel } from "../../models/follow";
+import { getFullLink } from "./getSignedLink";
 
 export const getFollowers = async (req: Request, res: Response) => {
   try {
@@ -37,11 +38,18 @@ export const getFollowers = async (req: Request, res: Response) => {
       },
     ]);
 
+    const formattedFollowers = followers.map((user) => ({
+      ...user,
+      avatar: user.avatar.isCloud
+        ? getFullLink(user.avatar.value)
+        : user.avatar.value,
+    }));
+
     return res.status(200).json({
       page,
       limit,
-      count: followers.length,
-      followers,
+      count: formattedFollowers.length,
+      formattedFollowers,
     });
   } catch (err) {
     console.error(err);

@@ -3,6 +3,7 @@ import { redis, redisSub } from "../config/redis";
 import { followModel } from "../models/follow";
 import { userModel } from "../models/user";
 import mongoose from "mongoose";
+import { getFullLink } from "../controller/user/getSignedLink";
 
 let userId: string;
 export function registerSidebarHandler(io: Namespace, socket: Socket) {
@@ -12,6 +13,7 @@ export function registerSidebarHandler(io: Namespace, socket: Socket) {
 
     // send initial state on connect
     const data = await getSidebarData(userId);
+    console.log("sidebar:init-", data);
     socket.emit("sidebar:init", data);
 
     socket.on("disconnect", () => {
@@ -34,6 +36,11 @@ export function SidebarRedisListener(io: Namespace) {
     }
   });
 }
+
+const resolveAvatar = (avatar: any) => {
+  if (!avatar) return null;
+  return avatar.isCloud ? getFullLink(avatar.value) : avatar.value;
+};
 
 export const getSidebarData = async (userId: string) => {
   const following = await followModel
@@ -67,12 +74,15 @@ export const getSidebarData = async (userId: string) => {
 
   // 3. if some are live, return live first then offline
   if (liveFollowing.length > 0) {
-    const offlineUsers = await userModel
+    const offline = await userModel
       .find({ _id: { $in: offlineIds } })
       .select("username avatar currentFrame")
       .limit(5)
       .lean();
-
+    const offlineUsers = offline.map((u) => ({
+      ...u,
+      avatar: resolveAvatar(u.avatar),
+    }));
     return {
       live: liveFollowing,
       offline: offlineUsers,
@@ -80,11 +90,15 @@ export const getSidebarData = async (userId: string) => {
   }
 
   // 4. none following are live; return offline following
-  const offlineUsers = await userModel
+  const offline = await userModel
     .find({ _id: { $in: followingIds } })
     .select("username avatar currentFrame")
     .limit(5)
     .lean();
+  const offlineUsers = offline.map((u) => ({
+    ...u,
+    avatar: resolveAvatar(u.avatar),
+  }));
 
   return { live: [], offline: offlineUsers };
 };
@@ -106,11 +120,15 @@ const getRandomFallback = async (userId: string) => {
   }
 
   // if nobody streaming then random 5 people
-  const randomUsers = await userModel.aggregate([
+  const users = await userModel.aggregate([
     { $match: { _id: { $ne: new mongoose.Types.ObjectId(userId) } } },
     { $sample: { size: 5 } },
     { $project: { username: 1, avatar: 1, currentFrame: 1 } },
   ]);
+  const randomUsers = users.map((u) => ({
+    ...u,
+    avatar: resolveAvatar(u.avatar),
+  }));
 
   return { live: [], offline: randomUsers };
 };

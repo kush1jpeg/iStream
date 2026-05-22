@@ -18,6 +18,7 @@ import ChangePass from "./components/changePassword";
 import { useEffect } from "react";
 import { useAuthStore } from "./components/zustand/zustand";
 import OtpVerify from "./components/OtpVerify";
+import CreateGroupPage from "./pages/group";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8888/api/",
@@ -77,7 +78,6 @@ const App = () => {
     const fetchUser = async () => {
       try {
         const data = await api.get("/user/me");
-        console.log(data);
         setProfile(data.data.user);
       } catch (err: any) {
         console.log(err?.response?.data?.message || "Failed");
@@ -101,7 +101,19 @@ const App = () => {
           <Route path="/profile/:userId" element={<ProfileSection />} />
           <Route path="/shop" element={<ShopLanding />} />
           <Route path="/start-stream" element={<GoLive />} />
-          <Route path="/chat" element={<Chat myId="xxxx" />} />
+          <Route
+            path="/chat"
+            element={
+              user ? (
+                <Chat myId={user._id} />
+              ) : (
+                <div className="flex items-center justify-center h-screen">
+                  Loading...
+                </div>
+              )
+            }
+          />
+          <Route path="/create-group" element={<CreateGroupPage />} />
         </Route>
 
         <Route path="/auth" element={<Auth />} />

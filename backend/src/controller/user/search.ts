@@ -45,7 +45,9 @@ export const search = async (req: Request, res: Response) => {
       // if the person is not logged in
       const data = foundUsers.map((user) => ({
         ...user,
-        avatar: getFullLink(user.avatar),
+        avatar: user.avatar.isCloud
+          ? getFullLink(user.avatar.value)
+          : user.avatar.value,
       }));
 
       return res.status(200).json(data);
@@ -73,7 +75,9 @@ export const search = async (req: Request, res: Response) => {
       const streamId = output![i][1] as string | null;
       return {
         ...user,
-        avatar: getFullLink(user.avatar),
+        avatar: user.avatar.isCloud
+          ? getFullLink(user.avatar.value)
+          : user.avatar.value,
         isLive: !!streamId,
         streamId: streamId ?? null,
         followed: followedSet.has(String(user._id)),

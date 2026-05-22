@@ -20,14 +20,11 @@ export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [followedUsers, setFollowed] = useState<SidebarUser[]>([]);
+  const socketsReady = useAuthStore((s) => s.socketsReady);
 
   useEffect(() => {
+    if (!socketsReady) return;
     const sidebarSocket = getSocket("/sidebar");
-    if (!sidebarSocket) {
-      console.log("Sidebar socket not ready");
-      return;
-    }
-
     const transformData = (data: any) => {
       const liveUsers =
         data.live?.map((u: any) => ({
@@ -41,7 +38,7 @@ export const Sidebar: React.FC = () => {
       const offlineUsers =
         data.offline?.map((u: any) => ({
           _id: u._id,
-          userrname: u.username,
+          username: u.username,
           avatar: u.avatar,
           frame: u.currentFrame,
           isLive: false,
@@ -97,8 +94,7 @@ export const Sidebar: React.FC = () => {
     return () => {
       sidebarSocket.off("sidebar:init", handleInit);
       sidebarSocket.off("sidebar:update", handleUpdate);
-      sidebarSocket.disconnect();
-    };
+    }
   }, []);
 
   const redirectLive = async (userId: string) => {

@@ -2,15 +2,17 @@ import { Request, Response } from "express";
 import { userModel } from "../../models/user";
 import mongoose from "mongoose";
 import { getFullLink } from "./getSignedLink";
+import { followModel } from "../../models/follow";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
+    const { profileId } = req.params;
+    const userId = req.id;
 
     const userData = await userModel.aggregate([
       {
         $match: {
-          _id: new mongoose.Types.ObjectId(userId),
+          _id: new mongoose.Types.ObjectId(profileId),
         },
       },
       {
@@ -62,12 +64,30 @@ export const getUserById = async (req: Request, res: Response) => {
         .json({ success: false, message: "User not found" });
     }
 
+    console.log("userData - ", userData);
+    console.log("Id:", userId);
+    console.log("profileId:", profileId);
+    const user = userData[0];
+
+    const follow = await followModel.exists({
+      followerId: new mongoose.Types.ObjectId(userId),
+      followedId: new mongoose.Types.ObjectId(profileId),
+    });
+    console.log("exists result:", follow);
+
     return res.status(200).json({
       success: true,
+      following: !!follow,
       user: {
-        ...userData[0],
-        banner: getFullLink(userData[0].banner),
-        avatar: getFullLink(userData[0].avatar),
+        ...user,
+
+        banner: user.banner.isCloud
+          ? getFullLink(user.banner.value)
+          : user.banner.value,
+
+        avatar: user.avatar.isCloud
+          ? getFullLink(user.avatar.value)
+          : user.avatar.value,
       },
     });
   } catch (err) {

@@ -5,7 +5,6 @@ import 'ldrs/react/Pinwheel.css'
 import { api } from '@/App';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { useAuthStore } from '@/components/zustand/zustand';
 
 export function Auth() {
   const navigate = useNavigate();

@@ -4,6 +4,7 @@ import { PaymentModel } from "../../../models/payments";
 import { getPayChannel } from "../../../config/rabbitmq";
 import { userModel } from "../../../models/user";
 import { payExchange } from "../../..";
+import { getFullLink } from "../../user/getSignedLink";
 
 export const verifyPayment = async (req: Request, res: Response) => {
   try {
@@ -56,7 +57,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
     }
 
     transaction.email = user.email;
-    transaction.userPfp = user.avatar;
+    transaction.userPfp = user.avatar.isCloud
+      ? getFullLink(user.avatar.value)
+      : user.avatar.value;
     transaction.username = user.username;
     transaction.expiresAt = null;
     await transaction.save();

@@ -1,14 +1,19 @@
 import dotenv from "dotenv";
 dotenv.config();
-
+import fs from "fs";
 import { spawn } from "child_process";
 import Docker from "dockerode";
 import os from "os";
-
-import pino from "pino";
 import { connectRabbitMQ } from "./config/rabbitmq.js";
 import { redis, redisConnect } from "./config/redis.js";
 import { handleTerm } from "./config/termHandler.js";
+import { ffmpegStreaming } from "./ffmpeg/streaming.js"; // for streaming only
+import { ffmpegStreamingVod } from "./ffmpeg/vod+streaming.js";
+
+import pino from "pino";
+import { drainUploadQueue } from "./cloudflare/drainUpload.js";
+import { startUploadConsumer } from "./cloudflare/consumer.js";
+import { initWatcher } from "./watcher/watcher.js";
 export const logger = pino(pino.destination(`/var/log/${os.hostname()}.log`));
 logger.info(`worker created ${os.hostname()}`);
 
@@ -44,88 +49,42 @@ async function startWorker() {
       if (!msg) return;
 
       const MTX_PATH = JSON.parse(msg.content.toString());
+      const watcher = await initWatcher(MTX_PATH);
+      if (!watcher)
+        logger.info(`[!] ffmpeg error for stream  ${MTX_PATH.split("/")[1]}:`);
+      await startUploadConsumer(MTX_PATH);
 
       logger.info(`[+] Received job for stream ${MTX_PATH.split("/")[1]}`);
       busy = true;
 
-      // Build ffmpeg command
-      const ffmpegArgs = [
-        "-i",
-        `${RTMP_URL}/${MTX_PATH}`,
-
-        // 1080p
-        "-map",
-        "v:0",
-        "-map",
-        "a:0",
-        "-c:v:0",
-        "copy",
-
-        // // 720p
-        // "-map",
-        // "v:0",
-        // "-map",
-        // "a:0",
-        // "-c:v:1",
-        // "libx264",
-        // "-preset",
-        // "veryfast",
-        // "-tune",
-        // "zerolatency",
-        // "-s:v:1",
-        // "1280x720",
-        // "-b:v:1",
-        // "3000k",
-
-        // 480p
-        "-map",
-        "v:0",
-        "-map",
-        "a:0",
-        "-c:v:2",
-        "libx264",
-        "-preset",
-        "veryfast",
-        "-tune",
-        "zerolatency",
-        "-s:v:2",
-        "854x480",
-        "-b:v:2",
-        "1200k",
-
-        "-c:a",
-        "aac",
-        "-ar",
-        "48000",
-        "-f",
-        "hls",
-        "-hls_time",
-        "4",
-        "-hls_list_size",
-        "6",
-        "-hls_flags",
-        "delete_segments+append_list",
-        "-var_stream_map",
-        "v:0,a:0 v:1,a:1", // for just 1080 and 480
-        //  "v:0,a:0 v:1,a:1 v:2,a:2", // for 1080,720 and 480
-        "-master_pl_name",
-        "master.m3u8",
-        `/hls/${MTX_PATH}/v%v/index.m3u8`,
-      ];
-
       const containerID = os.hostname(); // or /proc/self/cgroup
 
-      const ffmpegProcess = spawn("ffmpeg", ffmpegArgs, { stdio: "inherit" });
+      const ffmpegProcess = spawn(
+        "ffmpeg",
+        ffmpegStreamingVod(RTMP_URL, MTX_PATH), // change it to ffmpegStreaming for without VOD;
+        {
+          stdio: "inherit",
+        },
+      );
       await redis.hset("workers", containerID, "busy");
 
       ffmpegProcess.on("close", async (code) => {
         logger.info(
           `[x] Stream  ${MTX_PATH.split("/")[1]} finished with code ${code}`,
         );
-        if (busy) {
-          await redis.hset("workers", containerID, "idle");
-          busy = false;
-        }
+
+        // stop watching
+        await watcher.close();
+
+        // mark uploading
+        await redis.hset("workers", containerID, "uploading");
+
+        // drain the upload queue
+        await drainUploadQueue(MTX_PATH);
+
+        // cleanup local files
+        fs.rmSync(`/hls/live/${MTX_PATH}`, { recursive: true, force: true });
+
         channel.ack(msg); // job done
       });
 

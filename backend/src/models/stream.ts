@@ -27,7 +27,7 @@ const StreamSchema = new Schema(
       index: true, // c,kernel,lld etc
     },
 
-    streamKeyHash: {
+    streamKey: {
       type: String,
       required: true,
       select: false,
@@ -39,9 +39,10 @@ const StreamSchema = new Schema(
       default: "pending",
     },
 
-    // playbackUrl: {
-    //   type: String, // HLS/DASH URL
-    // },
+    VOD_URL: {
+      type: String, // R2 URL
+      sparse: true,
+    },
 
     thumbnail: {
       type: String, // url

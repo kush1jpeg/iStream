@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { conversationModel } from "../../models/conversation";
 import { msgModel } from "../../models/msgPvt";
+import { getFullLink } from "../user/getSignedLink";
 
 export const getConversationMessages = async (req: Request, res: Response) => {
   try {
@@ -20,10 +21,6 @@ export const getConversationMessages = async (req: Request, res: Response) => {
         conversationKey,
         participants: userId,
       })
-      .populate({
-        path: "participants",
-        select: "username avatar isVerified isLive",
-      });
 
     if (!conversation) {
       return res.status(403).json({
@@ -35,7 +32,7 @@ export const getConversationMessages = async (req: Request, res: Response) => {
     const pageNum = Math.max(Number(page), 1);
     const limitNum = Math.min(Number(limit), 50);
 
-    const messages = await msgModel
+    const rawMessages = await msgModel
       .find({
         conversationKey,
       })
@@ -44,9 +41,19 @@ export const getConversationMessages = async (req: Request, res: Response) => {
       .limit(limitNum)
       .populate({
         path: "senderId",
-        select: "username avatar isVerified",
+        select: "username avatar",
       })
       .lean();
+      
+      const messages = rawMessages.map((msg: any) => ({
+  ...msg,
+  senderId: {
+    ...msg.senderId,
+    avatar: msg.senderId?.avatar?.isCloud
+      ? getFullLink(msg.senderId.avatar.value)
+      : msg.senderId?.avatar?.value,
+  },
+}));
 
     return res.status(200).json({
       success: true,

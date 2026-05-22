@@ -3,12 +3,15 @@ import { conversationModel } from "../models/conversation";
 import { msgModel } from "../models/msgPvt";
 
 function getRoomId(userId: string, receiverId: string) {
-  return ["dm", userId, receiverId].sort().join(":");
+  return [userId, receiverId].sort().join(":");
 }
 
 export function registerPvtChatHandler(io: Namespace, socket: Socket) {
   socket.on("dm:join", async ({ receiverId }) => {
-    console.log("📥 dm:join received:", { receiverId, userId: socket.data.userId });
+    console.log("📥 dm:join received:", {
+      receiverId,
+      userId: socket.data.userId,
+    });
     try {
       const userId = socket.data.userId;
       if (receiverId == userId) {
@@ -21,17 +24,10 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
       }
 
       const roomId = getRoomId(userId, receiverId);
-      await conversationModel.findOneAndUpdate(
-        { conversationKey: roomId, isGroup: false },
-        {
-          $setOnInsert: {
-            // runs only on new docs, if existing does nothing
-            participants: [userId, receiverId],
-            conversationKey: roomId,
-          },
-        },
-        { upsert: true, new: true }, // return the new document if inserted
-      );
+      await conversationModel.findOneAndUpdate({
+        conversationKey: roomId,
+        isGroup: false,
+      });
       socket.join(roomId);
     } catch (err) {
       console.error("dm:join failed", err);
@@ -40,7 +36,11 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
   });
 
   socket.on("dm:send", async ({ receiverId, message }) => {
-    console.log("🔍 dm:send received:", { receiverId, message, userId: socket.data.userId });
+    console.log("🔍 dm:send received:", {
+      receiverId,
+      message,
+      userId: socket.data.userId,
+    });
     try {
       const userId = socket.data.userId;
       if (!receiverId) {
@@ -54,17 +54,20 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
 
       const roomId = getRoomId(userId, receiverId);
       console.log("📍 roomId:", roomId);
-      
+
       const conversation = await conversationModel.findOne({
         conversationKey: roomId,
       });
-      
+
       if (!conversation) {
         console.log("❌ dm:send: conversation not found for roomId:", roomId);
         return;
       }
-      
-      console.log("✅ Found conversation, participants:", conversation.participants);
+
+      console.log(
+        "✅ Found conversation, participants:",
+        conversation.participants,
+      );
       if (!conversation.participants.some((id) => id.equals(userId))) {
         console.log("❌ dm:send: userId not in participants");
         return;
@@ -94,13 +97,12 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
   socket.on("dm:read", async ({ conversationKey }) => {
     try {
       const userId = socket.data.userId;
-
       await msgModel.updateMany(
         { conversationKey, senderId: { $ne: userId } },
         { $addToSet: { readBy: userId } },
       );
 
-      const conversation = await conversationModel.findById(conversationKey);
+      const conversation = await conversationModel.findOne({ conversationKey });
       if (!conversation) return;
       if (!conversation.participants.some((id) => id.equals(userId))) return;
 

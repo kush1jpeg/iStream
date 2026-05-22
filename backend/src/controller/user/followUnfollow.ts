@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { followModel } from "../../models/follow";
 import { publishNotifs } from "../../services/otp/publishNotif";
-import { INotification } from "../../types/types";
+import { userModel } from "../../models/user";
 
 export const followXUnfollow = async (req: Request, res: Response) => {
   try {
@@ -33,26 +33,43 @@ export const followXUnfollow = async (req: Request, res: Response) => {
     // unfollow if a req is made again
 
     if (existing) {
-      await followModel.deleteOne({ _id: existing._id });
-      return res.status(200).json({ message: "Unfollowed successfully." });
+      await Promise.all([
+        followModel.deleteOne({ _id: existing._id }),
+
+        userModel.updateOne(
+          { _id: followedId },
+          { $inc: { followerCount: -1 } },
+        ),
+
+        userModel.updateOne({ _id: userId }, { $inc: { followCount: -1 } }),
+      ]);
+
+      return res.status(200).json({
+        message: "Unfollowed successfully",
+      });
     }
 
     const newFollow = await followModel.create({
       followerId: userId,
       followedId,
     });
-    const notify: INotification = {
-      type: "follow",
-      actorId: userId,
-      userId: followedId,
-      createdAt: Date.now(),
-    };
-    await publishNotifs(notify);
+
+    await Promise.all([
+      userModel.updateOne({ _id: followedId }, { $inc: { followerCount: 1 } }),
+
+      userModel.updateOne({ _id: userId }, { $inc: { followCount: 1 } }),
+
+      publishNotifs({
+        type: "follow",
+        actorId: userId,
+        userId: followedId,
+        createdAt: Date.now(),
+      }),
+    ]);
 
     return res.status(201).json({
-      message: "Followed successfully.",
+      message: "Followed successfully",
       follow: newFollow,
-      type: "SUCCESS",
     });
   } catch (err: any) {
     console.error(err);

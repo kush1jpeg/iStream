@@ -19,13 +19,12 @@ import { uploadImage } from "../controller/user/uploadUserCloudinary";
 export const userRouter: Router = Router();
 
 userRouter.get("/search", optionalAuth, search);
-userRouter.get("/:userId/stats", getUserById); // full Userinfo;
+userRouter.get("/:profileId/stats", optionalAuth, getUserById); // full Userinfo;
 userRouter.get("/me", authVerify, getProfile);
 userRouter.patch("/me", authVerify, updateProfile); // partial updates
 userRouter.post("/follow", authVerify, followXUnfollow);
 userRouter.get("/:userId/followers", getFollowers);
 userRouter.get("/:userId/following", getFollowing);
-// userRouter.get("/:streamId/like", authVerify, likeXUnlike);
 userRouter.get("/notify", authVerify, getNotifications);
 
 userRouter.post("/upload", authVerify, uploadImage);

@@ -1,14 +1,14 @@
 import mongoose, { model, Schema } from "mongoose";
 import { IUser } from "../types/types";
 
-const pfpDefaults = [
-  "/banner/reze.jpg",
-  "/banner/monster.jpg",
-  "/banner/mikasa.jpg",
-  "/banner/ido.jpg",
-  "/banner/guts.jpg",
-  "/banner/griff.jpg",
-  "/banner/baldaurs.jpg",
+export const pfpDefaults = [
+  "/pfp/reze.jpg",
+  "/pfp/monster.jpg",
+  "/pfp/mikasa.jpg",
+  "/pfp/ido.jpg",
+  "/pfp/guts.jpg",
+  "/pfp/griff.jpg",
+  "/pfp/baldaurs.jpg",
 ];
 const bannerDefaults = [
   "/banner/angel.jpg",
@@ -20,7 +20,7 @@ const bannerDefaults = [
   "/banner/retro.jpg",
 ];
 
-function pickRandom(arr: string[]) {
+export function pickRandom(arr: string[]) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -52,11 +52,13 @@ const userSchema = new Schema<IUser>(
       type: Number,
       default: 0,
       required: true,
+      min: 0,
     },
     followCount: {
       type: Number,
       required: true,
       default: 0,
+      min: 0,
     },
     lastReadNotificationId: {
       type: Schema.Types.ObjectId,
@@ -64,12 +66,25 @@ const userSchema = new Schema<IUser>(
       sparse: true,
     },
     avatar: {
-      type: String,
-      default: () => pickRandom(pfpDefaults),
+      value: {
+        type: String,
+        default: () => pickRandom(pfpDefaults),
+      },
+      isCloud: {
+        type: Boolean,
+        default: false,
+      },
     },
+
     banner: {
-      type: String,
-      default: () => pickRandom(bannerDefaults),
+      value: {
+        type: String,
+        default: () => pickRandom(bannerDefaults),
+      },
+      isCloud: {
+        type: Boolean,
+        default: false,
+      },
     },
     currentAnimation: {
       type: String,
@@ -106,10 +121,6 @@ const userSchema = new Schema<IUser>(
       default: false,
     },
     isLive: {
-      type: Boolean,
-      default: false,
-    },
-    usingCloud: {
       type: Boolean,
       default: false,
     },

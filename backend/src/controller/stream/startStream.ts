@@ -4,6 +4,7 @@ import { streamModel } from "../../models/stream";
 import { userModel } from "../../models/user";
 import { INotification } from "../../types/types";
 import { publishNotifs } from "../../services/otp/publishNotif";
+import { getFullLink } from "../user/getSignedLink";
 
 const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/live/";
 
@@ -46,7 +47,9 @@ export const startStream = async (req: Request, res: Response) => {
     streamer: JSON.stringify({
       id: userId,
       username: user?.username,
-      avatar: user?.avatar,
+      avatar: user?.avatar.isCloud
+        ? getFullLink(user.avatar.value)
+        : user.avatar.value,
       frame: user?.currentFrame,
       animation: user?.currentAnimation,
     }),
@@ -56,8 +59,8 @@ export const startStream = async (req: Request, res: Response) => {
       description: stream.description,
       thumbnail: stream.thumbnail,
       tags: stream.tags,
-      HLS_PATH,
     }),
+    HLS_PATH,
     inactiveSince: "",
     status: "pending",
     viewers: 0,
@@ -71,7 +74,7 @@ export const startStream = async (req: Request, res: Response) => {
   pipeline.sadd(`live:streams`, streamId);
 
   // for job-server auth
-  pipeline.set(`streamKey:${stream.streamKeyHash}`, streamId);
+  pipeline.set(`streamKey:${stream.streamKey}`, streamId);
   await pipeline.exec();
 
   const notify: INotification = {

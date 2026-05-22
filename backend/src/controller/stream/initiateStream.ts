@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { streamModel } from "../../models/stream";
+import { getFullLink } from "../user/getSignedLink";
 const rtmpUrl = process.env.RTMP_URL || "rtmp://localhost:1935/live";
 
 export const initiateStream = async (req: Request, res: Response) => {
@@ -15,7 +16,7 @@ export const initiateStream = async (req: Request, res: Response) => {
     title,
     description,
     tags,
-    streamKeyHash: streamKey,
+    streamKey,
     thumbnail,
     expiresAt: new Date(Date.now() + 0.5 * 60 * 60 * 1000), // 0.5 hour
   });
@@ -27,7 +28,7 @@ export const initiateStream = async (req: Request, res: Response) => {
     data: {
       title,
       tags,
-      thumbnail,
+      thumbnail: getFullLink(thumbnail),
       streamId: stream.id,
       streamKey,
       rtmpUrl,

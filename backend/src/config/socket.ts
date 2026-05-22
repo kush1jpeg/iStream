@@ -16,6 +16,7 @@ import {
   registerSidebarHandler,
   SidebarRedisListener,
 } from "../socket/registerSidebarHandler";
+import { registerGroupChatHandler } from "../socket/registerGroupChatHandler";
 
 const frontend_url = process.env.FRONTEND_URL || "http://localhost:8080";
 
@@ -66,7 +67,7 @@ export async function initSocket(server: any) {
       socket.data.userId,
     );
     const dm = io.of("/group");
-    registerPvtChatHandler(dm, socket);
+    registerGroupChatHandler(dm, socket);
   });
 
   io.of("/group").on("connect_error", (error: any) => {

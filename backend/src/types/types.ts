@@ -24,15 +24,19 @@ export interface IStreamLog {
   createdAt: Date;
 }
 
+interface IUserImage {
+  value: string;
+  isCloud: boolean;
+}
+
 export interface IUser extends Document {
-  usingCloud: boolean;
   _id: Types.ObjectId;
   username: string;
   email: string;
   bio: string;
   passwordHash: string | null;
-  avatar: string;
-  banner: string;
+  avatar: IUserImage;
+  banner: IUserImage;
   isVerified: boolean; // true if is mail or oauth verified and can stream
   followers?: string[];
   isLive: boolean;
@@ -58,7 +62,8 @@ export interface IStream {
   description?: string;
   thumbnail: string;
   tags: Array<string>;
-  streamKeyHash: string;
+  streamKey: string;
+  VOD_URL?: string;
   status?: "pending" | "live" | "ended";
   startedAt?: Date;
   endedAt?: Date;

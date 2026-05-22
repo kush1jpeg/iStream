@@ -4,7 +4,7 @@ import {
   type Profile,
   type VerifyCallback,
 } from "passport-google-oauth20";
-import { userModel } from "../models/user";
+import { pfpDefaults, pickRandom, userModel } from "../models/user";
 
 export function initPassport() {
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -46,7 +46,11 @@ export function initPassport() {
             user = await userModel.create({
               email,
               username: profile.displayName,
-              avatar: profile.photos[0]?.value,
+              avatar: {
+                value: pickRandom(pfpDefaults),
+                isCloud: false,
+              },
+
               googleId: profile.id,
               isVerified: true,
             });

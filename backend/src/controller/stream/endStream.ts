@@ -43,12 +43,13 @@ export const terminateStream = async (streamId: string, userId: string) => {
   stream.endedAt = new Date();
   stream.viewers = Number(redisStream?.viewers) || 0;
   stream.views = Number(redisStream?.views) || 0;
+  stream.VOD_URL = `${process.env.R2_PUBLIC_URL}/hls/live/${stream.streamKey}/master.m3u8`;
   await stream.save();
 
   const pipeline = redis.multi();
   pipeline.del(`stream:${streamId}`);
   pipeline.del(`live:user:${userId}`);
   pipeline.srem(`live:streams`, streamId);
-  pipeline.del(`streamKey:${stream.streamKeyHash}`);
+  pipeline.del(`streamKey:${stream.streamKey}`);
   await pipeline.exec();
 };

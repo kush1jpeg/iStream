@@ -2,27 +2,28 @@ import { Namespace, Socket } from "socket.io";
 import { conversationModel } from "../models/conversation";
 import { msgModel } from "../models/msgPvt";
 
-export function registerPvtChatHandler(io: Namespace, socket: Socket) {
-  socket.on("group:join", async ({ conversationKey }) => {
+export function registerGroupChatHandler(io: Namespace, socket: Socket) {
+  socket.on("dm:join", async ({ conversationKey }) => {
     try {
       if (!conversationKey) {
-        socket.emit("group:error", { code: "INVALID_PAYLOAD" });
+        socket.emit("dm:error", { code: "INVALID_PAYLOAD" });
         return;
       }
       const userId = socket.data.userId;
 
       const group = await conversationModel.findOne({ conversationKey });
       if (!group) {
-        socket.emit("group:error", { code: "GROUP_NOT_FOUND" });
+        socket.emit("dm:error", { code: "GROUP_NOT_FOUND" });
         return;
       }
 
       // Check if user is part of the group
       if (!group.participants.some((id) => id.equals(userId))) {
-        socket.emit("group:error", { code: "NOT_A_MEMBER" });
+        socket.emit("dm:error", { code: "NOT_A_MEMBER" });
         return;
       }
 
+      console.log(group);
       socket.join(group.conversationKey);
     } catch (err) {
       console.error("dm:join failed", err);
@@ -34,7 +35,7 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
     try {
       const userId = socket.data.userId;
       if (!conversationKey || !message) {
-        socket.emit("group:error", { code: "INVALID_PAYLOAD" });
+        socket.emit("dm:error", { code: "INVALID_PAYLOAD" });
         return;
       }
 
@@ -79,11 +80,11 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
 
       const conversation = await conversationModel.findById(conversationKey);
       if (!conversation) {
-        socket.emit("group:error", { code: "Conversation NOT FOUND" });
+        socket.emit("dm:error", { code: "Conversation NOT FOUND" });
         return;
       }
       if (!conversation.participants.some((id) => id.equals(userId))) {
-        socket.emit("group:error", { code: "CANNOT PARTICIPATE" });
+        socket.emit("dm:error", { code: "CANNOT PARTICIPATE" });
         return;
       }
 
@@ -91,7 +92,7 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
         (id) => id.toString() !== userId,
       );
       if (!otherParticipants) {
-        socket.emit("group:error", { code: "NO PARTICIPANTS FOUND" });
+        socket.emit("dm:error", { code: "NO PARTICIPANTS FOUND" });
         return;
       }
       otherParticipants.forEach((participantId) => {
@@ -108,7 +109,7 @@ export function registerPvtChatHandler(io: Namespace, socket: Socket) {
 
   socket.on("dm:leave", ({ conversationKey }) => {
     if (!conversationKey) {
-      socket.emit("group:error", { code: "INVALID_PAYLOAD" });
+      socket.emit("dm:error", { code: "INVALID_PAYLOAD" });
       return;
     }
     socket.leave(conversationKey);

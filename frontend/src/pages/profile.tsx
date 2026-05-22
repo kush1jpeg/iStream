@@ -10,7 +10,6 @@ import { IPay, IStream, IUser } from "@/types/types";
 import { useAuthStore } from "@/components/zustand/zustand";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
-import { toast } from "react-toastify";
 
 // ─── EditModal ─────────────────────────────────────────────────────────────────
 
@@ -31,7 +30,6 @@ const EditModal = ({ user, onClose, onSave }: { user: IUser; onClose: () => void
     try {
       const { data } = await api.patch(`user/me`, form, { withCredentials: true });
       onSave(form);
-      console.log(data);
       setUser(data.user);
       onClose();
     } catch { /* surface if needed */ }
@@ -106,7 +104,7 @@ const ImageUploadOverlay = ({ onUpload, uploading, children, className = "", hin
 
 const uploadFile = async (
   file: File,
-  type: "avatar" | "banner"
+  type: "avatar" | "banner" | "group"
 ): Promise<string> => {
   try {
     const { data } = await api.get(
@@ -177,12 +175,12 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: React.ElementType
 const Profile = () => {
   const { userId } = useParams();
   const isOwnProfile = !userId;
-  console.log(userId)
 
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
   const [otherUser, setOtherUser] = useState<IUser | null>(null);
+  const [otherUserFollowing, setOtherUserFollowing] = useState(false);
   const [streams, setStreams] = useState<IStream[]>([]);
   const [donations, setDonations] = useState<IPay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -190,20 +188,19 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const navigate = useNavigate();
   const displayUser = isOwnProfile ? user : otherUser;
 
   useEffect(() => {
     const load = async () => {
       try {
         if (isOwnProfile) {
-          const { data } = await api.get(`user/me`, { withCredentials: true });
-          setStreams(data.data?.streams ?? []);
-          setDonations(data.data?.donations ?? []);
+          setStreams(user.streams ?? []);
+          setDonations(user.donations ?? []);
         } else {
           const { data } = await api.get(`user/${userId}/stats`, { withCredentials: true });
-          console.log(data)
           setOtherUser(data.user);
+          setOtherUserFollowing(data.following)
+          console.log(data);
           setStreams(data.user?.streams ?? []);
           setDonations(data.user?.donations ?? []);
         }
@@ -241,6 +238,12 @@ const Profile = () => {
       </div>
     </div>
   );
+
+  const handleFollow = async (id: string) => {
+    const data = await api.post("/user/follow", { followedId: id },)
+    console.log(data);
+    setOtherUserFollowing((prev) => !prev)
+  }
 
   if (error || !displayUser) return (
     <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
@@ -326,8 +329,14 @@ const Profile = () => {
                 <GlitchText text={displayUser.username} as="h1" className="text-2xl md:text-4xl font-pixel text-white" />
                 {!isOwnProfile && (
                   <button
-                    className=" bottom-15 left-45 z-30 flex items-center  px-3  font-pixel text-[10px]  text-vhs-cyan border border-vhs-cyan/60 bg-black/70 hover:bg-vhs-cyan/10 transition-colors">
-                    Follow
+                    onClick={() => handleFollow(displayUser._id)}
+                    className={`bottom-15 left-45 z-30 flex items-center px-3 font-pixel text-[10px] border bg-black/70 transition-colors
+    ${otherUserFollowing
+                        ? "text-green-400 border-green-400/60 hover:bg-green-400/10"
+                        : "text-vhs-cyan border-purple-50 hover:bg-purple-600"
+                      }`}
+                  >
+                    {otherUserFollowing ? "Following" : "Follow"}
                   </button>
                 )}
               </div>
