@@ -35,11 +35,11 @@ The `Tiltfile` supports a `test` flag for selective service startup:
 Examples:
 
 ```bash
-tilt up -- --test stream
-```
+tilt up -- --test=stream
 
-```bash
-tilt up -- --test backend --test stream
+tilt up -- --test=backend
+
+tilt up
 ```
 
 ## Notes

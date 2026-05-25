@@ -1,18 +1,13 @@
 <h1 align="center">
-  <br/>
-  <img src="/frontend/public/icon.png" width="180" alt="Logo"/>
+  <img src="/frontend/public/icon.png" width="180" alt="Logo" />
   <br/>
   iStream
   <br/>
 </h1>
 
-<h4 align="center">
-
-</h4>
-
 <p align="center" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px">
   <a href="docs/architecture.md">Architecture</a> •
-  <a href="#getting-started">Getting Started</a> •
+  <a href="docs/getting-started">Getting Started</a> •
   <a href="docs/tilt-setup.md">Tilt Setup</a> •
   <a href="docs/api-reference.md">API Reference</a> •
   <a href="docs/contributing.md">Contributing</a>
@@ -39,40 +34,19 @@
 
 ## What is iStream?
 
-iStream is an adaptive bitrate live streaming platform built from scratch (leaving the frontend) - no managed streaming services, no shortcuts, handling the complete pipeline from RTMP ingest through FFmpeg -> transcoding into diff qualities -> HLS delivery (live/VOD)
+iStream is an abs supported distributed live streaming platform engineered to reproduce a production-grade streaming stack without managed streaming services, handling the complete pipeline from RTMP ingest through FFmpeg -> transcoding into diff qualities -> HLS delivery : live -> via a static nginx server : VOD -> via cloudflare R2. 
 
-With dynamic worker autoscaling, VOD recording of the stream with segment-level R2 uploads, comes alongside as modern distributed architechture, superchat support, integration of payment-gateway, seperate notification service for isolated deliveries via queue/exchangers, and many more.
+With dynamic worker autoscaling, segment-level R2 uploads and minimal disk writes, iStream comes alongside as a modern architechture with chat support via namespaces, integration of payment-gateway for superchats, seperate notification service for isolated deliveries via queue/exchangers.
 
 The goal was not to use managed streaming services but to build every layer: from RTMP ingest to HLS delivery, from autoscaling worker containers to real-time socket communication.
 
+In short: iStream aims to demonstrate a composable streaming platform with distributed processing, real-time state management, and object-storage-backed VOD delivery.
 
-## Getting Started
 
-### What you need
-
-- Docker installed and running. iStream is composed of multiple services and relies on containers for the full local stack.
-- Tilt installed. Tilt is the recommended entry point because it understands the repo’s `Tiltfile`, watches source changes, and manages service dependency ordering automatically;
-- if you want to run the stack without Tilt, but note that you will lose Tilt’s live rebuild, multi-service log UI, and selective service startup features.not a necessity but definitely a requirement for dev - [setup](/docs/tilt-setup.md)
-
-### Start the service
-
-From the repository root, simply run:
-
-```bash
-tilt up
-```
-
-This launches the development stack managed by the top-level `Tiltfile`.
-
-If you do not want to use Tilt, you can fall back to Docker Compose with:
-
-```bash
-docker compose up
-```
-
-But this will not provide the live development workflow, automatic rebuilds, or the service introspection that Tilt adds.
 
 ### For contributors
+
+[Open an issue here->](https://github.com/atithi3dev/veren/issues) for suggestions, bugs, etc;
 
 If you are contributing code, please read these docs first:
 
