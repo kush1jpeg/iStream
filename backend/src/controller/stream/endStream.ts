@@ -34,6 +34,11 @@ export const terminateStream = async (streamId: string, userId: string) => {
   const stream = await streamModel.findById(streamId);
 
   if (!stream) throw new Error("Stream not found");
+  console.log({
+  userId,
+  streamerId: stream.streamerId.toString(),
+  streamId,
+});
   if (stream.streamerId.toString() !== userId) throw new Error("Unauthorized");
   if (stream.status !== "live") throw new Error("Stream is not live");
 
@@ -43,7 +48,7 @@ export const terminateStream = async (streamId: string, userId: string) => {
   stream.endedAt = new Date();
   stream.viewers = Number(redisStream?.viewers) || 0;
   stream.views = Number(redisStream?.views) || 0;
-  stream.VOD_URL = `${process.env.R2_PUBLIC_URL}/hls/live/${stream.streamKey}/master.m3u8`;
+  stream.like = Number(redisStream.likes);
   await stream.save();
 
   const pipeline = redis.multi();
@@ -51,5 +56,6 @@ export const terminateStream = async (streamId: string, userId: string) => {
   pipeline.del(`live:user:${userId}`);
   pipeline.srem(`live:streams`, streamId);
   pipeline.del(`streamKey:${stream.streamKey}`);
+  pipeline.del(`stream:likes:${streamId}`);
   await pipeline.exec();
 };

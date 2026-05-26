@@ -6,6 +6,6 @@ export const uploadThumbnail = async (req: Request, res: Response) => {
   const { publicId, streamId } = await req.body;
   const url = getFullLink(publicId);
 
-  await streamModel.findByIdAndUpdate(streamId, { thumbnail: publicId });
+  await streamModel.findByIdAndUpdate(streamId, { thumbnail: publicId , isCloud: true});
   return res.status(200).json({ success: true, url });
 };

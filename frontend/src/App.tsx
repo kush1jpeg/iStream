@@ -25,38 +25,53 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+const redirectToAuth = () => {
+  if (window.location.pathname !== "/auth") {
+    useAuthStore.getState().logout();
+    window.location.href = "/auth";
+  }
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // skip interceptor for auth endpoints entirely
+    if (originalRequest.url?.includes("auth/")) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         await api.post("auth/refresh-token", {}, { withCredentials: true });
-        return api(originalRequest); // retry original request
-      } catch (e) {
-        useAuthStore.getState().logout();
-        window.location.href = "/auth";
+        return api(originalRequest);
+      } catch (refreshError: any) {
+        if (
+          refreshError.response?.status === 401 ||
+          refreshError.response?.status === 403
+        ) {
+          redirectToAuth();
+        }
+        return Promise.reject(refreshError);
       }
     }
+
     return Promise.reject(error);
   }
 );
 
 // proactive refresh every 14 minutes
-const REFRESH_INTERVAL = 14 * 60 * 1000;
-
-async function proactiveRefresh() {
+setInterval(async () => {
   try {
-    console.log("refreshing tokens")
     await api.post("auth/refresh-token", {}, { withCredentials: true });
   } catch {
     useAuthStore.getState().logout();
     window.location.href = "/auth";
   }
-}
+}, 14 * 60 * 1000);
 
-setInterval(proactiveRefresh, REFRESH_INTERVAL);
 const MainLayout = () => {
   return (
     <>

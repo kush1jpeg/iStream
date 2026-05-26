@@ -5,7 +5,7 @@ import { getFullLink } from "../user/getSignedLink";
 const rtmpUrl = process.env.RTMP_URL || "rtmp://localhost:1935/live";
 
 export const initiateStream = async (req: Request, res: Response) => {
-  const { title, description, tags, thumbnail } = req.body;
+  const { title, description, tags } = req.body;
   if (!title || !tags) {
     return res.status(400).json({ message: "Title and tags are required" });
   }
@@ -17,7 +17,6 @@ export const initiateStream = async (req: Request, res: Response) => {
     description,
     tags,
     streamKey,
-    thumbnail,
     expiresAt: new Date(Date.now() + 0.5 * 60 * 60 * 1000), // 0.5 hour
   });
 
@@ -28,7 +27,6 @@ export const initiateStream = async (req: Request, res: Response) => {
     data: {
       title,
       tags,
-      thumbnail: getFullLink(thumbnail),
       streamId: stream.id,
       streamKey,
       rtmpUrl,

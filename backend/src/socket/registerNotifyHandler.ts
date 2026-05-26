@@ -1,5 +1,5 @@
 import { Namespace, Socket } from "socket.io";
-import { redisSub } from "../config/redis";
+import { redis, redisSub } from "../config/redis";
 import { INotification, IStreamLog } from "../types/types";
 
 export function registerNotifyHandler(io: Namespace, socket: Socket) {
@@ -29,7 +29,8 @@ export const redisSubNotifyListener = async (io: Namespace) => {
     try {
       const strMsg = typeof msg === "string" ? msg : msg.toString();
       const payload = JSON.parse(strMsg) as IStreamLog;
-      io.to(String(payload.userId)).emit("stream-logs", msg);
+
+      io.to(String(payload.userId)).emit("stream:logs", msg);
     } catch (err) {
       console.error("Invalid notification payload", err);
     }

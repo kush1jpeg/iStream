@@ -11,6 +11,7 @@ import { verifyPayment } from "../controller/payment/superchat/verifyCallback";
 import { endStream } from "../controller/stream/endStream";
 import { uploadThumbnail } from "../controller/stream/uploadStreamCloudinary";
 import { getStreamId } from "../controller/stream/getStreamId";
+import { likeStream } from "../controller/stream/likeStream";
 
 export const streamRouter: Router = Router();
 
@@ -27,6 +28,4 @@ streamRouter.post("/:streamId/superchat-verify", verifyPayment);
 streamRouter.post("/initiate", authVerify, isVerified, initiateStream);
 streamRouter.post("/start", authVerify, isVerified, startStream);
 streamRouter.post("/upload/thumbnail", authVerify, isVerified, uploadThumbnail);
-
-// *** make FFmpeg write using streamId instead of streamKey: to not expose streamkey in the hls url ,
-// and also hash the stream key; for further shite protection
+streamRouter.post("/like/:streamId", authVerify, likeStream);

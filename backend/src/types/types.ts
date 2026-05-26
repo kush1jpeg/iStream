@@ -19,8 +19,7 @@ export interface INotification {
 export interface IStreamLog {
   type: NotificationType;
   msg: string;
-  streamId: Types.ObjectId;
-  userId: Types.ObjectId;
+  userId: string;
   createdAt: Date;
 }
 
@@ -61,6 +60,7 @@ export interface IStream {
   title: string;
   description?: string;
   thumbnail: string;
+  isCloud: boolean;
   tags: Array<string>;
   streamKey: string;
   VOD_URL?: string;

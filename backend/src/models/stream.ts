@@ -35,7 +35,7 @@ const StreamSchema = new Schema(
 
     status: {
       type: String,
-      enum: ["live", "ended", "pending"],
+      enum: ["live", "ended", "pending", "inactive"],
       default: "pending",
     },
 
@@ -44,9 +44,14 @@ const StreamSchema = new Schema(
       sparse: true,
     },
 
+    isCloud: {
+      type: Boolean,
+      default: false,
+    },
+
     thumbnail: {
       type: String, // url
-      default: "https://in.pinterest.com/pin/345510602689258975/",
+      default: "/thumbnail/miku.jpg",
     },
 
     startedAt: {

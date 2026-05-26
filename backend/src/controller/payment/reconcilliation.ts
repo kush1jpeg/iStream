@@ -1,6 +1,8 @@
 import cron from "node-cron";
 import { instance } from "../..";
 import { PaymentModel } from "../../models/payments";
+import { redis } from "../../config/redis";
+import { streamModel } from "../../models/stream";
 
 export function startCron() {
   cron.schedule("0 */3 * * *", async () => {

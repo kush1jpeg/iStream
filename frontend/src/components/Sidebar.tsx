@@ -157,42 +157,42 @@ export const Sidebar: React.FC = () => {
       < SearchButton />
 
 
-      < LiveStreamButton />
+      {user && (<> < LiveStreamButton />
 
-      <MessageButton />
+        <MessageButton />
 
-      {/* Divider */}
-      <div className="border-t border-border w-full mb-2" />
-      {/* Frame — sits around the avatar */}
-      {user && (
-        <>
-          {/* Frame */}
-          {user.currentFrame && (
-            <img
-              src={user.currentFrame}
-              alt="frame"
-              className="absolute opacity-90 inset-0 w-full h-full object-contain scale-125 z-10 pointer-events-none"
-            />
-          )}
+        {/* Divider */}
+        <div className="border-t border-border w-full mb-2" />
+        {/* Frame — sits around the avatar */}
+        {user && (
+          <>
+            {/* Frame */}
+            {user.currentFrame && (
+              <img
+                src={user.currentFrame}
+                alt="frame"
+                className="absolute opacity-90 inset-0 w-full h-full object-contain scale-125 z-10 pointer-events-none"
+              />
+            )}
 
-          <button
-            onClick={() => navigate(`/profile/me`)}
-            className="group focus:outline-none"
-          >
-            <img
-              src={user?.avatar}
-              alt="profile"
-              className="w-12 h-12 rounded-full object-cover brightness-125 opacity-100 border-2 hover:scale-105 transition-transform duration-150"
-            />
-          </button>
-        </>
-      )}
-      {/* Divider */}
-      <div className="border-t border-border w-full mb-2" />
+            <button
+              onClick={() => navigate(`/profile/me`)}
+              className="group focus:outline-none"
+            >
+              <img
+                src={user?.avatar}
+                alt="profile"
+                className="w-12 h-12 rounded-full object-cover brightness-125 opacity-100 border-2 hover:scale-105 transition-transform duration-150"
+              />
+            </button>
+          </>
+        )}
+        {/* Divider */}
+        <div className="border-t border-border w-full mb-2" />
 
-      <LogoutButton />
+        <LogoutButton />
 
-
+      </>)}
 
     </div>
   );

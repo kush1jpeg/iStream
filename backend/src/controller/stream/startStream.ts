@@ -7,9 +7,10 @@ import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 
 const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/live/";
+const VOD_PATH = "process.env.R2_PUBLIC_URL/hls/live/";
 
 export const startStream = async (req: Request, res: Response) => {
-  const { streamId } = req.body;
+  const { streamId, thumbnail } = req.body;
   if (!streamId) {
     return res
       .status(400)
@@ -31,7 +32,8 @@ export const startStream = async (req: Request, res: Response) => {
   }
 
   stream.status = "live";
-  stream.expiresAt = null;
+  if (!stream.isCloud)stream.thumbnail = thumbnail;
+  stream.VOD_URL = `${VOD_PATH}${stream.streamKey}/master.m3u8`;
   stream.startedAt = new Date();
   await stream.save();
 
@@ -45,7 +47,6 @@ export const startStream = async (req: Request, res: Response) => {
   // streamer: as the stream starts create redis stream details;
   const redisData = {
     streamer: JSON.stringify({
-      id: userId,
       username: user?.username,
       avatar: user?.avatar.isCloud
         ? getFullLink(user.avatar.value)
@@ -57,13 +58,16 @@ export const startStream = async (req: Request, res: Response) => {
     stream: JSON.stringify({
       title: stream.title,
       description: stream.description,
-      thumbnail: stream.thumbnail,
+      thumbnail: stream.isCloud ? getFullLink(stream.thumbnail) : stream.thumbnail,
       tags: stream.tags,
     }),
+    streamerId: userId,
+    streamId,
     HLS_PATH,
     inactiveSince: "",
     status: "pending",
     viewers: 0,
+    likes: 0,
     views: 0,
     createdAt: new Date().toISOString(),
   };

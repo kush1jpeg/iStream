@@ -7,7 +7,7 @@
 
 <p align="center" style="display:flex; flex-wrap:wrap; justify-content:center; gap:10px">
   <a href="docs/architecture.md">Architecture</a> •
-  <a href="docs/getting-started">Getting Started</a> •
+  <a href="docs/getting-started.md">Getting Started</a> •
   <a href="docs/tilt-setup.md">Tilt Setup</a> •
   <a href="docs/api-reference.md">API Reference</a> •
   <a href="docs/contributing.md">Contributing</a>
@@ -28,7 +28,6 @@
   <img src="https://img.shields.io/badge/License-BSD_3--Clause-A020F0?style=flat-square"/>
 </p>
 
----
 
 ---
 
@@ -46,7 +45,7 @@ In short: iStream aims to demonstrate a composable streaming platform with distr
 
 ### For contributors
 
-[Open an issue here->](https://github.com/atithi3dev/veren/issues) for suggestions, bugs, etc;
+[Open an issue here->](https://github.com/kush1jpeg/iStream/issues) for suggestions, bugs, etc;
 
 If you are contributing code, please read these docs first:
 
