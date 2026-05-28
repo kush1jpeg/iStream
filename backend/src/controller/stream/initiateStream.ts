@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import crypto from "crypto";
 import { streamModel } from "../../models/stream";
-import { getFullLink } from "../user/getSignedLink";
 const rtmpUrl = process.env.RTMP_URL || "rtmp://localhost:1935/live";
 
 export const initiateStream = async (req: Request, res: Response) => {
@@ -10,6 +9,7 @@ export const initiateStream = async (req: Request, res: Response) => {
     return res.status(400).json({ message: "Title and tags are required" });
   }
   const streamKey = crypto.randomBytes(15).toString("hex");
+  console.log(streamKey);
 
   const stream = await streamModel.create({
     streamerId: req.id,

@@ -13,7 +13,7 @@ import { ffmpegStreamingVod } from "./ffmpeg/vod+streaming.js";
 import pino from "pino";
 import { drainUploadQueue } from "./cloudflare/drainUpload.js";
 import { startUploadConsumer } from "./cloudflare/consumer.js";
-import { initWatcher } from "./watcher/watcher.js";
+import { initWatcher, publishStreamLog } from "./watcher/watcher.js";
 export const logger = pino(pino.destination(`/var/log/${os.hostname()}.log`));
 logger.info(`worker created ${os.hostname()}`);
 
@@ -33,6 +33,11 @@ logger.info(
     REDIS_PORT: process.env.REDIS_PORT,
     QUEUE_NAME: process.env.QUEUE_NAME,
     RTMP_URL: process.env.RTMP_URL,
+    R2_BUCKET: process.env.R2_BUCKET,
+    accessKeyId: process.env.R2_ACCESS_KEYID,
+    secretAccessKey: process.env.R2_SECRET_KEY,
+    endpoint: process.env.R2_ENDPOINT,
+    R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
   },
   "env check",
 );
@@ -52,16 +57,22 @@ async function startWorker() {
       const watcher = await initWatcher(MTX_PATH);
       if (!watcher)
         logger.info(`[!] ffmpeg error for stream  ${MTX_PATH.split("/")[1]}:`);
-      await startUploadConsumer(MTX_PATH);
 
-      logger.info(`[+] Received job for stream ${MTX_PATH.split("/")[1]}`);
+      // no await here cuz this runs concurrently;
+      logger.info("[+] starting the upload consume concurrently");
+      startUploadConsumer(MTX_PATH);
+
+      await publishStreamLog(
+        `[+] Received job for stream ${MTX_PATH.split("/")[1]}`,
+        MTX_PATH,
+        "info",
+      );
       busy = true;
 
       const containerID = os.hostname(); // or /proc/self/cgroup
-
       const ffmpegProcess = spawn(
         "ffmpeg",
-        ffmpegStreamingVod(RTMP_URL, MTX_PATH), // change it to ffmpegStreaming for without VOD;
+        ffmpegStreamingVod(RTMP_URL, MTX_PATH.split("/")[1]), // change the func call to ffmpegStreaming for without VOD;
         {
           stdio: "inherit",
         },
@@ -69,30 +80,44 @@ async function startWorker() {
       await redis.hset("workers", containerID, "busy");
 
       ffmpegProcess.on("close", async (code) => {
-        logger.info(
+        await publishStreamLog(
           `[x] Stream  ${MTX_PATH.split("/")[1]} finished with code ${code}`,
+          MTX_PATH,
+          "info",
         );
 
         // stop watching
         await watcher.close();
 
-        // mark uploading
-        await redis.hset("workers", containerID, "uploading");
-
         // drain the upload queue
         await drainUploadQueue(MTX_PATH);
 
         // cleanup local files
-        fs.rmSync(`/hls/live/${MTX_PATH}`, { recursive: true, force: true });
+        fs.rmSync(`/hls/${MTX_PATH}`, { recursive: true, force: true });
+        await publishStreamLog(
+          `[VOD] cleaned up ${MTX_PATH}`,
+          MTX_PATH,
+          "info",
+        );
+
+        await redis.hset("workers", containerID, "idle");
+        busy = false;
+        await publishStreamLog(
+          `[SUCCESS] Stream Uploaded to Cloudflare-R2 : ${MTX_PATH}`,
+          MTX_PATH,
+          "info",
+        );
 
         channel.ack(msg); // job done
       });
 
-      ffmpegProcess.on("error", (err) => {
-        logger.info(
-          `[!] ffmpeg error for stream  ${MTX_PATH.split("/")[1]}:`,
-          err,
+      ffmpegProcess.on("error", async (err) => {
+        await publishStreamLog(
+          `[!] ffmpeg error for stream - ${MTX_PATH.split("/")[1]}: ${err}`,
+          MTX_PATH,
+          "err",
         );
+        logger.info(err);
         channel.nack(msg); // requeue
       });
     },
@@ -101,7 +126,7 @@ async function startWorker() {
 }
 
 startWorker().catch((err) =>
-  logger.error("[!] Starting of worker failed", err),
+  publishStreamLog(`[!] Starting of worker failed ${err}`, MTX_PATH, "info"),
 );
 
 process.on("SIGINT", () => handleTerm("SIGINT", os.hostname(), busy));

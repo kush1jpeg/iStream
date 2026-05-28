@@ -60,5 +60,5 @@ export const ffmpegStreamingVod = (RTMP_URL, MTX_PATH) => [
   //  "v:0,a:0 v:1,a:1 v:2,a:2", // for 1080,720 and 480
   "-master_pl_name",
   "master.m3u8",
-  `/hls/${MTX_PATH}/v%v/index.m3u8`,
+  `/hls/live/${MTX_PATH}/v%v/index.m3u8`,
 ];

@@ -45,6 +45,16 @@ If you want to verify the image exists locally, run:
 docker images | grep abs_istream-ffmpeg-worker
 ```
 
+## Seeding the iStream Shop Collection in the DB
+
+The seed script populates the database with default shop items (e.g. frames and sticker packs). This is useful for development, testing, or resetting data.
+
+```bash
+cd backend
+npm run seed
+```
+
+
 ## Start the project
 
 From the repository root, start the full development stack with Tilt.

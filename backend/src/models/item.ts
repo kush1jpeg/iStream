@@ -4,8 +4,14 @@ export interface IShopItem extends Document {
   name: string;
   description?: string;
   price: number;
-  type: "animation" | "frame";
+  type: "animation" | "frame" | "stickerPack" | "sticker";
   imageURL?: string;
+  stickers?: [
+    {
+      name: { type: String };
+      imageURL: { type: String };
+    },
+  ];
   active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -15,8 +21,18 @@ const itemSchema = new mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String },
     price: { type: Number, required: true, min: 0 },
-    type: { type: String, enum: ["animation", "frame"], required: true },
+    type: {
+      type: String,
+      enum: ["animation", "frame", "stickerPack", "sticker"],
+      required: true,
+    },
     imageURL: { type: String },
+    stickers: [
+      {
+        name: { type: String },
+        imageURL: { type: String },
+      },
+    ],
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
     active: { type: Boolean, default: true }, // can be deactivated

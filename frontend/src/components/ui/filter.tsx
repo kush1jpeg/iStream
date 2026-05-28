@@ -46,7 +46,7 @@ export const FilterShop = ({ filter, setFilter }: Props) => {
         </DrawerHeader>
 
         <div className="p-6 flex gap-4 flex-wrap">
-          {["frame", "animation"].map((t) => (
+          {["frame", "animation", "sticker", "stickerPack"].map((t) => (
             <Button
               key={t}
               onClick={() => setFilter(t)}

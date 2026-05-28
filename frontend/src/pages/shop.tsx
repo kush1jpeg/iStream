@@ -9,45 +9,66 @@ import { Footer } from "@/components/Footer";
 
 
 export default function ShopLanding() {
-
   const [query, setQuery] = useState("");
   const [drops, setDrops] = useState<ShopItem[]>([]);
+  const [carousel, setCarousel] = useState<ShopItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState<string | null>(null);
+  const [allDrops, setAllDrops] = useState<ShopItem[]>([]);
 
   useEffect(() => {
-    const fetchShopItems = async () => {
+    const fetchAll = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(`/api/shop/`);
-        setDrops(data.data);
+        const { data } = await api.get("shop/getAll");
+
+        const items = data.data;
+        console.log(items)
+        setAllDrops(items);
+        setDrops(items);
+        setCarousel(items);
       } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchShopItems();
+    fetchAll();
   }, []);
 
-
   useEffect(() => {
-
-    if (query.trim().length < 2) {
-      return;
-    }
-
+    const trimmed = query.trim();
     const timeout = setTimeout(async () => {
-      setLoading(true);
       try {
-        const { data } = await api.get(`/api/shop/search`, {
+        setLoading(true);
+
+        if (!trimmed && !filter) {
+          setDrops(allDrops);
+          return;
+        }
+
+        if (!trimmed && filter) {
+          setDrops(allDrops.filter(item => item.type === filter));
+          return;
+        }
+
+        if (trimmed.length < 2) {
+          // query exists but too short — apply filter locally if any
+          const filtered = filter
+            ? allDrops.filter(item => item.type === filter)
+            : allDrops;
+          setDrops(filtered);
+          return;
+        }
+
+        // query >= 2 chars — hit search API
+        const { data } = await api.get("/shop/search", {
           params: {
-            user: query,
+            q: trimmed,
             ...(filter && { type: filter }),
           },
-          withCredentials: true,
         });
-        setDrops(data);
+        setDrops(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -56,22 +77,15 @@ export default function ShopLanding() {
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [query, filter]);
+  }, [query, filter, allDrops]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
-      <span className="font-mono text-vhs-purple animate-pulse">loading shop...</span>
-    </div>
-  );
+
+  const isSearching = query.trim().length >= 2;
 
   return (
     <div className="bg-background crt-container film-grain text-zinc-100">
-
-      {/* HERO */}
-
-      <section className="relative overflow-hidden border-border border-zinc-800 ">
+      <section className="relative overflow-hidden border-border border-zinc-800">
         <div className="max-w-7xl mx-auto px-6 py-4 grid md:grid-cols-2 gap-10 items-center">
-
           <div className="space-y-6 z-50">
             <h1 className="text-5xl font-bold leading-tight">
               Digital Drops.<br />Forged Fresh.
@@ -80,36 +94,46 @@ export default function ShopLanding() {
             <p className="text-zinc-400 max-w-md">
               Limited creator assets. Avatars, overlays, badges. Buy once. Flex forever.
             </p>
-
           </div>
 
-          {/* HERO CAROUSEL */}
-          <Carousel slides={drops} />
-
+          <Carousel slides={carousel} />
         </div>
       </section>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-12 ">
-
-
+      <div className="max-w-7xl mx-auto p-6 space-y-12">
         <section className="space-y-6">
           <div className="flex items-center justify-between mr-10">
-            <h2 className="text-3xl font-semibold">All Drops</h2>
+            <h2 className="text-3xl font-semibold">
+              {isSearching ? "Search Results" : "All Drops"}
+            </h2>
             <div className="w-full max-w-md">
               <SearchBar query={query} setQuery={setQuery} />
             </div>
           </div>
           <FilterShop filter={filter} setFilter={setFilter} />
-
           <div className="grid md:grid-cols-4 gap-6">
-            {drops.map((item) => (
-              <ProductCard item={item} />
-            ))}
+            {loading ? (
+              <div className="col-span-4 flex justify-center py-12">
+                <span className="font-mono text-vhs-purple animate-pulse text-xs uppercase tracking-widest">
+                  searching...
+                </span>
+              </div>
+            ) : drops.length === 0 ? (
+              <div className="col-span-4 text-center py-12">
+                <p className="font-mono text-xs text-muted-foreground opacity-50 uppercase tracking-widest">
+                  {'>'} no items found
+                </p>
+              </div>
+            ) : (
+              drops.map((item) => (
+                <ProductCard key={item._id} item={item} />
+              ))
+            )}
           </div>
         </section>
       </div>
+
       <Footer />
     </div>
   );
 }
-

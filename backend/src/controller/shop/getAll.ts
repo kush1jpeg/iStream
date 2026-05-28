@@ -3,13 +3,13 @@ import { shopItemModel } from "../../models/item";
 
 export const getShopHomepage = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
-  const LIMIT = 10;
+  const LIMIT = 20;
   const skip = (page - 1) * LIMIT;
 
   const [data, total] = await Promise.all([
     shopItemModel
       .find({ active: true })
-      .select("name description price type imageURL")
+      .select("name description price type imageURL stickers")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(LIMIT)

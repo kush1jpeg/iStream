@@ -1,21 +1,29 @@
-import { redis } from "../config/redis";
+import { redis } from "../config/redis.js";
+import { logger } from "../index.js";
 import fs from "fs";
 import path from "path";
 
 export async function startUploadConsumer(MTX_PATH) {
+  await publishStreamLog(
+    `[CONSUMER blpop] started for ${MTX_PATH}`,
+    MTX_PATH,
+    "info",
+  );
   while (true) {
     // BLPOP blocks until item available- no polling
-    const result = await redis.blpop(`upload:queue:${MTX_PATH}`, 0);
+    const result = await redis.blpop(`upload:queue:${MTX_PATH}`, 5);
     if (!result) continue;
+    await publishStreamLog("starting upload to R2", MTX_PATH, "info");
 
     const job = JSON.parse(result[1]);
 
     try {
       await uploadSegment(job.filePath, job.MTX_PATH);
+      await publishStreamLog(`starting upload to R2, ${job.filePath}`, "info");
       fs.unlinkSync(job.filePath);
-      console.log(`[VOD] uploaded ${job.filePath}`);
+      await publishStreamLog(`del - ${job.filePath}`, MTX_PATH, "info");
     } catch (err) {
-      console.error(`[VOD] upload failed:`, err);
+      await publishStreamLog(`[VOD] upload failed:, ${err}`, MTX_PATH, "err");
 
       if (job.retries < 3) {
         await new Promise((resolve) =>
@@ -30,7 +38,11 @@ export async function startUploadConsumer(MTX_PATH) {
         );
       } else {
         // push into a dlq/dlx
-        console.error(`[VOD] segment dead lettered: ${job.filePath}`);
+        await publishStreamLog(
+          `[VOD] segment dead lettered: ${job.filePath}`,
+          MTX_PATH,
+          "err",
+        );
       }
     }
   }
@@ -42,6 +54,7 @@ import {
   GetObjectCommand,
   ListObjectsV2Command,
 } from "@aws-sdk/client-s3"; // docs
+import { publishStreamLog } from "../watcher/watcher.js";
 
 const r2 = new S3Client({
   region: "auto", // Required by AWS SDK, not used by R2
@@ -55,14 +68,21 @@ const r2 = new S3Client({
 });
 
 export async function uploadSegment(filePath, MTX_PATH) {
+  if (!fs.statSync(filePath).size > 0) return;
+
   const fileName = path.basename(filePath);
   const isM3u8 = fileName.endsWith(".m3u8");
 
-  // /hls/live/kush/v0/seg0.ts → MTX_PATH/v0/seg0.ts
+  // /hls/live/kush/v0/seg0.ts -> MTX_PATH/v0/seg0.ts
   const relativePath = filePath.split(`/hls/live/`)[1]; // /kush/v0/seg0.ts
   const streamPath = relativePath.split("/").slice(1).join("/"); // v0/seg0.ts
 
+  logger.info(
+    `filePath ${filePath}, [rel]${relativePath}    streamPath${streamPath}`,
+  );
+
   const key = `hls/${MTX_PATH}/${streamPath}`;
+  logger.info(`[VOD] uploading ${key}`);
 
   const body = fs.readFileSync(filePath);
 

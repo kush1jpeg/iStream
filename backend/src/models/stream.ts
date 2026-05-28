@@ -30,7 +30,6 @@ const StreamSchema = new Schema(
     streamKey: {
       type: String,
       required: true,
-      select: false,
     },
 
     status: {

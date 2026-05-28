@@ -15,14 +15,14 @@ const StreamPage = () => {
   const [stream, setStream] = useState<IStreamRedis | null>(null);
 
   // check for the istreamer to show the additional logs of redis pubsub
-
   useEffect(() => {
-    api.get(`/api/stream/${streamId}`)
+    api.get(`stream/${streamId}`)
       .then(({ data }) => setStream(data.stream))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [streamId]);
 
+  console.log(stream)
   if (loading) return (
     <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -100,7 +100,7 @@ const StreamPage = () => {
                   {stream.stream.description}
                 </p>
 
-                <a href={`/profile/${stream.streamer.id}`} className="flex flex-col items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
+                <a href={`user${stream.streamer.id}`} className="flex flex-col items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
                   <img
                     src={stream.streamer.avatar}
                     alt={stream.streamer.id}

@@ -16,10 +16,10 @@ type RazorpayResponse = {
   razorpay_signature: string;
 };
 
-export const handlePayment = async (productId: string) => {
+export const handlePayment = async (productId: string, type: string, setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
   try {
     // create order  from BACKEND
-    const { data } = await api.post("/api/create-order", {
+    const { data } = await api.post(`${type}/create-order`, {
       productId,
     });
 
@@ -61,5 +61,5 @@ export const handlePayment = async (productId: string) => {
 
   } catch (err) {
     console.error("Payment failed:", err);
-  }
+  } finally { (setLoading(false)) }
 };

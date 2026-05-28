@@ -1,9 +1,9 @@
-import { logger } from "..";
-import { redis } from "../config/redis";
-import { uploadSegment } from "./consumer";
+import { logger } from "../index.js";
+import { redis } from "../config/redis.js";
+import { uploadSegment } from "./consumer.js";
 import fs from "fs";
 
-export async function drainUploadQueue(streamId: string) {
+export async function drainUploadQueue(streamId) {
   while (true) {
     const result = await redis.lpop(`upload:queue:${streamId}`);
     if (!result) break; // queue empty, exit loop
@@ -12,7 +12,11 @@ export async function drainUploadQueue(streamId: string) {
     try {
       await uploadSegment(job.filePath, job.MTX_PATH);
       fs.unlinkSync(job.filePath);
-      logger.info(`[VOD] drained ${job.filePath}`);
+      await publishStreamLog(
+        `[VOD] drained ${job.filePath}`,
+        job.MTX_PATH,
+        "info",
+      );
     } catch (err) {
       if (job.retries < 3) {
         await new Promise((r) =>
@@ -27,7 +31,11 @@ export async function drainUploadQueue(streamId: string) {
         );
       } else {
         // push to dlq or dlx
-        logger.error(`[VOD] dead lettered: ${job.filePath}`);
+        await publishStreamLog(
+          `[VOD] dead lettered: ${job.filePath}`,
+          job.MTX_PATH,
+          "err",
+        );
       }
     }
   }

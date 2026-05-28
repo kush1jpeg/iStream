@@ -94,8 +94,12 @@ export interface ShopItem {
   description?: string;
   price: number;
   imageURL?: string;
+  stickers?: [{
+    name: { type: String },
+    imageURL: { type: String },
+  }],
   active?: boolean;
-  type: "animation" | "frame"
+  type: "animation" | "frame" | "stickerPack" | "sticker"
 }
 
 export interface FollowedUser {

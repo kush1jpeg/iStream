@@ -2,13 +2,13 @@ import { Router } from "express";
 import { createOrder } from "../controller/payment/shop/createOrder";
 import { authVerify } from "../middlewares/jwtVerify";
 import { verifyPayment } from "../controller/payment/shop/verifyCallback";
-import { searchShopItems } from "../controller/payment/shop/searchItem";
-import { getShopHomepage } from "../controller/payment/shop/home";
+import { getShopHomepage } from "../controller/shop/getAll";
+import { searchShop } from "../controller/shop/search";
 
 export const shopRouter: Router = Router();
 
-shopRouter.post("/createOrderIntent", authVerify, createOrder);
-shopRouter.post("/rzp/callback", verifyPayment);
+shopRouter.post("/create-order", authVerify, createOrder);
+shopRouter.post("/verify-payment", verifyPayment);
 
-shopRouter.post("/search", searchShopItems);
-shopRouter.get("/", getShopHomepage);
+shopRouter.get("/search", searchShop);
+shopRouter.get("/getAll", getShopHomepage);

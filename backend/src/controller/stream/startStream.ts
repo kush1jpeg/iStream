@@ -7,7 +7,7 @@ import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 
 const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/live/";
-const VOD_PATH = "process.env.R2_PUBLIC_URL/hls/live/";
+const VOD_PATH = `${process.env.R2_PUBLIC_URL}/hls/live/`;
 
 export const startStream = async (req: Request, res: Response) => {
   const { streamId, thumbnail } = req.body;
@@ -32,7 +32,8 @@ export const startStream = async (req: Request, res: Response) => {
   }
 
   stream.status = "live";
-  if (!stream.isCloud)stream.thumbnail = thumbnail;
+  console.log("startStream", stream.streamKey);
+  if (!stream.isCloud) stream.thumbnail = thumbnail;
   stream.VOD_URL = `${VOD_PATH}${stream.streamKey}/master.m3u8`;
   stream.startedAt = new Date();
   await stream.save();
@@ -58,17 +59,19 @@ export const startStream = async (req: Request, res: Response) => {
     stream: JSON.stringify({
       title: stream.title,
       description: stream.description,
-      thumbnail: stream.isCloud ? getFullLink(stream.thumbnail) : stream.thumbnail,
+      thumbnail: stream.isCloud
+        ? getFullLink(stream.thumbnail)
+        : stream.thumbnail,
       tags: stream.tags,
     }),
-    streamerId: userId,
-    streamId,
+    streamerId: String(userId),
+    streamId: String(streamId),
     HLS_PATH,
     inactiveSince: "",
     status: "pending",
-    viewers: 0,
-    likes: 0,
-    views: 0,
+    viewers: "0",
+    likes: "0",
+    views: "0",
     createdAt: new Date().toISOString(),
   };
 
@@ -80,6 +83,8 @@ export const startStream = async (req: Request, res: Response) => {
   // for job-server auth
   pipeline.set(`streamKey:${stream.streamKey}`, streamId);
   await pipeline.exec();
+  const streamGotId = await redis.get(`streamKey:${stream.streamKey}`);
+  console.log(streamGotId);
 
   const notify: INotification = {
     type: "stream",

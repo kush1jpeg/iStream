@@ -20,6 +20,7 @@ import Razorpay from "razorpay";
 import { startCron } from "./controller/payment/reconcilliation";
 import { start_deadStreamConsumer } from "./controller/stream/deadStreamConsumer";
 import { chatRouter } from "./routes/chatRouter";
+import { shopRouter } from "./routes/shopRouter";
 export const instance = new Razorpay({
   key_id: process.env.KEY_ID,
   key_secret: process.env.KEY_SECRET,
@@ -44,6 +45,7 @@ app.use("/api/auth", authRouter());
 app.use("/api/user", userRouter);
 app.use("/api/stream", streamRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/shop", shopRouter);
 
 const startServer = async () => {
   try {

@@ -10,9 +10,10 @@ export const createOrder = async (req: Request, res: Response) => {
     const product = await shopItemModel.findById(productId);
     if (!product || !productId) return res.json({ msg: "product not found" });
     if (!product.active) return res.json({ msg: "product not available" });
+    const amount = Math.round(Number(product.price) * 100);
 
     const order = await instance.orders.create({
-      amount: `${product.price}* 100`,
+      amount,
       currency: "INR",
       notes: {
         type: `${product.type}`,
