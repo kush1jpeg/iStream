@@ -26,6 +26,7 @@ const Index = () => {
         params: { limit: 6, cursor: cur }
       });
       setStreams(prev => cur === 0 ? data.streams : [...prev, ...data.streams]);
+      console.log(streams);
       setHasMore(data.hasMore);
       setCursor(data.nextCursor ?? cur);
     } catch (err) {
@@ -159,12 +160,12 @@ const Index = () => {
                   .filter(s => activeTag ? s.stream.tags?.includes(activeTag) : true)
                   .map((stream, i) => (
                     <div
-                      key={stream.streamer.id}
+                      key={stream.streamerId}
                       className="animate-slide-in"
                       style={{ animationDelay: `${i * 100}ms` }}
                     >
                       <StreamCard
-                        id={stream.streamer.id}
+                        id={stream.streamerId}
                         title={stream.stream.title}
                         streamer={stream.streamer.username}
                         viewers={String(stream.viewers)}

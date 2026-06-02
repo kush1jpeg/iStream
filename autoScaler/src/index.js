@@ -10,12 +10,7 @@ export const docker = new Docker({
   socketPath: "/var/run/docker.sock",
 });
 
-import {
-  deleteWorker,
-  gracefulShutdown,
-  spawnWorker,
-  terminateStream,
-} from "./helpers.js";
+import { deleteWorker, gracefulShutdown, spawnWorker } from "./helpers.js";
 import { connectToRabbitMQ } from "./config/connectRabbitMq.js";
 
 const MAX_WORKERS = Number(process.env.MAX_WORKERS);
@@ -26,6 +21,11 @@ const IMAGE = process.env.IMAGE;
 const REDIS_PORT = process.env.REDIS_PORT;
 const RABBITMQ_URL = process.env.RABBITMQ_URL;
 const NETWORK = process.env.NETWORK;
+const R2_ENDPOINT = process.env.R2_ENDPOINT;
+const R2_ACCESS_KEYID = process.env.R2_ACCESS_KEYID;
+const R2_SECRET_KEY = process.env.R2_SECRET_KEY;
+const R2_BUCKET = process.env.R2_BUCKET;
+const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL;
 
 const allWorkers = await redis.hgetall("workers");
 if (allWorkers) {
@@ -51,6 +51,11 @@ for (let i = 0; i < MIN_WORKERS; i++) {
       REDIS_PORT,
       RABBITMQ_URL,
       NETWORK,
+      R2_BUCKET,
+      R2_ENDPOINT,
+      R2_SECRET_KEY,
+      R2_PUBLIC_URL,
+      R2_ACCESS_KEYID,
     );
   } catch (err) {
     console.error("Autoscaler failed:", err);
@@ -82,6 +87,11 @@ async function autoscaler() {
         REDIS_PORT,
         RABBITMQ_URL,
         NETWORK,
+        R2_BUCKET,
+        R2_ENDPOINT,
+        R2_SECRET_KEY,
+        R2_PUBLIC_URL,
+        R2_ACCESS_KEYID,
       );
     } else if (idleCount > 0 && total > MIN_WORKERS) {
       if (!idleTimer) {
@@ -97,30 +107,6 @@ async function autoscaler() {
     }
   } catch (err) {
     console.error("Autoscaler failed:", err);
-  }
-
-  // stopping the inactive streams
-  const streams = await redis.smembers("live:streams");
-  for (const streamId of streams) {
-    const data = await redis.hgetall(`stream:${streamId}`);
-
-    if (!data) continue;
-    if (data.status === "inactive") {
-      const inactiveSince = Number(data.inactiveSince);
-      const elapsed = Date.now() - inactiveSince;
-
-      if (elapsed > 60000) {
-        // streamer didn't came back after a min
-        await terminateStream(streamId);
-      }
-    }
-    //pending streams, OBS never connected
-    if (data.status === "pending") {
-      const age = Date.now() - new Date(data.createdAt).getTime();
-      if (age > 2 * 60000) {
-        await terminateStream(streamId);
-      }
-    }
   }
 }
 

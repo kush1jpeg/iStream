@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 
-const port = Number(process.env.REDIS_PORT) | 6379;
+const port = Number(process.env.REDIS_PORT) || 6379;
 const host = process.env.REDIS_HOST || "redis";
 
 // Export a single Redis instance to use across your app

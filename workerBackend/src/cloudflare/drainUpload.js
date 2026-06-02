@@ -1,5 +1,5 @@
-import { logger } from "../index.js";
 import { redis } from "../config/redis.js";
+import { publishStreamLog } from "../watcher/watcher.js";
 import { uploadSegment } from "./consumer.js";
 import fs from "fs";
 

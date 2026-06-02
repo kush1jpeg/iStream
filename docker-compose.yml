@@ -13,7 +13,9 @@ services:
 
 
   mediamtx:
-    build: ./config/mediamtx/
+    build: 
+      context:  ./config/mediamtx/
+      network: host
     container_name: mediamtx
     depends_on:
     - rabbitmq
@@ -41,7 +43,9 @@ services:
 
 
   auto-scaler:
-    build: ./autoScaler/
+    build: 
+      context: ./autoScaler
+      network: host
     container_name: auto-scaler
     depends_on:
       - rabbitmq
@@ -56,7 +60,9 @@ services:
 
 
   job-server:
-    build: ./jobServer/
+    build:
+      context: ./jobServer
+      network: host
     container_name: job-server
     depends_on:
       - rabbitmq
@@ -68,7 +74,9 @@ services:
 
 
   backend:
-    build: ./backend/
+    build:
+      context: ./backend
+      network: host
     env_file:
       - ./backend/.env
     container_name: main-backend
@@ -82,7 +90,9 @@ services:
 
 
   notification-service:
-    build: ./notification/
+    build:
+      context: ./notification
+      network: host
     env_file:
       - ./notification/.env
     container_name: notification-service

@@ -37,11 +37,14 @@ export const followXUnfollow = async (req: Request, res: Response) => {
         followModel.deleteOne({ _id: existing._id }),
 
         userModel.updateOne(
-          { _id: followedId },
+          { _id: followedId, followerCount: { $gt: 0 } },
           { $inc: { followerCount: -1 } },
         ),
 
-        userModel.updateOne({ _id: userId }, { $inc: { followCount: -1 } }),
+        userModel.updateOne(
+          { _id: userId, followCount: { $gt: 0 } },
+          { $inc: { followCount: -1 } },
+        ),
       ]);
 
       return res.status(200).json({
@@ -57,7 +60,10 @@ export const followXUnfollow = async (req: Request, res: Response) => {
     await Promise.all([
       userModel.updateOne({ _id: followedId }, { $inc: { followerCount: 1 } }),
 
-      userModel.updateOne({ _id: userId }, { $inc: { followCount: 1 } }),
+      userModel.updateOne(
+        { _id: userId, followCount: { $gt: 0 } },
+        { $inc: { followCount: 1 } },
+      ),
 
       publishNotifs({
         type: "follow",

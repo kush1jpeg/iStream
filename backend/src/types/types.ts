@@ -94,3 +94,54 @@ export interface IPay extends Document {
   updatedAt: Date;
   expiresAt: Date | null;
 }
+
+export interface IStreamerRedisData {
+  username: string;
+  avatar: string;
+  frame?: string;
+  animation?: string;
+}
+
+export interface IStreamRedisData {
+  title: string;
+  description: string;
+  thumbnail: string;
+  tags: string[];
+}
+export interface IStreamRedis {
+  streamer: string; // JSON.stringify(IStreamerData)
+  stream: string; // JSON.stringify(IStreamData)
+  streamerId: string;
+  streamId: string;
+  HLS_PATH: string;
+  inactiveSince: string;
+  status: "pending" | "live" | "ended" | "inactive";
+  viewers: string;
+  likes: string;
+  views: string;
+  createdAt: string;
+}
+
+export interface IStreamRedisFrontend {
+  streamer: {
+    username: string;
+    avatar: string;
+    frame?: string;
+    animation?: string;
+  };
+  stream: {
+    title: string;
+    description: string;
+    thumbnail: string;
+    tags: string[];
+  };
+  streamerId: string;
+  streamId: string;
+  HLS_PATH: string;
+  inactiveSince: string | null;
+  status: "pending" | "live" | "ended" | "inactive";
+  viewers: String;
+  likes: String;
+  views: String;
+  createdAt: String;
+}

@@ -73,7 +73,6 @@ export const getUserById = async (req: Request, res: Response) => {
       followerId: new mongoose.Types.ObjectId(userId),
       followedId: new mongoose.Types.ObjectId(profileId),
     });
-    console.log("exists result:", follow);
 
     return res.status(200).json({
       success: true,

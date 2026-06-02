@@ -14,6 +14,7 @@ type SidebarUser = {
   avatar: string;
   currentFrame?: string;
   isLive?: boolean;
+  streamId?: string;
 };
 
 export const Sidebar: React.FC = () => {

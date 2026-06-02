@@ -2,7 +2,12 @@ import type { Request, Response } from "express";
 import { redis } from "../../config/redis";
 import { streamModel } from "../../models/stream";
 import { userModel } from "../../models/user";
-import { INotification } from "../../types/types";
+import {
+  INotification,
+  IStream,
+  IStreamRedis,
+  IStreamRedisFrontend,
+} from "../../types/types";
 import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 
@@ -32,7 +37,6 @@ export const startStream = async (req: Request, res: Response) => {
   }
 
   stream.status = "live";
-  console.log("startStream", stream.streamKey);
   if (!stream.isCloud) stream.thumbnail = thumbnail;
   stream.VOD_URL = `${VOD_PATH}${stream.streamKey}/master.m3u8`;
   stream.startedAt = new Date();
@@ -46,7 +50,7 @@ export const startStream = async (req: Request, res: Response) => {
   user.isLive = true;
   await user.save();
   // streamer: as the stream starts create redis stream details;
-  const redisData = {
+  const redisData: IStreamRedis = {
     streamer: JSON.stringify({
       username: user?.username,
       avatar: user?.avatar.isCloud
@@ -81,10 +85,9 @@ export const startStream = async (req: Request, res: Response) => {
   pipeline.sadd(`live:streams`, streamId);
 
   // for job-server auth
-  pipeline.set(`streamKey:${stream.streamKey}`, streamId);
+  pipeline.set(`streamKey:${stream.streamKey}`, streamId, "EX", 15);
+  // if server dies ->  key auto-expires after 15sec -> job-server marks it as inactive -> queue clears it
   await pipeline.exec();
-  const streamGotId = await redis.get(`streamKey:${stream.streamKey}`);
-  console.log(streamGotId);
 
   const notify: INotification = {
     type: "stream",

@@ -18,7 +18,10 @@ import passport from "passport";
 
 import Razorpay from "razorpay";
 import { startCron } from "./controller/payment/reconcilliation";
-import { start_deadStreamConsumer } from "./controller/stream/deadStreamConsumer";
+import {
+  start_deadStreamConsumer,
+  startStreamHealthPoller,
+} from "./controller/stream/deadStreamConsumer";
 import { chatRouter } from "./routes/chatRouter";
 import { shopRouter } from "./routes/shopRouter";
 export const instance = new Razorpay({
@@ -78,6 +81,9 @@ const startServer = async () => {
     );
     // reconcilliation job for cleaning up pending/failed payments
     startCron();
+
+    // for cleaning up deadStreams + obsDisconnected
+    startStreamHealthPoller();
     await start_deadStreamConsumer();
 
     // await socket.io server connection

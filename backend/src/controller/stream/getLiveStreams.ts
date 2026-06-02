@@ -1,5 +1,11 @@
 import type { Request, Response } from "express";
 import { redis } from "../../config/redis";
+import {
+  IStreamerRedisData,
+  IStreamRedis,
+  IStreamRedisData,
+  IStreamRedisFrontend,
+} from "../../types/types";
 
 export const getLiveStreams = async (req: Request, res: Response) => {
   const limit = 20;
@@ -23,8 +29,27 @@ export const getLiveStreams = async (req: Request, res: Response) => {
     .map(([err, data]) => (err ? null : data))
     .filter(Boolean);
 
+  const final = streams.map((raw) => {
+    const data = raw as IStreamRedis;
+    const streamData: IStreamRedisFrontend = {
+      streamer: JSON.parse(data.streamer) as IStreamerRedisData,
+      stream: JSON.parse(data.stream) as IStreamRedisData,
+      streamerId: data.streamerId,
+      streamId: data.streamId,
+      HLS_PATH: data.HLS_PATH,
+      inactiveSince: data.inactiveSince,
+      status: data.status,
+      viewers: data.viewers,
+      likes: data.likes,
+      views: data.views,
+      createdAt: data.createdAt,
+    };
+    return streamData;
+  });
+
+  console.log("finalData - ", final);
   return res.status(200).json({
-    streams,
+    streams: final,
     hasMore,
     nextCursor: hasMore ? cursor + limit : null,
   });

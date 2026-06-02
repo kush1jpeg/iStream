@@ -1,7 +1,9 @@
 import { getPublishChannel } from "./config/connectRabbitMq.js";
 import { docker, redis } from "./index.js";
+import fs from "fs";
 
 const logsDir = process.env.LOGS_DIR;
+fs.mkdirSync(logsDir, { recursive: true });
 console.log("[+] logsDir:", logsDir);
 
 export async function spawnWorker(
@@ -11,6 +13,11 @@ export async function spawnWorker(
   REDIS_PORT,
   RABBITMQ_URL,
   NETWORK,
+  R2_BUCKET,
+  R2_ENDPOINT,
+  R2_SECRET_KEY,
+  R2_PUBLIC_URL,
+  R2_ACCESS_KEYID,
 ) {
   const ID = `worker-${crypto.randomUUID()}`;
   const container = await docker.createContainer({
@@ -21,6 +28,11 @@ export async function spawnWorker(
       `QUEUE_NAME=${QUEUE_NAME}`,
       `RTMP_URL=${RTMP_URL}`,
       `REDIS_PORT=${REDIS_PORT}`,
+      `R2_BUCKET=${R2_BUCKET}`,
+      `R2_ENDPOINT=${R2_ENDPOINT}`,
+      `R2_SECRET_KEY=${R2_SECRET_KEY}`,
+      `R2_PUBLIC_URL=${R2_PUBLIC_URL}`,
+      `R2_ACCESS_KEYID=${R2_ACCESS_KEYID}`,
     ],
     Labels: {
       role: "ffmpeg-worker",
@@ -29,7 +41,7 @@ export async function spawnWorker(
       NetworkMode: `${NETWORK}`, // SAME docker network {docker assings a prefix to each network name which i did override from compose to make this work}
       RestartPolicy: { Name: "no" },
       Binds: [
-        `${logsDir}:/var/log/`, // volume for logs of each worker
+        `${logsDir}:/var/log`, // volume for logs of each worker
         `hls_data:/hls`,
       ],
     },
@@ -51,16 +63,6 @@ export async function deleteWorker() {
       await c.remove({ force: true });
     }
   }
-}
-
-export async function terminateStream(streamId, userId) {
-  const channel = await getPublishChannel();
-  channel.publish(
-    "stream",
-    "stream.end",
-    Buffer.from(JSON.stringify({ streamId, userId })),
-    { persistent: true },
-  );
 }
 
 export const gracefulShutdown = async (signal) => {

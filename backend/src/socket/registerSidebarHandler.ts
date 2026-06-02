@@ -5,6 +5,14 @@ import { userModel } from "../models/user";
 import mongoose from "mongoose";
 import { getFullLink } from "../controller/user/getSignedLink";
 
+type SidebarUser = {
+  _id: string;
+  username: string;
+  avatar: string;
+  currentFrame?: string;
+  isLive?: boolean;
+};
+
 let userId: string;
 export function registerSidebarHandler(io: Namespace, socket: Socket) {
   io.on("connection", async (socket) => {
@@ -42,71 +50,97 @@ const resolveAvatar = (avatar: any) => {
   return avatar.isCloud ? getFullLink(avatar.value) : avatar.value;
 };
 
-export const getSidebarData = async (userId: string) => {
+export const getSidebarData = async (
+  userId: string,
+): Promise<{ live: SidebarUser[]; offline: SidebarUser[] }> => {
   const following = await followModel
     .find({ followerId: userId })
     .select("followedId")
     .lean();
 
   if (following.length === 0) {
-    // no following -> return random streaming or random 5 people
     return getRandomFallback(userId);
   }
 
   const followingIds = following.map((f) => f.followedId.toString());
 
-  // 2. check redis for live status
   const pipeline = redis.pipeline();
   followingIds.forEach((id) => pipeline.get(`live:user:${id}`));
   const results = await pipeline.exec();
 
-  const liveFollowing: any[] = [];
+  const liveIds: string[] = [];
   const offlineIds: string[] = [];
 
   results?.forEach((res, i) => {
     const streamId = res?.[1];
-    if (streamId) {
-      liveFollowing.push({ userId: followingIds[i], streamId, isLive: true });
-    } else {
-      offlineIds.push(followingIds[i]);
-    }
+    if (streamId) liveIds.push(followingIds[i]);
+    else offlineIds.push(followingIds[i]);
   });
 
-  // 3. if some are live, return live first then offline
-  if (liveFollowing.length > 0) {
-    const offline = await userModel
-      .find({ _id: { $in: offlineIds } })
-      .select("username avatar currentFrame")
-      .limit(5)
-      .lean();
-    const offlineUsers = offline.map((u) => ({
-      ...u,
-      avatar: resolveAvatar(u.avatar),
-    }));
-    return {
-      live: liveFollowing,
-      offline: offlineUsers,
-    };
-  }
+  const liveUsers = await userModel
+    .find({ _id: { $in: liveIds } })
+    .select("username avatar currentFrame")
+    .lean();
 
-  // 4. none following are live; return offline following
-  const offline = await userModel
-    .find({ _id: { $in: followingIds } })
+  const live: SidebarUser[] = liveUsers.map((u) => ({
+    _id: u._id.toString(),
+    username: u.username,
+    avatar: resolveAvatar(u.avatar),
+    currentFrame: u.currentFrame,
+    isLive: true,
+  }));
+
+  const offlineUsers = await userModel
+    .find({ _id: { $in: offlineIds } })
     .select("username avatar currentFrame")
     .limit(5)
     .lean();
-  const offlineUsers = offline.map((u) => ({
-    ...u,
+
+  const offline: SidebarUser[] = offlineUsers.map((u) => ({
+    _id: u._id.toString(),
+    username: u.username,
     avatar: resolveAvatar(u.avatar),
+    currentFrame: u.currentFrame,
+    isLive: false,
   }));
 
-  return { live: [], offline: offlineUsers };
+  const length = live.length + offline.length;
+  if (length < 7) {
+    const missing = 7 - length;
+    const randomUsers = await userModel.aggregate([
+      {
+        $match: {
+          _id: {
+            $nin: [
+              ...live.map((u) => new mongoose.Types.ObjectId(u._id)),
+              ...offline.map((u) => new mongoose.Types.ObjectId(u._id)),
+            ],
+          },
+        },
+      },
+      { $sample: { size: missing } },
+      { $project: { username: 1, avatar: 1, currentFrame: 1, isLive: 1 } },
+    ]);
+
+    const fallbackUsers: SidebarUser[] = randomUsers.map((u) => ({
+      _id: u._id.toString(),
+      username: u.username,
+      avatar: resolveAvatar(u.avatar),
+      currentFrame: u.currentFrame,
+      isLive: u.isLive,
+    }));
+
+    offline.push(...fallbackUsers);
+  }
+
+  return { live, offline };
 };
 
-const getRandomFallback = async (userId: string) => {
-  // check if anyone is streaming
+const getRandomFallback = async (
+  userId: string,
+): Promise<{ live: SidebarUser[]; offline: SidebarUser[] }> => {
   const liveStreamIds = await redis.smembers("live:streams");
-  console.log("random init suggestions");
+
   if (liveStreamIds.length > 0) {
     const randomLive = liveStreamIds
       .sort(() => Math.random() - 0.5)
@@ -116,19 +150,37 @@ const getRandomFallback = async (userId: string) => {
       randomLive.map((id) => redis.hgetall(`stream:${id}`)),
     );
 
-    return { live: streamData.filter(Boolean), offline: [] };
+    const live: SidebarUser[] = streamData.filter(Boolean).map((item: any) => {
+      const streamer = item.streamer;
+
+      return {
+        _id: item.streamerId,
+        username: streamer?.username ?? "",
+        avatar: streamer?.avatar ?? "",
+        currentFrame: streamer?.frame,
+        isLive: item.status === "live",
+      };
+    });
+
+    return {
+      live,
+      offline: [],
+    };
   }
 
-  // if nobody streaming then random 5 people
   const users = await userModel.aggregate([
     { $match: { _id: { $ne: new mongoose.Types.ObjectId(userId) } } },
     { $sample: { size: 5 } },
     { $project: { username: 1, avatar: 1, currentFrame: 1 } },
   ]);
-  const randomUsers = users.map((u) => ({
-    ...u,
+
+  const offline: SidebarUser[] = users.map((u) => ({
+    _id: u._id.toString(),
+    username: u.username,
     avatar: resolveAvatar(u.avatar),
+    currentFrame: u.currentFrame,
+    isLive: false,
   }));
 
-  return { live: [], offline: randomUsers };
+  return { live: [], offline };
 };

@@ -3,7 +3,7 @@ dotenv.config();
 
 import express from "express";
 import { connectRabbitMQ } from "./config/rabbitmq.js";
-import { redisClient, redisConnect } from "./config/redis.js";
+import { redisConnect } from "./config/redis.js";
 import { enqueueTasks } from "./controllers/enqueue.js";
 import { handleInactive } from "./controllers/handleInactive.js";
 
@@ -24,9 +24,6 @@ app.post("/enqueue", enqueueTasks);
 app.post("/stream-inactive", handleInactive);
 
 await redisConnect();
-// for just debugging
-console.log("created a test streamkey in redis");
-redisClient.set(`streamKey:kush`, "thisIsstreamId");
 
 app.listen(PORT, () => {
   console.log(`[+] Job-server listening on port ${PORT}`);
