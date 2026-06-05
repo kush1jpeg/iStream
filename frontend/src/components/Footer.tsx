@@ -26,7 +26,7 @@ export const Footer = () => {
               <div className="text-muted-foreground pl-4 space-y-1">
                 <p>{'>'} adaptive bitrate streaming platform — built from scratch</p>
                 <p>{'>'} <span className="text-terminal-green">stack:</span> node, ffmpeg, mediamtx, rabbitmq, redis, docker, nginx, Tilt, etc</p>
-                <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, live chat, shop, superchat, etc</p>
+                <p>{'>'} <span className="text-vhs-purple">features:</span> abs transcoding, autoscaling workers, segment-level uploads, superchat(rzp), etc</p>
                 <p>{'>'} running on coffee & marlboro at 3am</p>
                 <p className="text-vhs-cyan">
                   {'>'}{" "}

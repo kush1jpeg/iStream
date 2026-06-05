@@ -5,20 +5,21 @@ import { IPay } from "../types/types";
 
 interface ChatPayload {
   streamId: string;
-  message: string;
+  msg: string;
 }
 
 export function registerLiveChatHandler(io: Namespace, socket: Socket) {
-  socket.on("stream:send", async ({ streamId, message }: ChatPayload) => {
+  socket.on("stream:send", async ({ streamId, msg }: ChatPayload) => {
     const userId = socket.data.userId;
-    // do a streamId check based on redis hash
+    const username = socket.data.username;
+
     if (!(await redis.exists(`stream:${streamId}`))) {
       return socket.emit("error", "Stream does not exist");
     }
-
     socket.to(streamId).emit("stream:chat", {
-      message,
+      msg,
       userId,
+      username,
       timeStamp: Date.now(),
     });
   });
@@ -43,8 +44,8 @@ export async function superchatHandler(io: Namespace) {
         createdAt: payload.createdAt,
       };
       io.to(payload.streamId!.toString()).emit(
+        "superchat",
         JSON.stringify(superchat),
-        "stream:chat",
       );
 
       channel.ack(msg);

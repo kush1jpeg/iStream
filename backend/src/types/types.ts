@@ -145,3 +145,12 @@ export interface IStreamRedisFrontend {
   views: String;
   createdAt: String;
 }
+
+export interface IMsg extends Document {
+  _id: Types.ObjectId;
+  senderId: Types.ObjectId;
+  conversationKey: String;
+  message: String;
+  timestamp: Date;
+  readBy: Types.ObjectId[];
+}

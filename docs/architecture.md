@@ -83,6 +83,109 @@ graph TD
 
 ---
 
+##  Stream liveness detection logic-
+
+iStream implements stream liveness detection via a TTL-based heartbeat pattern in Redis. Rather than relying solely on MediaMTX's runOnNotReady webhook, which often misfires and is unreliable if accepting all the connections - every segment processing task issued by the job-server performs a SET streamKey:{hash} {streamId} EX 15 as a side effect, acting as a rolling lease renewal. 
+
+The key's 15-second TTL means it expires automatically if the encoder stops pushing — no explicit teardown required.
+
+A health poller running every 30 seconds iterates the live:streams sorted set and checks for the presence of each stream's heartbeat key. A missing key triggers a state machine transition: live → inactive on first detection, followed by a 10-minute grace period to allow reconnection. If the key remains absent past the grace window, the stream transitions to ended via an atomic pipeline (HSET + SREM), and a job is enqueued on the streamEnd queue for downstream cleanup - HLS segment purging, R2 dumping, analytics finalization.
+This design gives you at-most-once false termination (the grace period absorbs encoder restarts), crash safety (server death stops lease renewal, TTL handles the rest without a watchdog process).
+```mermaid
+
+flowchart TD
+    OBS(["`**OBS connects**
+    RTMP push to MediaMTX`"])
+ 
+    VERIFY["`**verifyStreamKey()**
+    streamKey:hash → streamId → status`"]
+ 
+    HEARTBEAT["`**SET streamKey:{key} streamId EX 15**
+    rolling lease — heartbeat starts`"]
+ 
+    STATUS_LIVE["`**HSET stream:{id} status live**
+    stream hash marked live`"]
+ 
+    JOB["`**job-server processes segment task**
+    pipeline.set streamKey:{key} EX 15`"]
+ 
+    POLLER["`**streamHealthPoller() — every 30s**
+    iterates live:streams SET`"]
+ 
+    TTL_CHECK{"`**GET streamKey:{key}**
+    key present?`"}
+ 
+    SKIP(["`skip — stream alive`"])
+ 
+    STATUS_CHECK{"`**HGET stream:{id} status**
+    which state?`"}
+ 
+    MARK_INACTIVE["`**HSET status inactive**
+    inactiveSince = Date.now()`"]
+ 
+    GRACE{"`**inactiveSince > 10 min?**
+    grace period check`"}
+ 
+    WAIT(["`wait — still in grace period
+    OBS may reconnect`"])
+ 
+    RECONNECT["`**verifyStreamKey() on reconnect**
+    inactive → live, heartbeat renewed`"]
+ 
+    ATOMIC["`**pipeline — atomic cleanup**
+    HSET status ended
+    SREM live:streams {id}`"]
+ 
+    QUEUE["`**streamEndQueue.add**
+    stream:end job enqueued`"]
+ 
+    WORKER["`**queue worker**
+    HLS purge · R2 cleanup · analytics`"]
+ 
+    %% ── happy path ──
+    OBS --> VERIFY
+    VERIFY --> HEARTBEAT
+    VERIFY --> STATUS_LIVE
+    HEARTBEAT --> JOB
+    STATUS_LIVE --> JOB
+    JOB -->|renews lease every task| HEARTBEAT
+    JOB --> POLLER
+ 
+    %% ── health poll ──
+    POLLER --> TTL_CHECK
+    TTL_CHECK -->|yes — key alive| SKIP
+    TTL_CHECK -->|no — key expired| STATUS_CHECK
+ 
+    %% ── state machine ──
+    STATUS_CHECK -->|live or pending| MARK_INACTIVE
+    STATUS_CHECK -->|inactive| GRACE
+ 
+    GRACE -->|no — within grace| WAIT
+    WAIT -->|OBS reconnects| RECONNECT
+    RECONNECT --> HEARTBEAT
+ 
+    GRACE -->|yes — grace exceeded| ATOMIC
+    ATOMIC --> QUEUE
+    QUEUE --> WORKER
+ 
+    %% ── styles ──
+    classDef obs      fill:#2e1065,stroke:#a78bfa,color:#e9d5ff
+    classDef redis    fill:#064e3b,stroke:#34d399,color:#d1fae5
+    classDef logic    fill:#451a03,stroke:#fb923c,color:#fed7aa
+    classDef queue    fill:#4c0519,stroke:#fb7185,color:#ffe4e6
+    classDef terminal fill:#1e1b4b,stroke:#818cf8,color:#e0e7ff
+ 
+    class OBS obs
+    class HEARTBEAT,STATUS_LIVE,ATOMIC redis
+    class VERIFY,JOB,POLLER,MARK_INACTIVE,RECONNECT logic
+    class TTL_CHECK,STATUS_CHECK,GRACE logic
+    class QUEUE,WORKER queue
+    class SKIP,WAIT terminal
+ 
+```
+
+---
+
 ## Streaming Pipeline
 
 > From OBS hitting the ingest server to the viewer receiving HLS in their browser.

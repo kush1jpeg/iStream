@@ -50,7 +50,7 @@ export const startStreamHealthPoller = () => {
           continue;
         }
 
-        if (streamData.status === "live") {
+        if (streamData.status === "live" || streamData.status === "pending") {
           // just dropped — mark inactive
           await redis.hset(`stream:${streamId}`, {
             status: "inactive",
@@ -65,7 +65,6 @@ export const startStreamHealthPoller = () => {
             Date.now() - Number(streamData.inactiveSince);
           if (inactiveDuration < INACTIVE_GRACE_MS) continue;
 
-          //grace period over → end stream
           const pipeline = redis.pipeline();
           pipeline.hset(`stream:${streamId}`, {
             status: "ended",
@@ -74,7 +73,7 @@ export const startStreamHealthPoller = () => {
           pipeline.srem("live:streams", streamId);
           await pipeline.exec();
 
-          // push to your streamEnd queue
+          // push to streamEnd queue
           await pushToTerminateStream(streamId, streamData.streamerId);
           console.log(`[poller] ${streamId} → ended, pushed to queue`);
         }

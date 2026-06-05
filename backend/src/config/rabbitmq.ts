@@ -61,3 +61,14 @@ export async function connectToQueues(channel: ConfirmChannel) {
   await channel.assertQueue("chat_queue", { durable: true });
   await channel.bindQueue("chat_queue", "notification", "chat");
 }
+
+export async function checkRabbitMQ() {
+  if (!connection) return false;
+  try {
+    const channel = await getPublishChannel();
+    await channel.checkQueue("like_queue");
+    return true;
+  } catch {
+    return false;
+  }
+}

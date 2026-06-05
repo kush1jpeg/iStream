@@ -9,7 +9,6 @@
   <a href="docs/architecture.md">Architecture</a> •
   <a href="docs/getting-started.md">Getting Started</a> •
   <a href="docs/tilt-setup.md">Tilt Setup</a> •
-  <a href="docs/api-reference.md">API Reference</a> •
   <a href="docs/contributing.md">Contributing</a>
 </p>
 

@@ -25,11 +25,20 @@ redis.on("error", (err) => {
 export const redisConnect = async () => {
   try {
     await redis.ping();
-    console.log("✅ Redis ping successful");
+    console.log("✅ redisConnect successful");
     return true;
   } catch (error) {
-    console.error("❌ Redis ping failed:", error);
+    console.error("❌ redisConnect failed:", error);
     process.exit(1); // fail fast if Redis is down
+  }
+};
+
+export const checkRedis = async (): Promise<boolean> => {
+  try {
+    await redis.ping();
+    return true;
+  } catch {
+    return false;
   }
 };
 

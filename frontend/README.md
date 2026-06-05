@@ -73,3 +73,10 @@ From `frontend`:
 2. open `frontend` and install dependencies
 3. configure `frontend/.env` with `VITE_BACKEND_URL` and `VITE_RAZORPAY_KEY`
 4. run `npm run dev`
+
+
+## visit next
+
+- [getting-started](../docs/getting-started.md)
+- [architecture](../docs/architecture.md)
+

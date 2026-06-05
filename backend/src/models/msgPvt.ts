@@ -1,14 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
 
-export interface IMsg extends Document {
-  _id: mongoose.Types.ObjectId;
-  senderId: mongoose.Types.ObjectId;
-  conversationKey: String;
-  message: String;
-  timestamp: Date;
-  readBy: mongoose.Types.ObjectId[];
-}
-
 const messageSchema = new Schema(
   {
     senderId: { type: mongoose.Types.ObjectId, ref: "users" },

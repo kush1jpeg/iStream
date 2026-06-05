@@ -64,9 +64,9 @@ export interface IStreamRedis {
   HLS_PATH: string;
   inactiveSince: string | null;
   status: "pending" | "live" | "ended";
-  viewers: number;
-  likes: number;
-  views: number;
+  viewers: string;
+  likes: string;
+  views: string;
   createdAt: string;
 }
 
@@ -112,4 +112,21 @@ export interface FollowedUser {
   StreamURL?: string;
 }
 
+
+export type LogLevel = "err" | "info";
+export interface IStreamLog {
+  userId: string;
+  level: LogLevel;
+  msg: string;
+  createdAt?: Date;
+}
+
+export interface IMsg extends Document {
+  _id: String;
+  senderId: String;
+  conversationKey: String;
+  message: String;
+  timestamp: Date;
+  readBy: String[];
+}
 

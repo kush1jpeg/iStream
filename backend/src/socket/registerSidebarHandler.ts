@@ -54,7 +54,7 @@ export const getSidebarData = async (
   userId: string,
 ): Promise<{ live: SidebarUser[]; offline: SidebarUser[] }> => {
   const following = await followModel
-    .find({ followerId: userId })
+    .find({ followerId: userId, followedId: { $ne: userId } })
     .select("followedId")
     .lean();
 
@@ -112,6 +112,7 @@ export const getSidebarData = async (
         $match: {
           _id: {
             $nin: [
+              new mongoose.Types.ObjectId(userId),
               ...live.map((u) => new mongoose.Types.ObjectId(u._id)),
               ...offline.map((u) => new mongoose.Types.ObjectId(u._id)),
             ],
@@ -150,17 +151,20 @@ const getRandomFallback = async (
       randomLive.map((id) => redis.hgetall(`stream:${id}`)),
     );
 
-    const live: SidebarUser[] = streamData.filter(Boolean).map((item: any) => {
-      const streamer = item.streamer;
+    const live: SidebarUser[] = streamData
+      .filter(Boolean)
+      .filter((item: any) => item.streamerId !== userId)
+      .map((item: any) => {
+        const streamer = item.streamer;
 
-      return {
-        _id: item.streamerId,
-        username: streamer?.username ?? "",
-        avatar: streamer?.avatar ?? "",
-        currentFrame: streamer?.frame,
-        isLive: item.status === "live",
-      };
-    });
+        return {
+          _id: item.streamerId,
+          username: streamer?.username ?? "",
+          avatar: streamer?.avatar ?? "",
+          currentFrame: streamer?.frame,
+          isLive: item.status === "live",
+        };
+      });
 
     return {
       live,

@@ -20,3 +20,28 @@ export const dbConnect = async (retries = 6, delay = 3000) => {
   console.error("❌ MongoDB connection failed after all retries");
   process.exit(1);
 };
+
+export const mongoStatus = () => {
+  const states = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  } as const;
+
+  return {
+    connected: mongoose.connection.readyState === 1,
+    state:
+      states[mongoose.connection.readyState as keyof typeof states] ??
+      "unknown",
+  };
+};
+
+/*
+  {
+  "mongoDB": {
+    "connected": true,
+    "state": "connected"
+  }
+}
+*/

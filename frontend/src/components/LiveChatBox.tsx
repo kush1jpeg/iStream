@@ -9,14 +9,14 @@ interface Message {
   id: string;
   username: string;
   message: string;
-  timestamp: string;
+  createdAt: string;
 }
 
 export const ChatBox = () => {
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", username: "retro_user", message: "This stream is amazing!", timestamp: "12:34" },
-    { id: "2", username: "pixel_fan", message: "Love the analog vibes", timestamp: "12:35" },
-    { id: "3", username: "vhs_collector", message: "Reminds me of old broadcasts", timestamp: "12:36" },
+    { id: "1", username: "retro_user", message: "This stream is amazing!", createdAt: "12:34" },
+    { id: "2", username: "pixel_fan", message: "Love the analog vibes", createdAt: "12:35" },
+    { id: "3", username: "vhs_collector", message: "Reminds me of old broadcasts", createdAt: "12:36" },
   ]);
   const [input, setInput] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
@@ -32,7 +32,7 @@ export const ChatBox = () => {
       id: Date.now().toString(),
       username: "you",
       message: input,
-      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      createdAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     };
 
     setMessages([...messages, newMessage]);
@@ -62,7 +62,7 @@ export const ChatBox = () => {
         {messages.map((msg) => (
           <div key={msg.id} className="group animate-slide-in">
             <div className="flex items-baseline gap-2">
-              <span className="text-xs text-muted-foreground">{msg.timestamp}</span>
+              <span className="text-xs text-muted-foreground">{msg.createdAt}</span>
               <span className={cn(
                 "text-sm font-mono",
                 msg.username === "you" ? "text-accent" : "text-primary"

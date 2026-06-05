@@ -57,5 +57,4 @@ The result is a streaming platform with robust failover boundaries, scalable wor
 ### Read Next -
 
 - [Architecture](./architecture.md)
-- [api-reference](./api-reference.md)
 - [Contributing](./contributing.md)

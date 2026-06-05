@@ -1,5 +1,5 @@
 import { Namespace, Socket } from "socket.io";
-import { redis, redisSub } from "../config/redis";
+import { redisSub } from "../config/redis";
 import { INotification, IStreamLog } from "../types/types";
 
 export function registerNotifyHandler(io: Namespace, socket: Socket) {

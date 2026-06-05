@@ -19,7 +19,19 @@ export function registerStreamHandler(io: Server, socket: Socket) {
   socket.on("stream:leave", async ({ streamId }) => {
     socket.leave(streamId);
 
-    const viewers = await redis.hincrby(`stream:${streamId}`, "viewers", -1);
+    const viewers = await redis.eval(
+      `
+  local current = tonumber(redis.call('HGET', KEYS[1], ARGV[1]) or '0')
+
+  if current <= 0 then
+    return 0
+  end
+  return redis.call('HINCRBY', KEYS[1], ARGV[1], -1)
+  `,
+      1,
+      `stream:${streamId}`,
+      "viewers",
+    );
 
     io.to(streamId).emit("stream:viewers", Number(viewers));
   });

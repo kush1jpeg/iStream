@@ -36,42 +36,47 @@ export const authVerify = async (
 
 import { Socket } from "socket.io";
 import { parse as parseCookie } from "cookie";
+import { userModel } from "../models/user";
 
-export const socketAuthMiddleware = (
+export const socketAuthMiddleware = async (
   socket: Socket,
   next: (err?: Error) => void,
 ) => {
   try {
     const rawCookie = socket.handshake.headers.cookie;
-    console.log("🔐 Socket Auth - checking cookie:", { rawCookie: !!rawCookie });
-    
+    console.log("[Socket_Auth] - checking cookie:", { rawCookie: !!rawCookie });
+
     if (!rawCookie) {
-      console.log("❌ AUTH_MISSING: No cookie header");
+      console.log("[AUTH_MISSING]: No cookie header");
       return next(new Error("AUTH_MISSING"));
     }
 
     const cookies = parseCookie(rawCookie);
-    console.log("🔐 Parsed cookies keys:", Object.keys(cookies));
-    
+    console.log("[Parsed cookies keys]:", Object.keys(cookies));
+
     const token = cookies.accessToken;
     if (!token) {
-      console.log("❌ AUTH_MISSING: No accessToken in cookies");
+      console.log("[AUTH_MISSING]: No accessToken in cookies");
       return next(new Error("AUTH_MISSING"));
     }
-
-    console.log("🔐 Token found, verifying...");
     const decoded = jwt.verify(token, jwtkey) as JwtPayload;
-    
+
     if (!decoded.id) {
-      console.log("❌ AUTH_INVALID: No id in decoded token");
+      console.log("[AUTH_INVALID]: No id in decoded token");
       return next(new Error("AUTH_INVALID"));
     }
 
-    console.log("✅ Socket auth successful, userId:", decoded.id);
+    console.log("Socket auth successful, userId:", decoded.id);
     socket.data.userId = decoded.id;
+    const user = await userModel.findById(decoded.id, { username: 1 });
+    if (!user) {
+      return next(new Error("AUTH_INVALID"));
+    }
+    socket.data.username = user.username;
+
     next();
   } catch (err: any) {
-    console.error("❌ Socket Auth Error:", err.message);
+    console.error("[Socket_Auth_Error]:", err.message);
     return next(new Error("AUTH_INVALID"));
   }
 };

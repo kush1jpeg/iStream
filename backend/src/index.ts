@@ -49,6 +49,7 @@ app.use("/api/user", userRouter);
 app.use("/api/stream", streamRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/shop", shopRouter);
+app.use("/api/health", healthCheck);
 
 const startServer = async () => {
   try {

@@ -3,12 +3,12 @@ import { cn } from "@/lib/utils";
 import { Send, Smile } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "./ChatMessage";
-import { Conversation, Message } from "@/pages/Chat";
+import { Conversation, IMsg } from "@/pages/Chat";
 import Picker, { Theme } from "emoji-picker-react";
 
 interface ChatWindowProps {
   conversation?: Conversation;
-  messages: Message[];
+  messages: IMsg[];
   currentUserId: string;
 }
 

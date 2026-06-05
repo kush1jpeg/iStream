@@ -82,5 +82,4 @@ npm run dev
 - [streaming-setup](./streaming-setup.md)
 - [service-overview](./services/about.md)
 - [Architecture](./architecture.md)
-- [api-reference](./api-reference.md)
 - [Contributing](./contributing.md)

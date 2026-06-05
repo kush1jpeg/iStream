@@ -1,9 +1,8 @@
 import { cn } from "@/lib/utils";
-import { Message } from "@/pages/Chat";
 import { Check, CheckCheck, Edit2, Trash2 } from "lucide-react";
 
 interface ChatMessageProps {
-  message: Message;
+  message: IMsg;
   isOwn: boolean;
   onEdit: () => void;
   onDelete: () => void;
