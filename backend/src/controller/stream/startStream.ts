@@ -2,12 +2,7 @@ import type { Request, Response } from "express";
 import { redis } from "../../config/redis";
 import { streamModel } from "../../models/stream";
 import { userModel } from "../../models/user";
-import {
-  INotification,
-  IStream,
-  IStreamRedis,
-  IStreamRedisFrontend,
-} from "../../types/types";
+import { INotification, IStreamRedis } from "../../types/types";
 import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 
@@ -70,7 +65,7 @@ export const startStream = async (req: Request, res: Response) => {
     }),
     streamerId: String(userId),
     streamId: String(streamId),
-    HLS_PATH,
+    HLS_PATH: `${HLS_PATH}/${stream.streamKey}/master.m3u8`,
     inactiveSince: "",
     status: "pending",
     viewers: "0",

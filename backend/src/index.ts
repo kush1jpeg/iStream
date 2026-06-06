@@ -24,6 +24,7 @@ import {
 } from "./controller/stream/deadStreamConsumer";
 import { chatRouter } from "./routes/chatRouter";
 import { shopRouter } from "./routes/shopRouter";
+import { healthCheck } from "./controller/healthCheck";
 export const instance = new Razorpay({
   key_id: process.env.KEY_ID,
   key_secret: process.env.KEY_SECRET,

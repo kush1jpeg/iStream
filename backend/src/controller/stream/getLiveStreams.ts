@@ -7,18 +7,24 @@ import {
   IStreamRedisFrontend,
 } from "../../types/types";
 
-export const getLiveStreams = async (req: Request, res: Response) => {
+export const getAvailableLiveStreams = async (req: Request, res: Response) => {
   const limit = 20;
   const cursor = Number(req.query.cursor) || 0; // offset into the set
+  try {
+    const data = await getLiveStreams(cursor, limit);
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
+export async function getLiveStreams(cursor: number, limit: number) {
   const allStreamIds = await redis.smembers("live:streams");
   const paginated = allStreamIds.slice(cursor, cursor + limit);
   const hasMore = cursor + limit < allStreamIds.length;
 
   if (paginated.length === 0)
-    return res
-      .status(200)
-      .json({ streams: [], hasMore: false, nextCursor: null });
+    return { streams: [], hasMore: false, nextCursor: null };
 
   const pipeline = redis.pipeline();
   paginated.forEach((id) => pipeline.hgetall(`stream:${id}`));
@@ -48,9 +54,9 @@ export const getLiveStreams = async (req: Request, res: Response) => {
   });
 
   console.log("finalData - ", final);
-  return res.status(200).json({
+  return {
     streams: final,
     hasMore,
     nextCursor: hasMore ? cursor + limit : null,
-  });
-};
+  };
+}

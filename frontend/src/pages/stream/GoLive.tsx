@@ -1,10 +1,12 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
 import { Signal, Copy, Check, Radio, ChevronRight, Loader, Upload, Loader2, X } from "lucide-react";
 import { api } from "@/App";
 import { Footer } from "@/components/Footer";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
+import StreamRedirect from "@/components/StreamRedirect";
 
 
 type Step = "initiate" | "ready" | "live";
@@ -98,8 +100,8 @@ export default function GoLive() {
       console.log(data.data)
       console.log("Stream initiated:", data);
       setStreamData({
-  ...data.data,
-});
+        ...data.data,
+      });
       setStep("ready");
     } catch (err: any) {
       setError(err.message);
@@ -128,12 +130,12 @@ export default function GoLive() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-const defaultThumbs = [
-  "/thumbnail/linux.jpg",
-  "/thumbnail/reyna.jpg",
-  "/thumbnail/anime.jpg",
-  "/thumbnail/miku.jpg",
-];
+  const defaultThumbs = [
+    "/thumbnail/linux.jpg",
+    "/thumbnail/reyna.jpg",
+    "/thumbnail/anime.jpg",
+    "/thumbnail/miku.jpg",
+  ];
 
   const handleThumbnailUpload = async (file: File) => {
     if (!streamData) return;
@@ -147,6 +149,17 @@ const defaultThumbs = [
       setUploading(false);
     }
   };
+
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (step !== "live" || !streamData?.streamId) return;
+
+    const timer = setTimeout(() => {
+      navigate(`/stream/${streamData.streamId}/dashboard`);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [step]);
 
   return (
     <div className="min-h-screen bg-background crt-container film-grain">
@@ -254,25 +267,25 @@ const defaultThumbs = [
           <div className="space-y-4">
             <RetroContainer className="space-y-4 bg-zinc-900 border-zinc-700">
 
-        <div className="relative overflow-hidden border border-amber-500 bg-amber-500/10 px-4 py-3">
-  
-  {/* subtle animated strip */}
-  <div className="absolute left-0 top-0 h-full w-1 bg-amber-500 animate-pulse" />
-  <div className="flex items-start gap-3 pl-2">
-    <div className="text-amber-500 text-lg">
-      ⚠
-    </div>
-    <div className="space-y-1">
-      <p className="font-pixel text-[10px] tracking-widest text-amber-400 uppercase">
-        Warning
-      </p>
-      <p className="font-mono text-xs text-amber-200 leading-relaxed">
-        Stream key will not be shown again. Copy and store it securely before continuing.
-      </p>
-    </div>
+              <div className="relative overflow-hidden border border-amber-500 bg-amber-500/10 px-4 py-3">
 
-  </div>
-</div>
+                {/* subtle animated strip */}
+                <div className="absolute left-0 top-0 h-full w-1 bg-amber-500 animate-pulse" />
+                <div className="flex items-start gap-3 pl-2">
+                  <div className="text-amber-500 text-lg">
+                    ⚠
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-pixel text-[10px] tracking-widest text-amber-400 uppercase">
+                      Warning
+                    </p>
+                    <p className="font-mono text-xs text-amber-200 leading-relaxed">
+                      Stream key will not be shown again. Copy and store it securely before continuing.
+                    </p>
+                  </div>
+
+                </div>
+              </div>
               {/* Stream Key */}
               <div className="space-y-1">
                 <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
@@ -316,138 +329,138 @@ const defaultThumbs = [
               </div>
 
               {/* Thumbnail Upload */}
-{/* Thumbnail Section */}
-<div className="border-t border-primary pt-3 space-y-2">
-  <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
-    Thumbnail
-  </label>
+              {/* Thumbnail Section */}
+              <div className="border-t border-primary pt-3 space-y-2">
+                <label className="font-mono text-xs text-muted-foreground uppercase tracking-wider">
+                  Thumbnail
+                </label>
 
-  <div className="grid grid-cols-2 gap-3 h-44">
+                <div className="grid grid-cols-2 gap-3 h-44">
 
-    {/* Upload Side */}
-    <div
-      className="relative border border-primary bg-background/50 overflow-hidden cursor-pointer group hover:border-terminal-green transition-colors"
-      onClick={() => !uploading && thumbnailRef.current?.click()}
-    >
-      {streamData.thumbnail ? (
-        <>
-          <img
-            src={streamData.thumbnail}
-            alt="thumbnail"
-            className="w-full h-full object-cover"
-          />
+                  {/* Upload Side */}
+                  <div
+                    className="relative border border-primary bg-background/50 overflow-hidden cursor-pointer group hover:border-terminal-green transition-colors"
+                    onClick={() => !uploading && thumbnailRef.current?.click()}
+                  >
+                    {streamData.thumbnail ? (
+                      <>
+                        <img
+                          src={streamData.thumbnail}
+                          alt="thumbnail"
+                          className="w-full h-full object-cover"
+                        />
 
-          {uploading && (
-            <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 animate-spin text-terminal-green" />
-            </div>
-          )}
+                        {uploading && (
+                          <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                            <Loader2 className="w-6 h-6 animate-spin text-terminal-green" />
+                          </div>
+                        )}
 
-          {!uploading && (
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/60 flex flex-col items-center justify-center transition-opacity">
-              <Upload className="w-5 h-5 text-terminal-green mb-1" />
-              <span className="font-pixel text-[9px] text-terminal-green">
-                UPLOAD
-              </span>
-            </div>
-          )}
+                        {!uploading && (
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-black/60 flex flex-col items-center justify-center transition-opacity">
+                            <Upload className="w-5 h-5 text-terminal-green mb-1" />
+                            <span className="font-pixel text-[9px] text-terminal-green">
+                              UPLOAD
+                            </span>
+                          </div>
+                        )}
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
 
-              setStreamData(prev =>
-                prev
-                  ? { ...prev, thumbnail: "/thumbnail/miku.jpg" }
-                  : prev
-              );
-            }}
-            className="absolute top-1 right-1 p-1 bg-black/70 border border-destructive"
-          >
-            <X className="w-3 h-3 text-destructive" />
-          </button>
-        </>
-      ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center">
-          {uploading ? (
-            <Loader2 className="w-6 h-6 animate-spin text-terminal-green" />
-          ) : (
-            <>
-            <div className="relative w-full h-full">
-  <img
-    src="/thumbnail/miku.jpg"
-    alt="default-thumbnail"
-    className="w-full h-full object-cover opacity-70"
-  />
+                            setStreamData(prev =>
+                              prev
+                                ? { ...prev, thumbnail: "/thumbnail/miku.jpg" }
+                                : prev
+                            );
+                          }}
+                          className="absolute top-1 right-1 p-1 bg-black/70 border border-destructive"
+                        >
+                          <X className="w-3 h-3 text-destructive" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center">
+                        {uploading ? (
+                          <Loader2 className="w-6 h-6 animate-spin text-terminal-green" />
+                        ) : (
+                          <>
+                            <div className="relative w-full h-full">
+                              <img
+                                src="/thumbnail/miku.jpg"
+                                alt="default-thumbnail"
+                                className="w-full h-full object-cover opacity-70"
+                              />
 
-  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
-    {uploading ? (
-      <Loader2 className="w-6 h-6 text-terminal-green animate-spin" />
-    ) : (
-      <>
-        <Upload className="w-5 h-5 mb-2 text-terminal-green" />
-        <span className="font-pixel text-[9px] tracking-widest text-terminal-green">
-          CLICK TO UPLOAD
-        </span>
-      </>
-    )}
-  </div>
-</div>
-            </>
-          )}
-        </div>
-      )}
-    </div>
+                              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
+                                {uploading ? (
+                                  <Loader2 className="w-6 h-6 text-terminal-green animate-spin" />
+                                ) : (
+                                  <>
+                                    <Upload className="w-5 h-5 mb-2 text-terminal-green" />
+                                    <span className="font-pixel text-[9px] tracking-widest text-terminal-green">
+                                      CLICK TO UPLOAD
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
-    {/* Preset Thumbnails Side */}
-    <div className="grid grid-cols-2 gap-2">
-      {defaultThumbs.map((thumb, i) => (
-        <button
-          key={i}
-          type="button"
-          onClick={() =>
-            setStreamData(prev =>
-              prev
-                ? { ...prev, thumbnail: thumb }
-                : prev
-            )
-          }
-          className={cn(
-            "overflow-hidden rounded border hover:scale-[1.03] transition",
-            streamData?.thumbnail === thumb
-              ? "border-terminal-green"
-              : "border-zinc-700"
-          )}
-        >
-          <img
-            src={thumb}
-            className="w-full h-full object-cover"
-            alt={`preset-${i}`}
-          />
-        </button>
-      ))}
-    </div>
+                  {/* Preset Thumbnails Side */}
+                  <div className="grid grid-cols-2 gap-2">
+                    {defaultThumbs.map((thumb, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() =>
+                          setStreamData(prev =>
+                            prev
+                              ? { ...prev, thumbnail: thumb }
+                              : prev
+                          )
+                        }
+                        className={cn(
+                          "overflow-hidden rounded border hover:scale-[1.03] transition",
+                          streamData?.thumbnail === thumb
+                            ? "border-terminal-green"
+                            : "border-zinc-700"
+                        )}
+                      >
+                        <img
+                          src={thumb}
+                          className="w-full h-full object-cover"
+                          alt={`preset-${i}`}
+                        />
+                      </button>
+                    ))}
+                  </div>
 
-    <input
-      ref={thumbnailRef}
-      type="file"
-      accept="image/*"
-      className="hidden"
-      onChange={async (e) => {
-        const file = e.target.files?.[0];
+                  <input
+                    ref={thumbnailRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
 
-        if (file) {
-          await handleThumbnailUpload(file);
-        }
+                      if (file) {
+                        await handleThumbnailUpload(file);
+                      }
 
-        if (thumbnailRef.current) {
-          thumbnailRef.current.value = "";
-        }
-      }}
-    />
-  </div>
-</div>
+                      if (thumbnailRef.current) {
+                        thumbnailRef.current.value = "";
+                      }
+                    }}
+                  />
+                </div>
+              </div>
             </RetroContainer>
 
             {error && (
@@ -472,30 +485,7 @@ const defaultThumbs = [
 
         {/* STEP 3 — Live */}
         {step === "live" && (
-          <RetroContainer variant="terminal" className="space-y-4 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse shadow-glow" />
-              <GlitchText
-                text="YOU ARE LIVE"
-                as="h2"
-                className="font-pixel text-2xl text-destructive"
-              />
-              <div className="w-3 h-3 rounded-full bg-destructive animate-pulse shadow-glow" />
-            </div>
-
-            <div className="font-mono text-xs text-muted-foreground space-y-1">
-              <p><span className="text-terminal-green">{'>'}</span> Stream is broadcasting</p>
-              <p><span className="text-terminal-green">{'>'}</span> Title: <span className="text-foreground">{streamData?.title}</span></p>
-              <p><span className="text-terminal-green">{'>'}</span> ID: <span className="text-vhs-cyan">{streamData?.streamId}</span></p>
-            </div>
-
-            <a
-              href={`/stream/${streamData?.streamId}`}
-              className="inline-block border border-terminal-green text-terminal-green font-mono text-xs px-4 py-2 hover:bg-terminal-green hover:text-background transition-colors"
-            >
-              View Stream Page →
-            </a>
-          </RetroContainer>
+          <StreamRedirect streamData={streamData} autoRedirectMs={4000} />
         )}
 
       </main>

@@ -1,4 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
+import type { IMsg } from "@istream/shared";
 
 const messageSchema = new Schema(
   {

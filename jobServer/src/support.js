@@ -19,7 +19,9 @@ export async function verifyStreamKey(streamKey) {
     // Heartbeat refresh
     await redisClient.expire(`streamKey:${streamKey}`, 15);
     publishStreamLog(
-      `streamKey verified, stream:${streamId} set to live`,
+      streamData.status === "pending"
+        ? `OBS connected, stream:${streamId} set to live`
+        : `streamKey verified, stream:${streamId} set to live`,
       streamKey,
       "info",
     );
@@ -30,15 +32,15 @@ export async function verifyStreamKey(streamKey) {
 }
 
 export async function publishStreamLog(msg, streamKey, type) {
-  const streamId = await redis.get(`streamKey:${streamKey}`);
+  const streamId = await redisClient.get(`streamKey:${streamKey}`);
   if (!streamId) {
-    logger.warn(`[stream:log] no streamId found for ${streamKey}`);
+    console.warn(`[stream:log] no streamId found for ${streamKey}`);
     return;
   }
 
-  const streamData = await redis.hgetall(`stream:${streamId}`);
+  const streamData = await redisClient.hgetall(`stream:${streamId}`);
   if (!streamData?.streamer) {
-    logger.warn(`[stream:log] no streamer data for ${streamId}`);
+    console.warn(`[stream:log] no streamer data for ${streamId}`);
     return;
   }
 
@@ -51,8 +53,8 @@ export async function publishStreamLog(msg, streamKey, type) {
     createdAt: Date.now(),
   };
 
-  if (type === "info") logger.info(msg);
-  else logger.error(msg);
+  if (type === "info") console.log(msg);
+  else console.error(msg);
 
-  await redis.publish("stream:log", JSON.stringify(data));
+  await redisClient.publish("stream:log", JSON.stringify(data));
 }

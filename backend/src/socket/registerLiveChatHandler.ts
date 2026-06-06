@@ -20,7 +20,7 @@ export function registerLiveChatHandler(io: Namespace, socket: Socket) {
       msg,
       userId,
       username,
-      timeStamp: Date.now(),
+      createdAt: Date.now(),
     });
   });
 }

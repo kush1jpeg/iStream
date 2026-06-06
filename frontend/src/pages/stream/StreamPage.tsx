@@ -54,7 +54,7 @@ const StreamPage = () => {
           {/* Main Stream Area */}
           <div className="lg:col-span-2 space-y-6">
             {/* Video Player */}
-            <VideoPlayer streamUrl={stream.stream.HLS_PATH} />
+            <VideoPlayer streamUrl={stream.HLS_PATH} />
 
             {/* Stream Info */}
             <RetroContainer variant="terminal" glow>
@@ -100,10 +100,10 @@ const StreamPage = () => {
                   {stream.stream.description}
                 </p>
 
-                <a href={`user${stream.streamer.id}`} className="flex flex-col items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
+                <a href={`user${stream.streamerId}`} className="flex flex-col items-center gap-2 shrink-0 hover:opacity-80 transition-opacity">
                   <img
                     src={stream.streamer.avatar}
-                    alt={stream.streamer.id}
+                    alt={stream.streamerId}
                     className="w-14 h-14 rounded-full object-cover border-2 border-b-slate-800 opacity-100 brightness-125 hover:scale-105 transition-transform duration-150"
                   />
                   <div className="flex items-center gap-1">

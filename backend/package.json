@@ -22,6 +22,7 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@istream/shared": "*",
     "@socket.io/redis-adapter": "^8.3.0",
     "amqplib": "^0.10.9",
     "bcryptjs": "^3.0.2",

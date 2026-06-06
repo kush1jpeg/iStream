@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend",
+    "workerBackend",
+    "notification",
+    "shared",
+    "jobServer",
+    "autoScaler"
+  ],
+  "allowScripts": {
+    "cpu-features@0.0.10": true
+  },
+  "dependencies": {
+    "@istream/shared": "^1.0.0"
+  }
+}

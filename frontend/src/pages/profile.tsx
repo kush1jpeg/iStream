@@ -5,7 +5,7 @@ import {
   Users, Heart, Video, DollarSign, Calendar,
   Eye, Globe, Pencil, X, Check, Upload, Loader2, Signal,
 } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { IPay, IStream, IUser } from "@/types/types";
 import { useAuthStore } from "@/components/zustand/zustand";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ const EditModal = ({ user, onClose, onSave }: { user: IUser; onClose: () => void
       const { data } = await api.patch(`user/me`, form, { withCredentials: true });
       onSave(form);
       setUser(data.user);
+      console.log(data.user)
       onClose();
     } catch { /* surface if needed */ }
     finally { setSaving(false); }
@@ -266,10 +267,10 @@ const Profile = () => {
           {isOwnProfile ? (
             <ImageUploadOverlay onUpload={handleBannerUpload} uploading={uploadingBanner}
               className="absolute inset-0" hint="CHANGE BANNER">
-              <img src={displayUser.banner} alt="banner" className="w-full h-full object-contain object-bottom" />
+              <img src={displayUser.banner.value} alt="banner" className="w-full h-full object-contain object-bottom" />
             </ImageUploadOverlay>
           ) : (
-            <img src={displayUser.banner} alt="banner" className="w-full h-full object-cover object-bottom" />
+            <img src={displayUser.banner.value} alt="banner" className="w-full h-full object-cover object-bottom" />
           )}
 
           {/* Dark gradient */}
@@ -299,7 +300,7 @@ const Profile = () => {
                 >
                   {displayUser.avatar ? (
                     <img
-                      src={displayUser.avatar}
+                      src={displayUser.avatar.value}
                       alt={displayUser.username}
                       className="w-full h-full object-cover"
                     />
@@ -315,7 +316,7 @@ const Profile = () => {
                 <div className="w-28 h-28 md:w-36 md:h-36 overflow-hidden relative">
                   {displayUser.avatar && (
                     <img
-                      src={displayUser.avatar}
+                      src={displayUser.avatar.value}
                       alt={displayUser.username}
                       className="w-full h-full object-cover"
                     />

@@ -1,0 +1,26 @@
+{
+  "name": "@istream/shared",
+  "version": "1.0.0",
+  "description": "A shared helper package to help reduce boilerplate code spanned across the istream microservices :> ",
+  "license": "ISC",
+  "author": "kush1jpeg",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "mongoose": "^8.19.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.12",
+    "eslint": "^9.10.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.15.0",
+    "typescript": "^5.9.3"
+  }
+}

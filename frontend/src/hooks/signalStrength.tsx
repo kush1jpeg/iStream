@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 export function useSignalStrength() {
   const [latency, setLatency] = useState<number | null>(null);
-  const [strength, setStrength] = useState(100);
+  const [strength, setStrength] = useState(null);
   const Rootsocket = getSocket("/");
   const socketsReady = useAuthStore((s) => s.socketsReady);
 

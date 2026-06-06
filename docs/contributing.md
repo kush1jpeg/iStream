@@ -1,6 +1,6 @@
 # Contributing to iStream
 
-First off, thank you for even considering to contributing. This project was built with a lot of late nights, bad coffee, and genuine love inorder to learn systems(design + implementation). If you're here, you probably care about building things properly too.
+First off, thank you for even considering to contribute. This project was built with a lot of late nights, bad coffee, and genuine love inorder to learn systems(design + implementation). If you're here, you probably care about building things properly too.
 
 Please be kind with the code - but not too kind :)
 This was built by a second-year college student at 3am, running on coffee and questionable life choices. It is not perfect. There are things done wrong, patterns that could be cleaner, and architectural decisions that seemed genius at 3am.

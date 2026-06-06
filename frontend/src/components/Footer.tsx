@@ -7,7 +7,6 @@ export const Footer = () => {
   const bars = Math.round(strength / 10); // 0-10
   const signalBar = "█".repeat(bars) + "░".repeat(10 - bars);
 
-
   return (<>
     {/* Footer */}
     <footer className=" pt-8 border-t-2 border-primary ml-10 scale-95">
@@ -129,7 +128,7 @@ export const Footer = () => {
           <p>
             [ SIGNAL STRENGTH: {signalBar} {strength}% ]
             [ LATENCY: ~{latency ?? "..."}ms ]
-            [ STATUS: {strength > 40 ? "OPERATIONAL" : "DEGRADED"} ]
+            [ STATUS: {strength && strength > 40 ? "OPERATIONAL" : "DEGRADED"} ]
           </p>
           <p className="text-vhs-purple text-sm">
           </p>

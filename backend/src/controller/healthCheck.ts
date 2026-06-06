@@ -3,7 +3,7 @@ import { checkRabbitMQ } from "../config/rabbitmq";
 import { checkRedis } from "../config/redis";
 import { mongoStatus } from "../config/mongoose";
 
-export const healthCheckController = async (req: Request, res: Response) => {
+export const healthCheck = async (req: Request, res: Response) => {
   const mongo = mongoStatus();
   const redis = await checkRedis();
   const rabbitmq = await checkRabbitMQ();

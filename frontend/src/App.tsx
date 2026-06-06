@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import { useAuthStore } from "./components/zustand/zustand";
 import OtpVerify from "./components/OtpVerify";
 import CreateGroupPage from "./pages/group";
+import StreamerDashboard from "./pages/stream/StreamerDashboard";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8888/api/",
@@ -111,11 +112,12 @@ const App = () => {
 
         <Route element={<MainLayout />}>
           <Route path="/" element={<Index />} />
-          <Route path="/stream/:id" element={<StreamPage />} />
+          <Route path="/stream/:streamId" element={<StreamPage />} />
           <Route path="/profile/me" element={<ProfileSection />} />
           <Route path="/profile/:userId" element={<ProfileSection />} />
           <Route path="/shop" element={<ShopLanding />} />
           <Route path="/start-stream" element={<GoLive />} />
+          <Route path="/stream/:streamId/dashboard" element={<StreamerDashboard />} />
           <Route
             path="/chat"
             element={

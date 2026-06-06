@@ -3,6 +3,7 @@ import { getSocket, connectAllSockets } from "@/lib/socket";
 import { IPay, IStreamLog, IStreamRedis, LogLevel } from "@/types/types";
 import { useParams } from "react-router-dom";
 import { api } from "@/App";
+import { Radio } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -14,19 +15,12 @@ interface IChatMessage {
   createdAt: Date,
 }
 
-
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatTime(secs: number) {
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
   const s = secs % 60;
   return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function now() {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}`;
 }
 
 const LOG_COLORS: Record<LogLevel, string> = {
@@ -116,10 +110,10 @@ export default function StreamerDashboard() {
     connectAllSockets();
 
     const notifySocket = getSocket("/notify");
-    const liveSocket = getSocket("/live");
+    const streamSocket = getSocket("/");
 
     // join stream room to receive chat + superchats
-    liveSocket.emit("stream:join", { streamId }); // or however you join rooms
+    streamSocket.emit("stream:join", { streamId }); // or however you join rooms
 
     // stream logs
     notifySocket?.on("stream:logs", (raw) => {
@@ -139,7 +133,7 @@ export default function StreamerDashboard() {
     });
 
     // live chat
-    liveSocket?.on("stream:chat", (data) => {
+    streamSocket?.on("stream:chat", (data) => {
       const parsed =
         typeof data === "string"
           ? JSON.parse(data)
@@ -157,7 +151,7 @@ export default function StreamerDashboard() {
     });
 
     // superchats
-    liveSocket?.on("superchat", (data) => {
+    streamSocket?.on("superchat", (data) => {
       const parsed =
         typeof data === "string"
           ? JSON.parse(data)
@@ -189,8 +183,8 @@ export default function StreamerDashboard() {
       ].slice(0, 100));
     }); return () => {
       notifySocket?.off("stream:logs");
-      liveSocket?.off("stream:chat");
-      liveSocket?.off("superchat");
+      streamSocket?.off("stream:chat");
+      streamSocket?.off("superchat");
     };
   }, []);
   // ── send chat ──
@@ -198,7 +192,7 @@ export default function StreamerDashboard() {
     const text = chatInput.trim();
     if (!text) return;
     const liveSocket = getSocket("/live");
-    liveSocket?.emit("chat:message", { text }); // server echoes back
+    liveSocket?.emit("stream:send", { streamId, text }); // server echoes back
     setChatInput("");
   }, [chatInput]);
 
@@ -211,8 +205,9 @@ export default function StreamerDashboard() {
       {/* ── TOP BAR ── */}
       <div style={S.topbar}>
         <div style={S.topLeft}>
-          <span style={S.logo}>((·)) iSTREAM</span>
-          <span style={S.liveBadge}>● LIVE</span>
+          <Radio className="w-8 h-8 text-primary" />
+          <span style={S.logo}> iSTREAM</span>
+          <span style={S.liveBadge}>● LIVE{stats.status === "pending" && "WAITING FOR OBS-RTMP"}</span>
         </div>
 
         <div style={S.statsRow}>
@@ -246,7 +241,6 @@ export default function StreamerDashboard() {
           >
             {camOn ? "📷" : "🚫"}
           </CtrlBtn>
-          <CtrlBtn title="Settings">⚙️</CtrlBtn>
           <CtrlBtn
             danger
             title="End stream"

@@ -87,7 +87,7 @@ graph TD
 
 iStream implements stream liveness detection via a TTL-based heartbeat pattern in Redis. Rather than relying solely on MediaMTX's runOnNotReady webhook, which often misfires and is unreliable if accepting all the connections - every segment processing task issued by the job-server performs a SET streamKey:{hash} {streamId} EX 15 as a side effect, acting as a rolling lease renewal. 
 
-The key's 15-second TTL means it expires automatically if the encoder stops pushing — no explicit teardown required.
+The key's 15-second TTL means it expires automatically if the encoder stops pushing;
 
 A health poller running every 30 seconds iterates the live:streams sorted set and checks for the presence of each stream's heartbeat key. A missing key triggers a state machine transition: live → inactive on first detection, followed by a 10-minute grace period to allow reconnection. If the key remains absent past the grace window, the stream transitions to ended via an atomic pipeline (HSET + SREM), and a job is enqueued on the streamEnd queue for downstream cleanup - HLS segment purging, R2 dumping, analytics finalization.
 This design gives you at-most-once false termination (the grace period absorbs encoder restarts), crash safety (server death stops lease renewal, TTL handles the rest without a watchdog process).
