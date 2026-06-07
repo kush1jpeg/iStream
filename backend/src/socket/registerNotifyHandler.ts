@@ -1,6 +1,6 @@
 import { Namespace, Socket } from "socket.io";
 import { redisSub } from "../config/redis";
-import { INotification, IStreamLog } from "../types/types";
+import { INotification, IStreamLog } from "@istream/shared";
 
 export function registerNotifyHandler(io: Namespace, socket: Socket) {
   socket.join(socket.data.userId);

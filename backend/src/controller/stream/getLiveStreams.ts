@@ -5,7 +5,7 @@ import {
   IStreamRedis,
   IStreamRedisData,
   IStreamRedisFrontend,
-} from "../../types/types";
+} from "@istream/shared";
 
 export const getAvailableLiveStreams = async (req: Request, res: Response) => {
   const limit = 20;

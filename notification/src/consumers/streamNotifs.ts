@@ -1,5 +1,5 @@
 import { Channel } from "amqplib";
-import { INotification } from "../types/types";
+import { INotification } from "@istream/shared";
 import { followModel } from "../models/follow";
 import { notifyModel } from "../models/notif";
 import { redisClient, redisConnect } from "../config/redis";

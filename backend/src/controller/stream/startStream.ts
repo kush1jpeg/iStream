@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { redis } from "../../config/redis";
 import { streamModel } from "../../models/stream";
 import { userModel } from "../../models/user";
-import { INotification, IStreamRedis } from "../../types/types";
+import { INotification, IStreamRedis } from "@istream/shared";
 import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 

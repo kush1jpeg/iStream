@@ -1,5 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
-import { IStream } from "../types/types";
+import { IStream } from "@istream/shared";
 
 const StreamSchema = new Schema(
   {

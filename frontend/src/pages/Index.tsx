@@ -6,7 +6,7 @@ import { RetroContainer } from "@/components/RetroContainer";
 import { useOnlineCount } from "@/hooks/updateStatusbar";
 import { api } from "@/App";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { IStreamRedis } from "@/types/types";
+import { IStreamRedisFrontend } from "@istream/shared";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
 
@@ -14,7 +14,7 @@ import { Footer } from "@/components/Footer";
 const Index = () => {
   const [loading, setLoading] = useState(true);
   const [activeTag, setActiveTag] = useState("");
-  const [streams, setStreams] = useState<IStreamRedis[]>([]);
+  const [streams, setStreams] = useState<IStreamRedisFrontend[]>([]);
   const [cursor, setCursor] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -170,7 +170,7 @@ const Index = () => {
                         streamer={stream.streamer.username}
                         viewers={String(stream.viewers)}
                         thumbnail={stream.stream.thumbnail}
-                        startedAt={stream.createdAt}
+                        startedAt={String(stream.createdAt)}
                       />
                     </div>
                   ))}

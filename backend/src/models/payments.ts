@@ -1,5 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-import { IPay } from "../types/types";
+import { IPay } from "@istream/shared";
 
 const paymentSchema = new Schema<IPay>(
   {

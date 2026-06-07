@@ -1,4 +1,4 @@
-import { IPay } from "../../types/types";
+import { IPay } from "@istream/shared";
 
 export const purchaseNotification_Template = (data: IPay) => ({
   from: `"iStream" <kush1jpeg>`,

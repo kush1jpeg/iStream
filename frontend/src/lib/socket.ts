@@ -1,10 +1,10 @@
 // socket.ts
-import { io, Socket } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 
 const URL = "http://localhost:8888";
 const namespaces = ["/sidebar", "/notify", "/live", "/dm", "/group", "/"];
 
-let sockets: Record<string, Socket> = {};
+let sockets: Record<string, any> = {};
 
 export const connectAllSockets = () => {
   namespaces.forEach((ns) => {
@@ -12,7 +12,7 @@ export const connectAllSockets = () => {
       sockets[ns] = io(`${URL}${ns}`, {
         withCredentials: true,
         autoConnect: false,
-      });
+      } as any);
 
       // Add connection event listeners for debugging
       sockets[ns].on("connect", () => {
@@ -36,6 +36,6 @@ export const disconnectAllSockets = () => {
   sockets = {};
 };
 
-export const getSocket = (ns: string): Socket | null => {
+export const getSocket = (ns: string): any | null => {
   return sockets[ns] ?? null; // never throw
 };

@@ -1,7 +1,7 @@
 import { Channel } from "amqplib";
 import { notifyModel } from "../models/notif";
-import { redisClient, redisConnect } from "../config/redis";
-import { INotification } from "../types/types";
+import { redisConnect } from "../config/redis";
+import { INotification } from "@istream/shared";
 
 export async function consumeNotifs(queueName: string, channel: Channel) {
   console.log(`Waiting for messages in ${queueName}...`);

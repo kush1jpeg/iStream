@@ -3,11 +3,12 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-COPY tsconfig.json ./
+
+COPY /shared/ ./shared
+COPY ./backend/ ./backend
+
 RUN npm ci
 
-COPY ./src  ./src
+RUN npm run build --workspace=backend
 
-RUN npm run build
-
-CMD ["npm", "start"]
+CMD ["npm", "start", "--workspace=backend"]

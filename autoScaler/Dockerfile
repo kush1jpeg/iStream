@@ -1,10 +1,11 @@
 FROM node:20-alpine
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
+COPY /shared ./shared
 COPY package*.json ./
+COPY /autoScaler/ ./autoScaler/
+
 RUN npm ci
 
-COPY ./src  .
-
-CMD ["node", "index.js"]
+CMD ["node", "autoScaler/src/index.js" ]

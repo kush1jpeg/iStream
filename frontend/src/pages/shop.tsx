@@ -4,17 +4,17 @@ import SearchBar from "@/components/ui/SearchBar";
 import { useEffect, useState } from "react";
 import { FilterShop } from "@/components/ui/filter";
 import { api } from "@/App";
-import { ShopItem } from "@/types/types";
+import { IShopItem } from "@istream/shared";
 import { Footer } from "@/components/Footer";
 
 
 export default function ShopLanding() {
   const [query, setQuery] = useState("");
-  const [drops, setDrops] = useState<ShopItem[]>([]);
-  const [carousel, setCarousel] = useState<ShopItem[]>([]);
+  const [drops, setDrops] = useState<IShopItem[]>([]);
+  const [carousel, setCarousel] = useState<IShopItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);
-  const [allDrops, setAllDrops] = useState<ShopItem[]>([]);
+  const [allDrops, setAllDrops] = useState<IShopItem[]>([]);
 
   useEffect(() => {
     const fetchAll = async () => {

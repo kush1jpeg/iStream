@@ -44,7 +44,8 @@ services:
 
   auto-scaler:
     build: 
-      context: ./autoScaler
+      context: .
+      dockerfile: autoScaler/Dockerfile
       network: host
     container_name: auto-scaler
     depends_on:
@@ -61,7 +62,8 @@ services:
 
   job-server:
     build:
-      context: ./jobServer
+      context: .
+      dockerfile: jobServer/Dockerfile
       network: host
     container_name: job-server
     depends_on:
@@ -75,7 +77,8 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
       network: host
     env_file:
       - ./backend/.env
@@ -91,7 +94,8 @@ services:
 
   notification-service:
     build:
-      context: ./notification
+      context: .
+      dockerfile: notification/Dockerfile
       network: host
     env_file:
       - ./notification/.env

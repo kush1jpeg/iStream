@@ -2,13 +2,18 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import { bindExchange, connectToRabbitMQ } from "./config/rabbitmq";
+import {
+  bindExchange,
+  connectToRabbitMQ,
+  getNotifyChannel,
+} from "./config/rabbitmq";
 import { consumeNotifs } from "./consumers/notifs";
 import { consumeOTPMails } from "./consumers/mails";
 import { consumePayments } from "./consumers/payments";
 import { dbConnect } from "./config/mongoose";
 import { redisConnect } from "./config/redis";
 import { consumeStreamNotifs } from "./consumers/streamNotifs";
+import { healthCheck } from "./config/healthCheck";
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -24,8 +29,7 @@ const notifyQueue = [
 const startServer = async () => {
   try {
     const { connection } = await connectToRabbitMQ();
-
-    const notifyChannel = await connection.createChannel();
+    const notifyChannel = await getNotifyChannel();
 
     await notifyChannel.assertExchange("notification", "direct", {
       durable: true,
@@ -57,6 +61,7 @@ const startServer = async () => {
 
     await redisConnect();
 
+    app.get("/health", healthCheck);
     app.listen(PORT, () => {
       console.log("💻Server started on PORT:", PORT);
     });

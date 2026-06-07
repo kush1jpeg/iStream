@@ -10,6 +10,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@istream/shared": "*",
     "amqplib": "^0.10.9",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",

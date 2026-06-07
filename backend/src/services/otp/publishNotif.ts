@@ -1,5 +1,5 @@
 import { getPublishChannel } from "../../config/rabbitmq";
-import { INotification } from "../../types/types";
+import { INotification } from "@istream/shared";
 
 export async function publishNotifs(msg: INotification) {
   const publishChannel = await getPublishChannel();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
-import { Loader2, Eye, EyeOff, ShieldOff, Shield, ShieldCheck, ShieldAlert, Zap } from "lucide-react";
+import { Loader2, Eye, EyeOff, ShieldOff, Shield, ShieldAlert, Zap } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
 import { GlitchText } from "@/components/GlitchText";
 

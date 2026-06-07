@@ -16,3 +16,28 @@ export const dbConnect = async () => {
     console.error(" MongoDB connection failed:", err.message);
   }
 };
+
+export const mongoStatus = () => {
+  const states = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  } as const;
+
+  return {
+    connected: mongoose.connection.readyState === 1,
+    state:
+      states[mongoose.connection.readyState as keyof typeof states] ??
+      "unknown",
+  };
+};
+
+/*
+  {
+  "mongoDB": {
+    "connected": true,
+    "state": "connected"
+  }
+}
+*/

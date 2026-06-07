@@ -1,7 +1,7 @@
 import { Namespace, Socket } from "socket.io";
 import { redis } from "../config/redis";
 import { getPayChannel } from "../config/rabbitmq";
-import { IPay } from "../types/types";
+import { IPay } from "@istream/shared";
 
 interface ChatPayload {
   streamId: string;

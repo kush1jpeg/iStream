@@ -1,12 +1,12 @@
 import { connectAllSockets, disconnectAllSockets } from "@/lib/socket";
-import { IUser } from "@/types/types";
+import { IUserFrontend } from "@istream/shared";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface AuthState {
-  user: IUser | null;
+  user: IUserFrontend | null;
   socketsReady: boolean;
-  setUser: (updater: IUser | null | ((prev: IUser | null) => IUser | null)) => void;
+  setUser: (updater: IUserFrontend | null | ((prev: IUserFrontend | null) => IUserFrontend | null)) => void;
   logout: () => void;
 }
 

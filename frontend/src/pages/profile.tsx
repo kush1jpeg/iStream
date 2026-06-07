@@ -6,14 +6,14 @@ import {
   Eye, Globe, Pencil, X, Check, Upload, Loader2, Signal,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
-import { IPay, IStream, IUser } from "@/types/types";
+import { IPay, IStream, IUserFrontend } from "@istream/shared";
 import { useAuthStore } from "@/components/zustand/zustand";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
 
 // ─── EditModal ─────────────────────────────────────────────────────────────────
 
-const EditModal = ({ user, onClose, onSave }: { user: IUser; onClose: () => void; onSave: (u: Partial<IUser>) => void }) => {
+const EditModal = ({ user, onClose, onSave }: { user: IUserFrontend; onClose: () => void; onSave: (u: Partial<IUserFrontend>) => void }) => {
   const [form, setForm] = useState({
     username: user.username ?? "",
     bio: user.bio ?? "",
@@ -180,7 +180,7 @@ const Profile = () => {
   const user = useAuthStore((s) => s.user);
   const setUser = useAuthStore((s) => s.setUser);
 
-  const [otherUser, setOtherUser] = useState<IUser | null>(null);
+  const [otherUser, setOtherUser] = useState<IUserFrontend | null>(null);
   const [otherUserFollowing, setOtherUserFollowing] = useState(false);
   const [streams, setStreams] = useState<IStream[]>([]);
   const [donations, setDonations] = useState<IPay[]>([]);
@@ -267,10 +267,10 @@ const Profile = () => {
           {isOwnProfile ? (
             <ImageUploadOverlay onUpload={handleBannerUpload} uploading={uploadingBanner}
               className="absolute inset-0" hint="CHANGE BANNER">
-              <img src={displayUser.banner.value} alt="banner" className="w-full h-full object-contain object-bottom" />
+              <img src={displayUser.banner} alt="banner" className="w-full h-full object-contain object-bottom" />
             </ImageUploadOverlay>
           ) : (
-            <img src={displayUser.banner.value} alt="banner" className="w-full h-full object-cover object-bottom" />
+            <img src={displayUser.banner} alt="banner" className="w-full h-full object-cover object-bottom" />
           )}
 
           {/* Dark gradient */}
@@ -300,7 +300,7 @@ const Profile = () => {
                 >
                   {displayUser.avatar ? (
                     <img
-                      src={displayUser.avatar.value}
+                      src={displayUser.avatar}
                       alt={displayUser.username}
                       className="w-full h-full object-cover"
                     />
@@ -316,7 +316,7 @@ const Profile = () => {
                 <div className="w-28 h-28 md:w-36 md:h-36 overflow-hidden relative">
                   {displayUser.avatar && (
                     <img
-                      src={displayUser.avatar.value}
+                      src={displayUser.avatar}
                       alt={displayUser.username}
                       className="w-full h-full object-cover"
                     />
@@ -330,7 +330,7 @@ const Profile = () => {
                 <GlitchText text={displayUser.username} as="h1" className="text-2xl md:text-4xl font-pixel text-white" />
                 {!isOwnProfile && (
                   <button
-                    onClick={() => handleFollow(displayUser._id)}
+                    onClick={() => handleFollow(String(displayUser._id))}
                     className={`bottom-15 left-45 z-30 flex items-center px-3 font-pixel text-[10px] border bg-black/70 transition-colors
     ${otherUserFollowing
                         ? "text-green-400 border-green-400/60 hover:bg-green-400/10"
@@ -399,6 +399,7 @@ const Profile = () => {
                 <DollarSign className="w-3 h-3 mr-2" /> DONATIONS
               </TabsTrigger>
             </TabsList>
+            refreshToken: string | null;
 
             {/* Streams */}
             <TabsContent value="streams" className="p-4 space-y-3">
@@ -415,7 +416,7 @@ const Profile = () => {
                   ? Math.floor((new Date(stream.endedAt).getTime() - new Date(stream.startedAt).getTime()) / 60000) + "min"
                   : stream.status === "live" ? "LIVE" : "—";
                 return (
-                  <div key={stream._id}
+                  <div key={String(stream._id)}
                     className="flex items-center gap-4 p-3 border border-vhs-purple/20 bg-black/20 hover:bg-vhs-purple/5 hover:border-vhs-purple/40 transition-all group">
                     <div className="w-14 h-10 border border-vhs-purple/30 overflow-hidden shrink-0">
                       <img src={stream.thumbnail} alt={stream.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
@@ -456,7 +457,7 @@ const Profile = () => {
                   {'>'} no donations yet
                 </p>
               ) : donations.map((d) => (
-                <div key={d._id}
+                <div key={String(d.userId)}
                   className="flex items-center gap-4 p-3 border border-vhs-cyan/20 bg-black/20 hover:bg-vhs-cyan/5 hover:border-vhs-cyan/40 transition-all">
                   <div className="w-10 h-10 border border-vhs-cyan/30 flex items-center justify-center shrink-0 bg-vhs-purple/10">
                     {d.userPfp

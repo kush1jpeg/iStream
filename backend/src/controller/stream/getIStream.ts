@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { redis } from "../../config/redis";
-import { IStreamRedisFrontend } from "../../types/types";
+import { IStreamRedisFrontend } from "@istream/shared";
 
 export const getIStream = async (req: Request, res: Response) => {
   const streamId = req.params.streamId;

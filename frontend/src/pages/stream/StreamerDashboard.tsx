@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getSocket, connectAllSockets } from "@/lib/socket";
-import { IPay, IStreamLog, IStreamRedis, LogLevel } from "@/types/types";
+import { IPay, IStreamLog, IStreamRedisFrontend, LogLevel } from "@istream/shared";
 import { useParams } from "react-router-dom";
 import { api } from "@/App";
 import { Radio } from "lucide-react";
@@ -49,7 +49,7 @@ export default function StreamerDashboard() {
   const { streamId } = useParams();
   const [elapsed, setElapsed] = useState(0);
 
-  const [stats, setStats] = useState<IStreamRedis>({
+  const [stats, setStats] = useState<IStreamRedisFrontend>({
     streamer: {
       username: "",
       avatar: "",

@@ -1,21 +1,6 @@
 import mongoose, { model } from "mongoose";
+import { IShopItem } from "@istream/shared";
 
-export interface IShopItem extends Document {
-  name: string;
-  description?: string;
-  price: number;
-  type: "animation" | "frame" | "stickerPack" | "sticker";
-  imageURL?: string;
-  stickers?: [
-    {
-      name: { type: String };
-      imageURL: { type: String };
-    },
-  ];
-  active: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
 const itemSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },

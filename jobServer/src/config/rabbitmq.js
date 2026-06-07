@@ -25,3 +25,13 @@ export async function getChannel() {
   }
   return channel;
 }
+
+export async function checkRabbitMQ() {
+  if (!conn) return false;
+  try {
+    await channel.checkQueue("like_queue");
+    return true;
+  } catch {
+    return false;
+  }
+}

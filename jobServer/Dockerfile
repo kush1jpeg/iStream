@@ -3,9 +3,10 @@ FROM node:20-alpine
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+
+COPY /shared/ ./shared
+COPY /jobServer/ ./jobServer
+
 RUN npm ci
 
-COPY ./src .
-
-CMD ["node", "index.js"]
-
+CMD ["node", "jobServer/src/index.js"]

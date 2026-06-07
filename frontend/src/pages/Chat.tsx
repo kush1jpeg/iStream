@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Socket } from "socket.io-client";
 import { RetroContainer } from "@/components/RetroContainer";
 import { Users, MessageCircle, Send, Loader, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
 import { getSocket } from "@/lib/socket";
 import { useAuthStore } from "@/components/zustand/zustand";
-import { IUser } from "@/types/types";
+import { IUserFrontend } from "@istream/shared";
 
 interface Conversation {
   _id: string;
@@ -16,7 +15,7 @@ interface Conversation {
   groupName?: string;
   unreadCount?: number;
 }
-type SuggestionUser = IUser & {
+type SuggestionUser = IUserFrontend & {
   status: "offline" | "streaming";
 };
 
@@ -62,7 +61,7 @@ export default function ChatPage({ myId }: { myId: string }) {
   const [socketReady, setSocketReady] = useState(false);
   const [suggestions, setSuggestions] = useState<SuggestionUser[]>([])
 
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<any | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesTopRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -351,8 +350,8 @@ export default function ChatPage({ myId }: { myId: string }) {
         const live = data.data.data.live;
         const offline = data.data.data.offline;
         const merged = [
-          ...live.map((u: IUser) => ({ ...u, status: "streaming" })),
-          ...offline.map((u: IUser) => ({ ...u, status: "offline" })),
+          ...live.map((u: IUserFrontend) => ({ ...u, status: "streaming" })),
+          ...offline.map((u: IUserFrontend) => ({ ...u, status: "offline" })),
         ];
 
         setSuggestions(merged);

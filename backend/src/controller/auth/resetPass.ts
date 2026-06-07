@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { userModel } from "../../models/user.js";
 import { redis } from "../../config/redis.js";
-import { QueueOTP } from "../../types/types.js";
+import { QueueOTP } from "@istream/shared";
 import { getPublishChannel } from "../../config/rabbitmq.js";
 
 const FRONTEND_RESET_URL = process.env.FRONTEND_RESET_URL;

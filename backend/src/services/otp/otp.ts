@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import { userModel } from "../../models/user";
 import { redis } from "../../config/redis";
 import { getPublishChannel } from "../../config/rabbitmq";
-import { QueueOTP } from "../../types/types";
+import { QueueOTP } from "@istream/shared";
 
 // services/otp.service.ts
 export const sendOTP = async (userId: string): Promise<void> => {

@@ -6,13 +6,13 @@ import { ChatBox } from "@/components/LiveChatBox";
 import { Footer } from "@/components/Footer";
 import { api } from "@/App";
 import { useEffect, useState } from "react";
-import { IStreamRedis } from "@/types/types";
+import { IStreamRedisFrontend } from "@istream/shared";
 import { useParams } from "react-router-dom";
 
 const StreamPage = () => {
   const { streamId } = useParams();
   const [loading, setLoading] = useState(true);
-  const [stream, setStream] = useState<IStreamRedis | null>(null);
+  const [stream, setStream] = useState<IStreamRedisFrontend | null>(null);
 
   // check for the istreamer to show the additional logs of redis pubsub
   useEffect(() => {

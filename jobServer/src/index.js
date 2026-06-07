@@ -6,6 +6,7 @@ import { connectRabbitMQ } from "./config/rabbitmq.js";
 import { redisConnect } from "./config/redis.js";
 import { enqueueTasks } from "./controllers/enqueue.js";
 import { handleInactive } from "./controllers/handleInactive.js";
+import { healthCheck } from "./controllers/healthCheck.js";
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,8 @@ app.post("/enqueue", enqueueTasks);
 
 // POST endpoint to alert about disconnect
 app.post("/stream-inactive", handleInactive);
+
+app.get("/health", healthCheck);
 
 await redisConnect();
 

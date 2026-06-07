@@ -1,5 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-import { IUser } from "../types/types";
+import { IUser } from "@istream/shared";
 
 export const pfpDefaults = [
   "/pfp/reze.jpg",

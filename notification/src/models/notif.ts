@@ -1,5 +1,5 @@
 import mongoose, { Schema, model } from "mongoose";
-import { INotification } from "../types/types";
+import { INotification } from "@istream/shared";
 
 export const notificationSchema = new Schema<INotification>(
   {

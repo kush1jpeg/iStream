@@ -22,6 +22,8 @@ The service topology is intentionally split into: ingest, orchestration, transco
 
 I have had planned to split the concerns - like seperate auth-service, payment-gateway, user-service like a chad microservice architecture, grpc calling, but it adds too much unnecessary complexity + time;
 
+- [**shared**](/shared/): is a shared helper package to use types, helper functions across the whole project;
+
 - [**notification-service**](/notification/): is a separated delivery microservice that consumes the notification exchange and sends out emails or user alerts. By isolating notification processing, the system avoids coupling email delivery failures to core streaming availability.
 
 - [**workerBackend**](/workerBackend/): is the FFmpeg worker runtime. Each worker consumes a `stream.jobs` message from RabbitMQ, pulls the RTMP source from `MediaMTX`, spawns the `ffmpeg` process, writes HLS segments into the shared volume, and uploads VOD segments to Cloudflare R2. Workers also report status back into Redis via pub/sub to enable the streamer stay updated regarding the stream status, enabling clean autoscaler-driven lifecycle management.

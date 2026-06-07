@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Bell, BellOff, X, BellRingIcon } from "lucide-react";
-import { INotification } from "@/types/types";
+import { INotification } from "@istream/shared";
 import { api } from "@/App";
 import { getSocket } from "@/lib/socket";
 

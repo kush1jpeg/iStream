@@ -1,5 +1,5 @@
 import { Channel } from "amqplib";
-import { QueueOTP } from "../types/types";
+import { QueueOTP } from "@istream/shared";
 import { sendMail } from "../mailer/nodeMailer";
 import { MailTemplates } from "../mailer/mailManager";
 

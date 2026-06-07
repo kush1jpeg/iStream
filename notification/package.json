@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "amqplib": "^0.10.9",
+    "@istream/shared": "*",
     "express": "^4.21.2",
     "nodemailer": "^7.0.9",
     "dotenv": "^16.4.5",

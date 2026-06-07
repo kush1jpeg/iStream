@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
 import { jwtkey, refreshKey } from "./register.js";
 import { userModel } from "../../models/user.js";
-import { IUser } from "../../types/types.js";
+import { IUser } from "@istream/shared";
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;

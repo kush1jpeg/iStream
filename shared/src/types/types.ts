@@ -16,8 +16,9 @@ export interface INotification {
   createdAt: Number;
 }
 
+export type LogLevel = "err" | "info";
 export interface IStreamLog {
-  type: NotificationType;
+  level: LogLevel;
   msg: string;
   userId: string;
   createdAt: Date;
@@ -54,6 +55,30 @@ export interface IUser extends Document {
   lastReadNotificationId: Types.ObjectId | null;
 }
 
+export interface IUserFrontend extends Document {
+  _id: Types.ObjectId;
+  username: string;
+  email: string;
+  bio: string;
+  streams: IStream[];
+  donations: IPay[];
+  avatar: string;
+  banner: string;
+  isVerified: boolean; // true if is mail or oauth verified and can stream
+  followers?: string[];
+  isLive: boolean;
+  following?: string[];
+  createdAt: Date;
+  updatedAt: Date;
+  websiteId?: string;
+  followerCount: Number;
+  followCount: Number;
+  currentAnimation?: string; // to store shopped animation sprite next to livestream and profile
+  currentFrame?: string; // to store shopped frames
+  Inventory?: Array<Types.ObjectId>;
+  lastReadNotificationId: Types.ObjectId | null;
+}
+
 export interface IStream {
   _id: Types.ObjectId;
   streamerId: Types.ObjectId;
@@ -64,7 +89,7 @@ export interface IStream {
   tags: Array<string>;
   streamKey: string;
   VOD_URL?: string;
-  status?: "pending" | "live" | "ended";
+  status?: "pending" | "live" | "ended" | "inactive";
   startedAt?: Date;
   endedAt?: Date;
   viewers: number;
@@ -146,6 +171,14 @@ export interface IStreamRedisFrontend {
   createdAt: String;
 }
 
+export interface FollowedUser {
+  _id: string;
+  frame?: string;
+  name: string;
+  avatarUrl: string;
+  StreamURL?: string;
+}
+
 export interface IMsg extends Document {
   _id: Types.ObjectId;
   senderId: Types.ObjectId;
@@ -153,4 +186,20 @@ export interface IMsg extends Document {
   message: String;
   timestamp: Date;
   readBy: Types.ObjectId[];
+}
+
+export interface IShopItem {
+  _id: string;
+  name: string;
+  description?: string;
+  price: number;
+  imageURL?: string;
+  stickers?: [
+    {
+      name: { type: String };
+      imageURL: { type: String };
+    },
+  ];
+  active?: boolean;
+  type: "animation" | "frame" | "stickerPack" | "sticker";
 }
