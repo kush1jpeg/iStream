@@ -181,7 +181,7 @@ export const Sidebar: React.FC = () => {
               className="group focus:outline-none"
             >
               <img
-                src={user?.avatar.value}
+                src={user?.avatar}
                 alt="profile"
                 className="w-12 h-12 rounded-full object-cover brightness-125 opacity-100 border-2 hover:scale-105 transition-transform duration-150"
               />

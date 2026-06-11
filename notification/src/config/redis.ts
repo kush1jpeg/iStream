@@ -22,9 +22,20 @@ redisClient.on("error", (err) => {
   console.error("❌ Redis connection error:", err);
 });
 
+export const redisPub = new Redis({
+  host,
+  port,
+  maxRetriesPerRequest: 4,
+  retryStrategy(times) {
+    const delay = Math.min(times * 200, 2000);
+    return delay;
+  },
+});
+
 export const redisConnect = async () => {
   try {
     await redisClient.ping();
+    await redisPub.ping();
     console.log("✅ Redis ping successful");
     return true;
   } catch (error) {

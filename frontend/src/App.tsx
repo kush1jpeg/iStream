@@ -20,6 +20,7 @@ import { useAuthStore } from "./components/zustand/zustand";
 import OtpVerify from "./components/OtpVerify";
 import CreateGroupPage from "./pages/group";
 import StreamerDashboard from "./pages/stream/StreamerDashboard";
+import { connectAllSockets } from "./lib/socket";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8888/api/",
@@ -89,6 +90,10 @@ const App = () => {
   const user = useAuthStore(
     (state) => state.user
   );
+  const ready = useAuthStore(
+    (state) => state.socketsReady
+  );
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -103,6 +108,17 @@ const App = () => {
     if (!user) fetchUser();
   }, []);
 
+  useEffect(() => {
+    const connectSocket = async () => {
+      try {
+        connectAllSockets()
+      } catch (err: any) {
+        console.log(err?.response?.data?.message || "Failed");
+      } finally {
+      }
+    };
+    if (!ready) connectSocket();
+  }, []);
 
   return (<>
     <TooltipProvider>
@@ -122,7 +138,7 @@ const App = () => {
             path="/chat"
             element={
               user ? (
-                <Chat myId={user._id} />
+                <Chat myId={String(user._id)} />
               ) : (
                 <div className="flex items-center justify-center h-screen">
                   Loading...

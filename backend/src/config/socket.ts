@@ -7,8 +7,8 @@ import {
 } from "../socket/registerLiveChatHandler";
 import { registerPvtChatHandler } from "../socket/registerPvtChatHandler";
 import {
-  redisSubNotifyListener,
   registerNotifyHandler,
+  redisSubNotifyListener,
 } from "../socket/registerNotifyHandler";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { redis } from "./redis";
@@ -78,7 +78,7 @@ export async function initSocket(server: any) {
   });
 
   // notifications
-  redisSubNotifyListener(io.of("/notify")); // establishing redisSubscriber
+  redisSubNotifyListener(io.of("/notify")); // establishing a global redisSubscriber
   io.of("/notify").on("connection", (socket) => {
     const notify = io.of("/notify");
     registerNotifyHandler(notify, socket);

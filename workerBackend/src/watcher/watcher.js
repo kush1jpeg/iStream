@@ -71,7 +71,7 @@ export async function publishStreamLog(msg, MTX_PATH, type) {
     return;
   }
 
-  const { id: userId } = JSON.parse(streamData.streamer);
+  const userId = JSON.parse(streamData.streamerId);
   const data = {
     type: "stream",
     msg,
@@ -83,5 +83,5 @@ export async function publishStreamLog(msg, MTX_PATH, type) {
   if (type === "info") logger.info(msg);
   else logger.error(msg);
 
-  await redis.publish("stream:log", JSON.stringify(data));
+  await redis.publish(`stream:log:${userId}`, JSON.stringify(data));
 }

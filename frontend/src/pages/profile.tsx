@@ -399,7 +399,6 @@ const Profile = () => {
                 <DollarSign className="w-3 h-3 mr-2" /> DONATIONS
               </TabsTrigger>
             </TabsList>
-            refreshToken: string | null;
 
             {/* Streams */}
             <TabsContent value="streams" className="p-4 space-y-3">

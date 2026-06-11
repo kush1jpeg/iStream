@@ -7,7 +7,7 @@ export const listHomePage = async (req: Request, res: Response) => {
   const cursor = Number(req.query.live) || 1;
   const limit = 20;
   try {
-    const [live, vod] = await Promise.all([
+    const [vod, live] = await Promise.all([
       getVods(page, limit),
       getLiveStreams(cursor, limit),
     ]);

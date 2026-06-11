@@ -9,7 +9,7 @@ export async function connectRabbitMQ(RABBITMQ_URL) {
       conn = await amqp.connect(RABBITMQ_URL);
       channel = await conn.createChannel();
       await channel.assertQueue("stream.jobs", { durable: true });
-      console.log("[*] Connected to RabbitMQ");
+      console.log("✅ Connected to RabbitMQ");
       return channel;
     } catch (err) {
       console.log("[!] RabbitMQ not ready, retrying in 3s...", err.message);

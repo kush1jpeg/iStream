@@ -11,7 +11,7 @@ import { healthCheck } from "./controllers/healthCheck.js";
 const app = express();
 app.use(express.json());
 
-const PORT = Number(3000);
+const PORT = process.env.PORT || Number(3000);
 const RABBITMQ_URL = process.env.RABBITMQ_URL;
 console.log(RABBITMQ_URL);
 

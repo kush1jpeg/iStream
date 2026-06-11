@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { streamModel } from "../../models/stream";
 
-const VOD_PATH = `${process.env.R2_PUBLIC_URL}/hls/live/`;
+const VOD_PATH = `${process.env.R2_PUBLIC_URL}/hls/live`;
 
 export const getAvailableVods = async (req: Request, res: Response) => {
   try {
@@ -21,7 +21,6 @@ export async function getVods(page: number, limit: number) {
     .sort({ endedAt: -1 })
     .skip((page - 1) * limit)
     .limit(limit)
-    .select("-streamKey")
     .populate("streamerId", "username avatar");
 
   const total = await streamModel.countDocuments({ status: "ended" });
@@ -42,10 +41,8 @@ export async function getVods(page: number, limit: number) {
 
   return {
     vods: vodsWithUrl,
-    pagination: {
-      page,
-      total,
-      hasMore: page * limit < total,
-    },
+    page,
+    total,
+    hasMore: page * limit < total,
   };
 }

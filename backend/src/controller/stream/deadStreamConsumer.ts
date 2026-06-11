@@ -21,7 +21,7 @@ export async function start_deadStreamConsumer() {
 
 async function pushToTerminateStream(streamId: string, userId: string) {
   const channel = await getPublishChannel();
-  console.log("[*] jublishing to stream_end queue: [autoscaler] ", {
+  console.log("[*] publishing to stream_end queue: [autoscaler] ", {
     streamId,
     userId,
   });

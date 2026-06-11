@@ -1,7 +1,7 @@
 import { StreamCard } from "@/components/StreamCard";
 import { GlitchText } from "@/components/GlitchText";
 import { StatusBar } from "@/components/StatusBar";
-import { Signal, Wifi } from "lucide-react";
+import { Signal, Video, Wifi } from "lucide-react";
 import { RetroContainer } from "@/components/RetroContainer";
 import { useOnlineCount } from "@/hooks/updateStatusbar";
 import { api } from "@/App";
@@ -10,25 +10,47 @@ import { IStreamRedisFrontend } from "@istream/shared";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
 
+export interface IVod {
+  _id: string;
+  title: string;
+  description: string;
+  thumbnail: string;
+  tags: string[];
+  viewers: number;
+  views: number;
+  startedAt: string;
+  endedAt: string;
+  streamer: {
+    _id: string;
+    username: string;
+    avatar: string;
+  };
+  VOD_PATH: string;
+}
 
 const Index = () => {
   const [loading, setLoading] = useState(true);
   const [activeTag, setActiveTag] = useState("");
   const [streams, setStreams] = useState<IStreamRedisFrontend[]>([]);
-  const [cursor, setCursor] = useState(0);
+  const [vods, setVods] = useState<IVod[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const [cursor, setCursor] = useState<number | null>(null);
+  const [page, setPage] = useState<number>(1);
 
-  const fetchStreams = async (cur: number) => {
+  const fetchHome = async (page: number, cursor: number) => {
     setLoading(true);
     try {
-      const { data } = await api.get("stream/live", {
-        params: { limit: 6, cursor: cur }
+      const { data } = await api.get("stream/home", {
+        params: { limit: 6, cursor, page }
       });
-      setStreams(prev => cur === 0 ? data.streams : [...prev, ...data.streams]);
-      console.log(streams);
-      setHasMore(data.hasMore);
-      setCursor(data.nextCursor ?? cur);
+      console.log(data);
+      setStreams(prev => cursor === 0 ? data.live.streams : [...prev, ...data.live.streams]);
+      setVods(prev => cursor === 0 ? data.vod.vods : [...prev, ...data.vod.vods]);
+      setHasMore(!!(data?.live.hasMore || data?.vod.hasMore));
+      setCursor(data?.live?.nextCursor ?? null);
+      setPage(data?.vod?.pagination?.hasMore ? page + 1 : page);
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -37,14 +59,14 @@ const Index = () => {
   };
 
   // initial fetch
-  useEffect(() => { fetchStreams(0); }, []);
+  useEffect(() => { fetchHome(0, 0); }, []);
 
   // intersection observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          fetchStreams(cursor);
+          fetchHome(cursor, page);
         }
       },
       { threshold: 1.0 }
@@ -177,8 +199,51 @@ const Index = () => {
               </>
             )}
           </div>
-        </main >
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-6 pb-3 border-b-2 border-primary">
+              <div className="flex items-center gap-2">
+                <Video className="w-5 h-5 text-vhs-cyan" />
+              </div>
 
+              <h3 className="font-pixel text-sm uppercase text-primary tracking-wider">
+                Recent VODs
+              </h3>
+
+              <div className="flex-1 h-0.5 bg-gradient-to-r from-primary via-vhs-purple to-vhs-cyan opacity-50" />
+            </div>
+
+            {vods.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="font-mono text-sm text-muted-foreground opacity-50 uppercase tracking-wider">
+                  {'>'} no vods found
+                </p>
+              </div>
+            ) : (
+              <>
+                {vods
+                  .filter(v => activeTag ? v.tags?.includes(activeTag) : true)
+                  .map((vod, i) => (
+                    <div
+                      key={vod._id}
+                      className="animate-slide-in"
+                      style={{ animationDelay: `${i * 100}ms` }}
+                    >
+                      <StreamCard
+                        id={vod._id}
+                        title={vod.title}
+                        streamer={vod.streamer.username}
+                        viewers={String(vod.views)}
+                        thumbnail={vod.thumbnail}
+                        startedAt={String(vod.startedAt)}
+                        endedAt={String(vod.endedAt)}
+                        type="vod"
+                      />
+                    </div>
+                  ))}
+              </>
+            )}
+          </div>
+        </main >
         <Footer />
 
       </div >

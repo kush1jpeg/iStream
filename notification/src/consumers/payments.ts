@@ -22,4 +22,6 @@ export async function consumePayments(queueName: string, channel: Channel) {
   );
 }
 
+// fix pub of superchats in backend
+
 // create a ledger service which would cut a % of money and then send the remaining amount to the creator Razorpay Fund Account

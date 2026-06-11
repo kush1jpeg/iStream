@@ -34,22 +34,31 @@
 
 iStream is an abs supported distributed live streaming platform engineered to reproduce a production-grade streaming stack without managed streaming services, handling the complete pipeline from RTMP ingest through FFmpeg -> transcoding into diff qualities -> HLS delivery : live -> via a static nginx server : VOD -> via cloudflare R2. 
 
-With dynamic worker autoscaling, segment-level R2 uploads and minimal disk writes, iStream comes alongside as a modern architechture with chat support via namespaces, integration of payment-gateway for superchats, seperate notification service for isolated deliveries via queue/exchangers.
+With dynamic worker autoscaling, segment-level R2 uploads and minimal disk writes, iStream comes alongside as a modern architechture with chat support via namespaces, integration of payment-gateway for superchats, seperate notification service for isolated deliveries via queue/exchangers, reconcilliation service for cleaning up expired payments and dead streams.
 
 The goal was not to use managed streaming services but to build every layer: from RTMP ingest to HLS delivery, from autoscaling worker containers to real-time socket communication.
-
-In short: iStream aims to demonstrate a composable streaming platform with distributed processing, real-time state management, and object-storage-backed VOD delivery.
-
 
 
 ### For contributors
 
-[Open an issue here->](https://github.com/kush1jpeg/iStream/issues) for suggestions, bugs, etc;
+<table>
+<tr>
+<td width="220">
+
+<img src="assets/readme/wip.gif" alt="wip" width="210">
+</td>
+<td>
+
+[Open an issue here](https://github.com/kush1jpeg/iStream/issues) for suggestions, bugs, etc.
 
 If you are contributing code, please read these docs first:
 
 - [architecture](docs/architecture.md) — to understand how the streaming pipeline, jobs, workers, and storage fit together.
 - [contribute](docs/contributing.md) — a humble request
+
+</td>
+</tr>
+</table>
 
 
 ## Contact
@@ -58,7 +67,7 @@ Built by **kush1jpeg**
 
 - GitHub: [@kush1jpeg](https://github.com/kush1jpeg)
 - LinkedIn: [kushagra-gupta-dystopia](https://www.linkedin.com/in/kushagra-gupta-dystopia)
-- Blog: [kush1jpeg.github.io](https://kush1jpeg.github.io)
+- Portfolio: [kush1jpeg.github.io](https://kush1jpeg.github.io)
 - Email: [kushuvikas@gmail.com](mailto:kushuvikas@gmail.com)
 
 ---

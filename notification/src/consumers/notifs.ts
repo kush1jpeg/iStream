@@ -1,6 +1,6 @@
 import { Channel } from "amqplib";
 import { notifyModel } from "../models/notif";
-import { redisConnect } from "../config/redis";
+import { redisClient, redisConnect, redisPub } from "../config/redis";
 import { INotification } from "@istream/shared";
 
 export async function consumeNotifs(queueName: string, channel: Channel) {
@@ -22,8 +22,8 @@ export async function consumeNotifs(queueName: string, channel: Channel) {
         });
 
         // // sending thru sockets for instant update
-        // (await redisClient.publish("notifications", String(data)),
-        //   channel.ack(msg));
+        (await redisPub.publish(`notifications:${data.userId}`, String(data)),
+          channel.ack(msg));
       } catch (err) {
         console.error("Consumer error:", err);
         channel.nack(msg, false, true);

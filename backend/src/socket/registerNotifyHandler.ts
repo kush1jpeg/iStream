@@ -1,38 +1,32 @@
 import { Namespace, Socket } from "socket.io";
 import { redisSub } from "../config/redis";
-import { INotification, IStreamLog } from "@istream/shared";
 
 export function registerNotifyHandler(io: Namespace, socket: Socket) {
   socket.join(socket.data.userId);
 }
 
-export const redisSubNotifyListener = async (io: Namespace) => {
-  redisSub.subscribe("notifications", (ch, msg) => {
+export function redisSubNotifyListener(io: Namespace) {
+  /* 
+
+  * pub/sub has a subscription overhead; as ill be maintaining for 10k users 10k active redis pub/sub -> a better solution
+   is using a pull based queue like kafka or using redis streams so the notification can be rolled back incase the socket disconnects and reconnects,
+   or if socket server is down; will improve afterwards.
+
+  * using the pattern subscribe to get the userId asap without even parsing the msg in the global channel; would reduce the overhead
+    of parsing, the caveat for a global channel is that Every notification read by socket server even if user offline
+
+   * */
+  redisSub.psubscribe("notifications:*", "stream:log*");
+  redisSub.on("pmessage", (pattern: string, channel: string, msg: string) => {
     if (!msg) {
       console.warn("Empty notifications");
       return;
     }
-    try {
-      const strMsg = typeof msg === "string" ? msg : msg.toString();
-      const payload = JSON.parse(strMsg) as INotification;
-      io.to(String(payload.userId)).emit("notifications", msg);
-    } catch (err) {
-      console.error("Invalid notification payload", err);
+    const userId = channel.split(":")[1];
+    if (pattern === "notifications:*") {
+      io.to(userId).emit("notifications", msg);
+    } else if (pattern === "stream:log*") {
+      io.to(userId).emit("stream:logs", msg);
     }
   });
-
-  redisSub.subscribe("stream:log", (msg) => {
-    if (!msg) {
-      console.warn("Empty stream-logs");
-      return;
-    }
-    try {
-      const strMsg = typeof msg === "string" ? msg : msg.toString();
-      const payload = JSON.parse(strMsg) as IStreamLog;
-
-      io.to(String(payload.userId)).emit("stream:logs", msg);
-    } catch (err) {
-      console.error("Invalid notification payload", err);
-    }
-  });
-};
+}

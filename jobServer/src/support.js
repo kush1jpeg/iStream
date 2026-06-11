@@ -1,4 +1,5 @@
 import { redisClient } from "./config/redis.js";
+import { checkStreamLoadStatus } from "./controllers/checkStreamLoadStatus.js";
 
 export async function verifyStreamKey(streamKey) {
   const streamId = await redisClient.get(`streamKey:${streamKey}`);
@@ -15,6 +16,19 @@ export async function verifyStreamKey(streamKey) {
     return false;
   }
   if (streamData.status === "pending" || streamData.status === "inactive") {
+    // checking if the server can handle any more streams!
+    if (streamData.status === "pending") {
+      const result = checkStreamLoadStatus(streamKey);
+      if (!result.allowed) {
+        publishStreamLog(
+          "Stream rejected - server at capacity. Try again in a few minutes.",
+          streamKey,
+          "err",
+        );
+        sendToNotify(streamData.streamerId);
+      }
+      return false;
+    }
     await redisClient.hset(`stream:${streamId}`, "status", "live");
     // Heartbeat refresh
     await redisClient.expire(`streamKey:${streamKey}`, 15);
@@ -44,7 +58,7 @@ export async function publishStreamLog(msg, streamKey, type) {
     return;
   }
 
-  const { id: userId } = JSON.parse(streamData.streamer);
+  const userId = JSON.parse(streamData.streamerId);
   const data = {
     type: "stream",
     msg,
@@ -56,5 +70,14 @@ export async function publishStreamLog(msg, streamKey, type) {
   if (type === "info") console.log(msg);
   else console.error(msg);
 
-  await redisClient.publish("stream:log", JSON.stringify(data));
+  await redisClient.publish(`stream:log${userId}`, JSON.stringify(data));
+}
+
+async function sendToNotify(userId) {
+  const buffer = {
+    type: "stream",
+    userId,
+    createdAt: Date.now(),
+  };
+  await redisClient.publish(`notifications:${userId}`, buffer);
 }

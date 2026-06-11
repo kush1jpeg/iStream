@@ -5,7 +5,7 @@ export const handleInactive = async (req, res) => {
 
   if (!MTX_PATH) return res.status(400).json({ error: "MTX_PATH required" });
   try {
-    const streamKey = MTX_PATH;
+    const streamKey = MTX_PATH.split("/")[1];
     const status = await redisClient.hget(`stream:${streamKey}`, "status");
 
     if (!status) {

@@ -12,11 +12,22 @@ interface StreamCardProps {
   thumbnail?: string;
   isLive?: boolean;
   startedAt: string | Date;
+  endedAt?: string | Date
   className?: string;
   colorAccent?: "green" | "purple" | "cyan" | "pink";
+  type?: "vod" | "live"
 }
 
+function formatDuration(startedAt: string | Date, endedAt: string | Date) {
+  const diff =
+    new Date(endedAt).getTime() -
+    new Date(startedAt).getTime();
 
+  const hours = Math.floor(diff / 1000 / 60 / 60);
+  const minutes = Math.floor((diff / 1000 / 60) % 60);
+
+  return `${hours}h ${minutes}m`;
+}
 
 export const StreamCard = ({
   id,
@@ -24,13 +35,15 @@ export const StreamCard = ({
   streamer,
   viewers,
   thumbnail,
-  isLive = true,
   colorAccent = "green",
   startedAt,
-  className
+  endedAt,
+  className,
+  type,
 }: StreamCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+  const isLive = type === "vod" ? false : true;
 
   const accentColors = {
     green: "border-terminal-green shadow-[4px_4px_0px_hsl(var(--terminal-green-dim))]",
@@ -92,8 +105,11 @@ export const StreamCard = ({
         <div className="absolute bottom-2 right-2 px-2 py-1 bg-background/90 border border-primary flex items-center gap-1">
           <Eye className="w-3 h-3" />
           <span className="text-xs">{viewers}</span>
-          <p>[ UPTIME: {duration} ]</p>
-        </div>
+          <p>
+            {type === "live"
+              ? `[ UPTIME: ${duration} ]`
+              : `[ DURATION: ${formatDuration(startedAt, endedAt)} ]`}
+          </p>        </div>
       </div>
 
       {/* Stream Info */}

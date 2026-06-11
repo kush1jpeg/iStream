@@ -134,8 +134,8 @@ export interface IStreamRedisData {
   tags: string[];
 }
 export interface IStreamRedis {
-  streamer: string; // JSON.stringify(IStreamerData)
-  stream: string; // JSON.stringify(IStreamData)
+  streamer: string; // JSON.stringify(IStreamerRedisData)
+  stream: string; // JSON.stringify(IStreamRedisData)
   streamerId: string;
   streamId: string;
   HLS_PATH: string;
