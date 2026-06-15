@@ -1,6 +1,6 @@
 import { Channel } from "amqplib";
 import { notifyModel } from "../models/notif";
-import { redisClient, redisConnect, redisPub } from "../config/redis";
+import { redisConnect, redisPub } from "../config/redis";
 import { INotification } from "@istream/shared";
 
 export async function consumeNotifs(queueName: string, channel: Channel) {

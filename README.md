@@ -53,8 +53,8 @@ The goal was not to use managed streaming services but to build every layer: fro
 
 If you are contributing code, please read these docs first:
 
-- [architecture](docs/architecture.md) — to understand how the streaming pipeline, jobs, workers, and storage fit together.
-- [contribute](docs/contributing.md) — a humble request
+- [architecture](docs/architecture.md) —> to understand how the streaming pipeline, jobs, workers, and storage fit together.
+- [contribute](docs/contributing.md) —> a humble request
 
 </td>
 </tr>

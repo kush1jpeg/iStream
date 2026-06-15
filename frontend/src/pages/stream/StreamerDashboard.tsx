@@ -116,6 +116,7 @@ export default function StreamerDashboard() {
     streamSocket.emit("stream:join", { streamId });
 
     notifySocket?.on("stream:logs", (raw) => {
+      console.log("recieved log in the frontend")
       const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
       setLogs((prev) =>
         [

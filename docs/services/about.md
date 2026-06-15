@@ -14,9 +14,9 @@ The service topology is intentionally split into: ingest, orchestration, transco
 
 - **redis**: maintains live state and coordination data. It stores active stream metadata, worker heartbeat status, idle/busy worker sets, and health flags used by the autoscaler. Redis is the fast in-memory source of truth for routing decisions and runtime service orchestration.
 
-- [**auto-scaler**](/autoScaler/): is the runtime controller for FFmpeg worker containers. It uses Dockerode and the host Docker socket to spawn or kill `workerBackend` containers based on Redis state. It enforces `MIN_WORKERS` and `MAX_WORKERS`, cleans up idle workers after a timeout, and terminates stale or pending streams. This is the project’s dynamic worker orchestration layer.
+- [**auto-scaler**](/autoScaler/): is the runtime controller for FFmpeg worker containers. It uses Dockerode and the host Docker socket to spawn or kill `workerBackend` containers based on Redis state. It enforces `MIN_WORKERS` and `MAX_WORKERS`, cleans up idle workers after a timeout, and terminates stale/crashed workers. This is the project’s dynamic worker orchestration layer, sortof a toy K8.
 
-- [**job-server**](/jobServer/): is the first validation gate for ingest jobs. It receives `MediaMTX` webhook notifications, validates stream keys against Redis, and publishes stream jobs to RabbitMQ. This makes the system resilient by ensuring only authorized ingest streams enter the worker queue.
+- [**job-server**](/jobServer/): is the first validation gate for ingest jobs. It receives `MediaMTX` webhook notifications, validates stream keys against Redis, and publishes stream jobs to RabbitMQ. This makes the system resilient by ensuring only authorized ingest streams enter the worker queue, also handles the rolling lease mechanism to detect weather the streamer is streaming/disconnected/forgot the stream after creating it.
 
 - [**backend**](/backend/): is the primary application service. It runs Express + Socket.io, sets up RabbitMQ exchanges, connects to MongoDB for persistent data, manages Redis state, and exposes API routes for auth, user, stream, chat, and shop/payment flows. The backend also handles OAuth configuration, payment exchange bindings, and notification publish semantics.
 
@@ -29,6 +29,8 @@ I have had planned to split the concerns - like seperate auth-service, payment-g
 - [**workerBackend**](/workerBackend/): is the FFmpeg worker runtime. Each worker consumes a `stream.jobs` message from RabbitMQ, pulls the RTMP source from `MediaMTX`, spawns the `ffmpeg` process, writes HLS segments into the shared volume, and uploads VOD segments to Cloudflare R2. Workers also report status back into Redis via pub/sub to enable the streamer stay updated regarding the stream status, enabling clean autoscaler-driven lifecycle management.
 
 ```bash
+TTL update to autoscaler
+         ↓
 FFmpeg writes segment.ts
          ↓
 Watcher fires - RPUSH segment path to Redis list
@@ -46,15 +48,13 @@ Max retries → dead letter queue/exchange + alert
 
 ## Why this?
 
-This service design demonstrates a mature separation of concerns acc to my llm but mostly it was inspired from different systems videos; it can be that the current architectural design/implementation is actually bad, pls point it out and help me improve my understanding
+This service design demonstrates a mature separation of concerns acc to my llm, but mostly it was inspired from different systems videos; it can be that the current architectural design/implementation is actually bad, pls point it out and help me improve my understanding.
 
 - ingest is isolated from authorization
 - event dispatch is handled by RabbitMQ
 - runtime orchestration is handled by a dedicated autoscaler
 - live delivery and VOD storage are separated
 - application concerns are decoupled from media processing concerns
-
-The result is a streaming platform with robust failover boundaries, scalable worker orchestration, and a clear domain model for live streaming, payments, and notifications.
 
 ### Read Next -
 

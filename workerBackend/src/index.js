@@ -14,6 +14,7 @@ import pino from "pino";
 import { drainUploadQueue } from "./cloudflare/drainUpload.js";
 import { startUploadConsumer } from "./cloudflare/consumer.js";
 import { initWatcher, publishStreamLog } from "./watcher/watcher.js";
+import { setInterval } from "timers";
 export const logger = pino(pino.destination(`/var/log/${os.hostname()}.log`));
 logger.info(`worker created ${os.hostname()}`);
 
@@ -42,11 +43,18 @@ logger.info(
   "env check",
 );
 
+const containerID = os.hostname(); // or /proc/self/cgroup
+
 async function startWorker() {
   await redisConnect();
   const channel = await connectRabbitMQ(RABBITMQ_URL, QUEUE_NAME);
   channel.prefetch(1); // only one job at a time
   logger.info("[*] Waiting for jobs...");
+
+  // setting up ttl for heartbeat to autoscaler;
+  setInterval(async () => {
+    await redis.set(`worker:heartbeat:${containerID}`, "alive", "EX", 10);
+  }, 5000);
 
   channel.consume(
     QUEUE_NAME,
@@ -69,7 +77,6 @@ async function startWorker() {
       );
       busy = true;
 
-      const containerID = os.hostname(); // or /proc/self/cgroup
       const ffmpegProcess = spawn(
         "ffmpeg",
         ffmpegStreamingVod(RTMP_URL, MTX_PATH.split("/")[1]), // change the func call to ffmpegStreaming for without VOD;

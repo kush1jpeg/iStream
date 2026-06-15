@@ -27,21 +27,6 @@ const R2_SECRET_KEY = process.env.R2_SECRET_KEY;
 const R2_BUCKET = process.env.R2_BUCKET;
 const R2_PUBLIC_URL = process.env.R2_PUBLIC_URL;
 
-const allWorkers = await redis.hgetall("workers");
-if (allWorkers) {
-  console.log("[+] deleting the previous workers");
-  await Promise.all(
-    Object.keys(allWorkers).map((w) => {
-      console.log("cleaning prev worker", w);
-      return docker
-        .getContainer(w)
-        .remove({ force: true })
-        .catch(() => {}); // move on if container removed can put in trycatch too
-    }),
-  );
-  await redis.del("workers");
-}
-
 for (let i = 0; i < MIN_WORKERS; i++) {
   try {
     await spawnWorker(
@@ -66,6 +51,20 @@ let idleTimer = null;
 async function autoscaler() {
   try {
     const allWorkers = await redis.hgetall("workers");
+
+    // check heartbeats, remove dead workers
+    for (const [containerId, state] of Object.entries(allWorkers)) {
+      const heartbeat = await redis.ttl(`worker:heartbeat:${containerId}`);
+      if (heartbeat === -2) {
+        console.log(`[!] ${containerId} heartbeat expired, removing`);
+        await redis.hdel("workers", containerId);
+        await docker
+          .getContainer(containerId)
+          .remove({ force: true })
+          .catch(() => {});
+        delete allWorkers[containerId];
+      }
+    }
     console.log("[+] allWorkers", allWorkers);
     const busyCount = Object.values(allWorkers).filter(
       (state) => state === "busy",
@@ -111,7 +110,13 @@ async function autoscaler() {
 }
 
 await connectToRabbitMQ();
-setInterval(autoscaler, 5000);
+const autoScalerTimer = setInterval(autoscaler, 5000);
 
-process.on("SIGINT", () => gracefulShutdown("SIGINT"));
-process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", async () => {
+  clearInterval(autoScalerTimer);
+  await gracefulShutdown("SIGINT");
+});
+process.on("SIGTERM", async () => {
+  clearInterval(autoScalerTimer);
+  await gracefulShutdown("SIGTERM");
+});
