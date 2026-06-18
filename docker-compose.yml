@@ -27,6 +27,7 @@ services:
     networks:
       - istream
 
+
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -57,7 +58,6 @@ services:
       - istream
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
 
 
   job-server:
@@ -70,7 +70,6 @@ services:
       - rabbitmq
     env_file:
       - ./jobServer/.env
-    restart: unless-stopped
     networks:
       - istream
 
@@ -86,8 +85,6 @@ services:
     depends_on:
       - rabbitmq
       - redis
-      - job-server
-    restart: unless-stopped
     networks:
       - istream
 
@@ -104,7 +101,6 @@ services:
       - rabbitmq
       - redis
       - backend
-    restart: unless-stopped
     networks:
       - istream
 

@@ -178,24 +178,26 @@ const Index = () => {
                   </p>
                 )}
 
-                {streams
-                  .filter(s => activeTag ? s.stream.tags?.includes(activeTag) : true)
-                  .map((stream, i) => (
-                    <div
-                      key={stream.streamerId}
-                      className="animate-slide-in"
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    >
-                      <StreamCard
-                        id={stream.streamerId}
-                        title={stream.stream.title}
-                        streamer={stream.streamer.username}
-                        viewers={String(stream.viewers)}
-                        thumbnail={stream.stream.thumbnail}
-                        startedAt={String(stream.createdAt)}
-                      />
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {streams
+                    .filter(s => activeTag ? s.stream.tags?.includes(activeTag) : true)
+                    .map((stream, i) => (
+                      <div
+                        key={stream.streamerId}
+                        className="animate-slide-in"
+                        style={{ animationDelay: `${i * 100}ms` }}
+                      >
+                        <StreamCard
+                          id={stream.streamerId}
+                          title={stream.stream.title}
+                          streamer={stream.streamer.username}
+                          viewers={String(stream.viewers)}
+                          thumbnail={stream.stream.thumbnail}
+                          startedAt={String(stream.createdAt)}
+                        />
+                      </div>
+                    ))}
+                </div>
               </>
             )}
           </div>
@@ -220,26 +222,28 @@ const Index = () => {
               </div>
             ) : (
               <>
-                {vods
-                  .filter(v => activeTag ? v.tags?.includes(activeTag) : true)
-                  .map((vod, i) => (
-                    <div
-                      key={vod._id}
-                      className="animate-slide-in"
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    >
-                      <StreamCard
-                        id={vod._id}
-                        title={vod.title}
-                        streamer={vod.streamer.username}
-                        viewers={String(vod.views)}
-                        thumbnail={vod.thumbnail}
-                        startedAt={String(vod.startedAt)}
-                        endedAt={String(vod.endedAt)}
-                        type="vod"
-                      />
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {vods
+                    .filter(v => (activeTag ? v.tags?.includes(activeTag) : true))
+                    .map((vod, i) => (
+                      <div
+                        key={vod._id}
+                        className="animate-slide-in"
+                        style={{ animationDelay: `${i * 100}ms` }}
+                      >
+                        <StreamCard
+                          id={vod._id}
+                          title={vod.title}
+                          streamer={vod.streamer.username}
+                          viewers={String(vod.views)}
+                          thumbnail={vod.thumbnail}
+                          startedAt={String(vod.startedAt)}
+                          endedAt={String(vod.endedAt)}
+                          type="vod"
+                        />
+                      </div>
+                    ))}
+                </div>
               </>
             )}
           </div>

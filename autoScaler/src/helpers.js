@@ -1,4 +1,3 @@
-import { getPublishChannel } from "./config/connectRabbitMq.js";
 import { docker, redis } from "./index.js";
 import fs from "fs";
 
@@ -10,6 +9,7 @@ export async function spawnWorker(
   IMAGE,
   QUEUE_NAME,
   RTMP_URL,
+  REDIS_HOST,
   REDIS_PORT,
   RABBITMQ_URL,
   NETWORK,
@@ -28,6 +28,7 @@ export async function spawnWorker(
       `QUEUE_NAME=${QUEUE_NAME}`,
       `RTMP_URL=${RTMP_URL}`,
       `REDIS_PORT=${REDIS_PORT}`,
+      `REDIS_HOST=${REDIS_HOST}`,
       `R2_BUCKET=${R2_BUCKET}`,
       `R2_ENDPOINT=${R2_ENDPOINT}`,
       `R2_SECRET_KEY=${R2_SECRET_KEY}`,

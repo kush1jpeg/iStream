@@ -42,4 +42,12 @@ export const checkRedis = async (): Promise<boolean> => {
   }
 };
 
-export const redisSub = new Redis({ host: "redis", port });
+export const redisSub = new Redis({
+  host,
+  port,
+  maxRetriesPerRequest: 4,
+  retryStrategy(times) {
+    const delay = Math.min(times * 200, 2000);
+    return delay;
+  },
+});

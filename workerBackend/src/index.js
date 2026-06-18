@@ -28,21 +28,6 @@ const QUEUE_NAME = process.env.QUEUE_NAME;
 
 let busy = false;
 
-logger.info(
-  {
-    RABBITMQ_URL: process.env.RABBITMQ_URL,
-    REDIS_PORT: process.env.REDIS_PORT,
-    QUEUE_NAME: process.env.QUEUE_NAME,
-    RTMP_URL: process.env.RTMP_URL,
-    R2_BUCKET: process.env.R2_BUCKET,
-    accessKeyId: process.env.R2_ACCESS_KEYID,
-    secretAccessKey: process.env.R2_SECRET_KEY,
-    endpoint: process.env.R2_ENDPOINT,
-    R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
-  },
-  "env check",
-);
-
 const containerID = os.hostname(); // or /proc/self/cgroup
 
 async function startWorker() {
@@ -53,8 +38,8 @@ async function startWorker() {
 
   // setting up ttl for heartbeat to autoscaler;
   setInterval(async () => {
-    await redis.set(`worker:heartbeat:${containerID}`, "alive", "EX", 10);
-  }, 5000);
+    await redis.set(`worker:heartbeat:${containerID}`, Date.now().toString());
+  }, 3000);
 
   channel.consume(
     QUEUE_NAME,

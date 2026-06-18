@@ -14,17 +14,47 @@ The service topology is intentionally split into: ingest, orchestration, transco
 
 - **redis**: maintains live state and coordination data. It stores active stream metadata, worker heartbeat status, idle/busy worker sets, and health flags used by the autoscaler. Redis is the fast in-memory source of truth for routing decisions and runtime service orchestration.
 
-- [**auto-scaler**](/autoScaler/): is the runtime controller for FFmpeg worker containers. It uses Dockerode and the host Docker socket to spawn or kill `workerBackend` containers based on Redis state. It enforces `MIN_WORKERS` and `MAX_WORKERS`, cleans up idle workers after a timeout, and terminates stale/crashed workers. This is the project’s dynamic worker orchestration layer, sortof a toy K8.
+- [**auto-scaler**](/autoScaler/): This service implements a polling-based reconciliation loop rather than event-driven scaling and evaluates cluster state derived from Redis hashes (`workers`) and per-worker heartbeat keys (`worker:heartbeat:<containerId>`). These signals are used to infer worker liveness, utilization pressure, and scheduling capacity -> basically removing stale or crashed workers when they exceed the configured timeout threshold. It also removes idle workers after sustained inactivity to optimize resource usage.
+
+Overall, this module acts as a lightweight, orchestration system, a simplified, custom-built alternative to K8-style autoscaling tailored specifically for FFmpeg workloads.
+
+Right now this is a very brute-force, very beginner-like architecture cuz it assumes just reactive control-
+  - check current busy workers
+  - instantly spawn or kill
+
+instead a better optimization would have been making a system which scales based on demand over time- sorta of a prediction system based lets say a variable called pressure score which gets updated and the scale up and scale down is smooth and slow not instant like right now;
+
 
 - [**job-server**](/jobServer/): is the first validation gate for ingest jobs. It receives `MediaMTX` webhook notifications, validates stream keys against Redis, and publishes stream jobs to RabbitMQ. This makes the system resilient by ensuring only authorized ingest streams enter the worker queue, also handles the rolling lease mechanism to detect weather the streamer is streaming/disconnected/forgot the stream after creating it.
 
 - [**backend**](/backend/): is the primary application service. It runs Express + Socket.io, sets up RabbitMQ exchanges, connects to MongoDB for persistent data, manages Redis state, and exposes API routes for auth, user, stream, chat, and shop/payment flows. The backend also handles OAuth configuration, payment exchange bindings, and notification publish semantics.
 
-I have had planned to split the concerns - like seperate auth-service, payment-gateway, user-service like a chad microservice architecture, grpc calling, but it adds too much unnecessary complexity + time;
+I have had planned to split the concerns - like seperate auth-service, payment-gateway, user-service like a chad microservice architecture, grpc calling, but it adds too much unnecessary complexity + it would be a time-waste for now;
 
 - [**shared**](/shared/): is a shared helper package to use types, helper functions across the whole project;
 
-- [**notification-service**](/notification/): is a separated delivery microservice that consumes the notification exchange and sends out emails or user alerts. By isolating notification processing, the system avoids coupling email delivery failures to core streaming availability.
+- [**notification-service**](/notification/): is a separated delivery microservice that consumes the notification exchange and sends out emails or user alerts. By isolating notification processing, the system avoids coupling email delivery failures to core streaming availability. There should have had been multiple services instead of tightly coupling different frequency-events into one single process/server- for eg- consumeStreamNotifs doing a 500-follower batch will starve consumeOTPMails in the same event loop. A cleaner and more scalable approach would be seperate concerns handled by seperate services would have looked like -
+
+  - notification-service/
+    → consumes: follow_queue, like_queue, chat_queue
+    → light, stateless, scale freely
+    → prefetch: 10
+
+  - stream-fanout-service/
+    → consumes: stream_queue only
+    → heavy, long-running batches
+    → prefetch: 1, scale carefully
+
+  - mail-service/
+    → consumes: otp_queue
+    → I/O bound on SMTP, scale independently
+
+  - payment-service/
+    → consumes: payment_queue
+    → never share a process with anything else
+    → prefetch: 1, dead letter queue mandatory
+
+also when i would use k8, i would be able to add replicas for a particular service.
 
 - [**workerBackend**](/workerBackend/): is the FFmpeg worker runtime. Each worker consumes a `stream.jobs` message from RabbitMQ, pulls the RTMP source from `MediaMTX`, spawns the `ffmpeg` process, writes HLS segments into the shared volume, and uploads VOD segments to Cloudflare R2. Workers also report status back into Redis via pub/sub to enable the streamer stay updated regarding the stream status, enabling clean autoscaler-driven lifecycle management.
 
