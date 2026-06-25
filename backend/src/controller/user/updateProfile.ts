@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { userModel } from "../../models/user";
+import { getFullLink } from "./getSignedLink";
 
 export const updateProfile = async (req: Request, res: Response) => {
   try {
@@ -37,9 +38,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       {
         new: true,
         runValidators: true,
-        select: "",
+            select: "-passwordHash -refreshToken -googleId -twitchId -Inventory -lastReadNotificationId",
       },
-    );
+    ).lean();
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -47,7 +48,17 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       message: "Profile updated successfully",
-      user: updatedUser,
+      user: {
+        ...updatedUser,
+
+        banner: updatedUser.banner.isCloud
+          ? getFullLink(updatedUser.banner.value)
+          : updatedUser.banner.value,
+
+        avatar: updatedUser.avatar.isCloud
+          ? getFullLink(updatedUser.avatar.value)
+          : updatedUser.avatar.value,
+      },
     });
   } catch (err) {
     console.error("Update profile error:", err);

@@ -171,6 +171,11 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: React.ElementType
   );
 };
 
+const formatCount = (value: unknown) => {
+  const count = Number(value ?? 0);
+  return Number.isFinite(count) ? count.toLocaleString() : "0";
+};
+
 // ─── Profile ───────────────────────────────────────────────────────────────────
 
 const Profile = () => {
@@ -182,6 +187,7 @@ const Profile = () => {
 
   const [otherUser, setOtherUser] = useState<IUserFrontend | null>(null);
   const [otherUserFollowing, setOtherUserFollowing] = useState(false);
+  const [followUpdating, setFollowUpdating] = useState(false);
   const [streams, setStreams] = useState<IStream[]>([]);
   const [donations, setDonations] = useState<IPay[]>([]);
   const [loading, setLoading] = useState(true);
@@ -226,6 +232,39 @@ const Profile = () => {
     finally { setUploadingAvatar(false); }
   };
 
+  const updateOtherUserFollowerCount = (isFollowing: boolean) => {
+    setOtherUser((prev) => {
+      if (!prev) return prev;
+
+      const followerCount = Number(prev.followerCount ?? 0);
+      return {
+        ...prev,
+        followerCount: Math.max(0, followerCount + (isFollowing ? 1 : -1)),
+      };
+    });
+  };
+
+  const handleFollow = async (id: string) => {
+    if (followUpdating) return;
+
+    const nextFollowing = !otherUserFollowing;
+
+    setFollowUpdating(true);
+    setOtherUserFollowing(nextFollowing);
+    updateOtherUserFollowerCount(nextFollowing);
+
+    try {
+      const data = await api.post("/user/follow", { followedId: id });
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+      setOtherUserFollowing(!nextFollowing);
+      updateOtherUserFollowerCount(!nextFollowing);
+    } finally {
+      setFollowUpdating(false);
+    }
+  }
+
   if (loading) return (
     <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -239,12 +278,6 @@ const Profile = () => {
       </div>
     </div>
   );
-
-  const handleFollow = async (id: string) => {
-    const data = await api.post("/user/follow", { followedId: id },)
-    console.log(data);
-    setOtherUserFollowing((prev) => !prev)
-  }
 
   if (error || !displayUser) return (
     <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
@@ -331,11 +364,12 @@ const Profile = () => {
                 {!isOwnProfile && (
                   <button
                     onClick={() => handleFollow(String(displayUser._id))}
+                    disabled={followUpdating}
                     className={`bottom-15 left-45 z-30 flex items-center px-3 font-pixel text-[10px] border bg-black/70 transition-colors
     ${otherUserFollowing
                         ? "text-green-400 border-green-400/60 hover:bg-green-400/10"
                         : "text-vhs-cyan border-purple-50 hover:bg-purple-600"
-                      }`}
+                      } disabled:opacity-60 disabled:cursor-not-allowed`}
                   >
                     {otherUserFollowing ? "Following" : "Follow"}
                   </button>
@@ -380,10 +414,10 @@ const Profile = () => {
 
         {/* ── Stats ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <StatCard icon={Users} label="Followers" value={displayUser.followerCount.toLocaleString()} color="vhs-purple" />
-          <StatCard icon={Heart} label="Following" value={displayUser.followCount.toLocaleString()} color="vhs-pink" />
-          <StatCard icon={Video} label="Streams" value={streams.length.toLocaleString()} color="vhs-cyan" />
-          <StatCard icon={Signal} label="Donations" value={donations.length.toLocaleString()} color="terminal-green" />
+          <StatCard icon={Users} label="Followers" value={formatCount(displayUser.followerCount)} color="vhs-purple" />
+          <StatCard icon={Heart} label="Following" value={formatCount(displayUser.followCount)} color="vhs-pink" />
+          <StatCard icon={Video} label="Streams" value={formatCount(streams.length)} color="vhs-cyan" />
+          <StatCard icon={Signal} label="Donations" value={formatCount(donations.length)} color="terminal-green" />
         </div>
 
         {/* ── Tabs ── */}
@@ -428,7 +462,7 @@ const Profile = () => {
                         )}
                         <div className="flex items-center gap-1 text-muted-foreground">
                           <Eye className="w-3 h-3" />
-                          <span className="font-mono text-xs">{stream.viewers?.toLocaleString()}</span>
+                          <span className="font-mono text-xs">{formatCount(stream.viewers)}</span>
                         </div>
                       </div>
                       {stream.tags?.length > 0 && (

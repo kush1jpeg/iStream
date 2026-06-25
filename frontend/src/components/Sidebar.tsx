@@ -26,13 +26,15 @@ export const Sidebar: React.FC = () => {
   useEffect(() => {
     if (!socketsReady) return;
     const sidebarSocket = getSocket("/sidebar");
+    if (!sidebarSocket) return;
+
     const transformData = (data: any) => {
       const liveUsers =
         data.live?.map((u: any) => ({
-          _id: u.userId,
+          _id: u._id || u.userId,
           username: u.username,
           avatar: u.avatar,
-          frame: u.currentFrame,
+          currentFrame: u.currentFrame,
           isLive: true,
         })) || [];
 
@@ -41,7 +43,7 @@ export const Sidebar: React.FC = () => {
           _id: u._id,
           username: u.username,
           avatar: u.avatar,
-          frame: u.currentFrame,
+          currentFrame: u.currentFrame,
           isLive: false,
         })) || [];
 
@@ -55,48 +57,65 @@ export const Sidebar: React.FC = () => {
 
     const handleUpdate = (u: any) => {
       setFollowed((prev) => {
-        const exists = prev.some((x) => x._id === u._id);
+        const userId = u._id || u.userId;
+        if (!userId) return prev;
+
+        const exists = prev.some((x) => x._id === userId);
 
         if (exists) {
           return prev.map((user) =>
-            user._id === u.userId
+            user._id === userId
               ? {
                 ...user,
-                isLive: true,
+                username: u.username || user.username,
+                avatar: u.avatar || user.avatar,
+                currentFrame: u.currentFrame || user.currentFrame,
+                isLive: u.isLive ?? true,
               }
               : user
           );
         }
 
+        if (!u.username || !u.avatar) return prev;
+
         return [
           {
-            _id: u.userId,
+            _id: userId,
             username: u.username,
             avatar: u.avatar,
-            frame: u.currentFrame,
-            isLive: true,
+            currentFrame: u.currentFrame,
+            isLive: u.isLive ?? true,
           },
           ...prev,
         ];
       });
     };
 
-    sidebarSocket.on("connect", () => {
+    const handleConnect = () => {
       console.log("/sidebar connected");
-    });
+    };
 
-    sidebarSocket.on("disconnect", () => {
+    const handleDisconnect = () => {
       console.log("/sidebar disconnected");
-    });
+    };
 
+    sidebarSocket.off("connect", handleConnect);
+    sidebarSocket.off("disconnect", handleDisconnect);
+    sidebarSocket.off("sidebar:init", handleInit);
+    sidebarSocket.off("sidebar:update", handleUpdate);
+
+    sidebarSocket.on("connect", handleConnect);
+    sidebarSocket.on("disconnect", handleDisconnect);
     sidebarSocket.on("sidebar:init", handleInit);
     sidebarSocket.on("sidebar:update", handleUpdate);
 
     return () => {
+      sidebarSocket.off("connect", handleConnect);
+      sidebarSocket.off("disconnect", handleDisconnect);
       sidebarSocket.off("sidebar:init", handleInit);
       sidebarSocket.off("sidebar:update", handleUpdate);
     }
-  }, []);
+  }, [socketsReady]);
 
   const redirectLive = async (userId: string) => {
     try {
@@ -198,5 +217,4 @@ export const Sidebar: React.FC = () => {
     </div>
   );
 };
-
 

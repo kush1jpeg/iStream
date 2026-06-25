@@ -9,6 +9,19 @@ interface ChatPayload {
 }
 
 export function registerLiveChatHandler(io: Namespace, socket: Socket) {
+  socket.on("stream:join", async ({ streamId }: { streamId: string }) => {
+    if (!streamId || !(await redis.exists(`stream:${streamId}`))) {
+      return socket.emit("error", "Stream does not exist");
+    }
+
+    socket.join(streamId);
+  });
+
+  socket.on("stream:leave", ({ streamId }: { streamId: string }) => {
+    if (!streamId) return;
+    socket.leave(streamId);
+  });
+
   socket.on("stream:send", async ({ streamId, msg }: ChatPayload) => {
     const userId = socket.data.userId;
     const username = socket.data.username;

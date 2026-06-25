@@ -5,8 +5,8 @@ import { useParams } from "react-router-dom";
 import { api } from "@/App";
 import { Radio } from "lucide-react";
 import { VideoPlayer } from "@/components/VideoPlayer"; // adjust path as needed
-import { toast } from "react-toastify";
 import { useSignalStrength } from "@/hooks/signalStrength";
+import { EndStream } from "@/components/ui/endStream";
 
 
 interface IChatMessage {
@@ -14,6 +14,23 @@ interface IChatMessage {
   userId: string;
   username: string;
   createdAt: Date;
+}
+
+type SuperchatPayload = Pick<
+  IPay,
+  | "userId"
+  | "username"
+  | "message"
+  | "amount"
+  | "streamId"
+  | "userPfp"
+  | "currency"
+  | "status"
+  | "createdAt"
+>;
+
+function parseSocketPayload<T>(raw: T | string): T {
+  return typeof raw === "string" ? JSON.parse(raw) : raw;
 }
 
 function formatTime(secs: number) {
@@ -68,13 +85,6 @@ export default function StreamerDashboard() {
     createdAt: "",
   });
 
-  async function handleStreamEnd(streamId: string) {
-    const data = await api.post(`/stream/${streamId}/end`);
-    const outcome = data.data.success;
-    if (outcome) toast.success(data.data.msg);
-    getSocket("/")?.emit("stream:leave");
-  }
-
 
   useEffect(() => {
     const init = async () => {
@@ -96,10 +106,11 @@ export default function StreamerDashboard() {
   const chatBodyRef = useRef<HTMLDivElement>(null);
 
   // ── timer ──
-  useEffect(() => {
-    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
-    return () => clearInterval(id);
-  }, []);
+useEffect(() => {
+  if (stats.status !== "live") return;
+  const id = setInterval(() => setElapsed((e) => e + 1), 1000);
+  return () => clearInterval(id);
+}, [stats.status]);
 
   // auto-scroll chat
   useEffect(() => {
@@ -109,15 +120,24 @@ export default function StreamerDashboard() {
 
   // ── sockets ──
   useEffect(() => {
+    if (!streamId) return;
+
     connectAllSockets();
     const notifySocket = getSocket("/notify");
     const streamSocket = getSocket("/");
+    const liveSocket = getSocket("/live");
 
-    streamSocket.emit("stream:join", { streamId });
+    const joinStreamRooms = () => {
+      streamSocket?.emit("stream:join", { streamId });
+      liveSocket?.emit("stream:join", { streamId });
+    };
 
-    notifySocket?.on("stream:logs", (raw) => {
-      console.log("recieved log in the frontend")
-      const payload = typeof raw === "string" ? JSON.parse(raw) : raw;
+    joinStreamRooms();
+    streamSocket?.on("connect", joinStreamRooms);
+    liveSocket?.on("connect", joinStreamRooms);
+
+    const handleStreamLogs = (raw: IStreamLog | string) => {
+      const payload = parseSocketPayload<IStreamLog>(raw);
       setLogs((prev) =>
         [
           {
@@ -129,10 +149,10 @@ export default function StreamerDashboard() {
           ...prev,
         ].slice(0, 200)
       );
-    });
+    };
 
-    streamSocket?.on("stream:chat", (data) => {
-      const parsed = typeof data === "string" ? JSON.parse(data) : data;
+    const handleStreamChat = (data: IChatMessage | string) => {
+      const parsed = parseSocketPayload<IChatMessage>(data);
       setChat((prev) =>
         [
           ...prev,
@@ -144,53 +164,79 @@ export default function StreamerDashboard() {
           },
         ].slice(-300)
       );
-    });
+    };
 
-    streamSocket?.on("superchat", (data) => {
-      const parsed = typeof data === "string" ? JSON.parse(data) : data;
-      setSuperchats((prev: any) =>
+    const handleSuperchat = (data: SuperchatPayload | string) => {
+      const parsed = parseSocketPayload<SuperchatPayload>(data);
+      setSuperchats((prev) =>
         [
           {
-            _id: parsed._id,
             userId: parsed.userId,
             username: parsed.username,
-            email: parsed.email,
             message: parsed.message,
             amount: parsed.amount,
             streamId: parsed.streamId,
             userPfp: parsed.userPfp,
-            itemId: parsed.itemId,
             currency: parsed.currency,
             status: parsed.status,
-            provider: parsed.provider,
-            orderId: parsed.orderId,
-            providerPaymentId: parsed.providerPaymentId,
             createdAt: new Date(parsed.createdAt),
-            updatedAt: new Date(parsed.updatedAt),
-            expiresAt: parsed.expiresAt ? new Date(parsed.expiresAt) : null,
-          },
+          } as IPay,
           ...prev,
         ].slice(0, 100)
       );
-    });
+    };
+
+    const handleViewers = (viewers: number) => {
+      setStats((prev) =>
+        prev ? { ...prev, viewers: String(viewers) } : prev
+      );
+    };
+
+    const handleViews = (views: number) => {
+      setStats((prev) => (prev ? { ...prev, views: String(views) } : prev));
+    };
+
+    notifySocket?.on("stream:logs", handleStreamLogs);
+    liveSocket?.on("stream:chat", handleStreamChat);
+    liveSocket?.on("superchat", handleSuperchat);
+    streamSocket?.on("stream:viewers", handleViewers);
+    streamSocket?.on("stream:views", handleViews);
 
     return () => {
-      notifySocket?.off("stream:logs");
-      streamSocket?.off("stream:chat");
-      streamSocket?.off("superchat");
+      streamSocket?.off("connect", joinStreamRooms);
+      liveSocket?.off("connect", joinStreamRooms);
+      notifySocket?.off("stream:logs", handleStreamLogs);
+      liveSocket?.off("stream:chat", handleStreamChat);
+      liveSocket?.off("superchat", handleSuperchat);
+      streamSocket?.off("stream:viewers", handleViewers);
+      streamSocket?.off("stream:views", handleViews);
+      streamSocket?.emit("stream:leave", { streamId });
+      liveSocket?.emit("stream:leave", { streamId });
     };
-  }, []);
+  }, [streamId]);
 
   // ── send chat ──
   const sendChat = useCallback(() => {
     const text = chatInput.trim();
-    if (!text) return;
+    if (!text || !streamId) return;
     const liveSocket = getSocket("/live");
-    liveSocket?.emit("stream:send", { streamId, text });
+    liveSocket?.emit("stream:send", { streamId, msg: text });
+    setChat((prev) =>
+      [
+        ...prev,
+        {
+          msg: text,
+          userId: "me",
+          username: "You",
+          createdAt: new Date(),
+        },
+      ].slice(-300)
+    );
     setChatInput("");
-  }, [chatInput]);
+  }, [chatInput, streamId]);
 
   const scTotal = superchats.reduce((a, s) => a + s.amount, 0);
+const [showConfirm, setShowConfirm] = useState(false);
 
   // ─── JSX ───────────────────────────────────────────────────────────────────
   return (
@@ -202,7 +248,7 @@ export default function StreamerDashboard() {
           <span style={S.liveBadge}>
             ●{" "}
             {
-              { inactive: "WAITING FOR OBS-RTMP", pending: "WAITING FOR OBS-RTMP", live: "LIVE" }[
+              { inactive: "WAITING FOR OBS-RTMP", pending: "WAITING FOR OBS-RTMP", live: "LIVE", ended: "ENDED" }[
               stats?.status ?? "pending"
               ] ?? ""
             }
@@ -261,13 +307,21 @@ export default function StreamerDashboard() {
             </div>
 
           </div>
+
+          {showConfirm && (
+            <EndStream
+              streamId={streamId}
+              onClose={() => setShowConfirm(false)}
+              onEnded={() => {
+                setStats((prev) => (prev ? { ...prev, status: "ended" } : prev));
+              }}
+            />
+          )}
           <CtrlBtn
             danger
             title="End stream"
             onClick={() => {
-              if (window.confirm("End the stream?")) {
-                handleStreamEnd(streamId);
-              }
+              if (stats?.status !== "ended") setShowConfirm(true);
             }}
           >
             ⏹
@@ -324,7 +378,11 @@ export default function StreamerDashboard() {
         <div style={S.midCol}>
           <SectionHeader
             label="LIVE CHAT"
-            right={<span style={{ color: "#22c55e", fontSize: 10 }}>● LIVE</span>}
+right={
+  <span style={{ color: stats.status === "live" ? "#22c55e" : "#6b7280", fontSize: 10 }}>
+    ● {stats.status === "live" ? "LIVE" : "OFFLINE"}
+  </span>
+}
           />
           <div ref={chatBodyRef} style={S.chatBody}>
             {chat.length === 0 && (

@@ -13,32 +13,47 @@ type SidebarUser = {
   isLive?: boolean;
 };
 
-let userId: string;
-export function registerSidebarHandler(io: Namespace, socket: Socket) {
-  io.on("connection", async (socket) => {
-    userId = socket.data.userId;
-    socket.join(userId);
 
-    // send initial state on connect
-    const data = await getSidebarData(userId);
-    console.log("sidebar:init-", data);
-    socket.emit("sidebar:init", data);
+export function registerSidebarHandler(_io: Namespace, socket: Socket) {
+  const userId = socket.data.userId;
+  if (!userId) {
+    socket.emit("sidebar:error", { code: "USER_MISSING" });
+    return;
+  }
 
-    socket.on("disconnect", () => {
-      socket.leave(userId);
+  socket.join(userId);
+
+  getSidebarData(userId)
+    .then((data) => {
+      socket.emit("sidebar:init", data);
+    })
+    .catch((err) => {
+      console.error("sidebar:init failed", err);
+      socket.emit("sidebar:error", { code: "SIDEBAR_INIT_FAILED" });
     });
-  });
 }
 
+let sidebarRedisListenerReady = false;
 export function SidebarRedisListener(io: Namespace) {
+  if (sidebarRedisListenerReady) return;
+  sidebarRedisListenerReady = true;
+
   // redis sub for live updates
   redisSub.subscribe("notifications");
-  redisSub.on("message", (channel, message) => {
+  redisSub.on("message", async (_channel, message) => {
     try {
       const payload = JSON.parse(message);
       console.log("[+]Payload :", payload);
-      if (payload.type !== "stream" || payload.userId !== userId) return;
-      io.to(payload.userId).emit("sidebar:update", payload);
+      if (payload.type !== "stream" || !payload.userId) return;
+
+      const followers = await followModel
+        .find({ followedId: payload.userId })
+        .select("followerId")
+        .lean();
+
+      followers.forEach((follow) => {
+        io.to(follow.followerId.toString()).emit("sidebar:update", payload);
+      });
     } catch (err) {
       console.error("sidebar pmessage error:", err);
     }
@@ -155,7 +170,10 @@ const getRandomFallback = async (
       .filter(Boolean)
       .filter((item: any) => item.streamerId !== userId)
       .map((item: any) => {
-        const streamer = item.streamer;
+        const streamer =
+          typeof item.streamer === "string"
+            ? JSON.parse(item.streamer)
+            : item.streamer;
 
         return {
           _id: item.streamerId,

@@ -18,6 +18,10 @@ export const getAllConversations = async (req: Request, res: Response) => {
         path: "participants",
         select: "username avatar isVerified isLive",
       })
+       .populate({
+        path: "lastMessage",
+        select: "message createdAt", // adjust fields to whatever msgPvt has
+      })
       .sort({ updatedAt: -1 })
       .lean();
 

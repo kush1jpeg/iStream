@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search } from "lucide-react";
 import { api } from "@/App";
+import { useNavigate } from "react-router-dom";
 
 interface SearchUser {
   _id: string;
@@ -15,6 +16,7 @@ interface SearchUser {
 const fmt = (n: number) => (n >= 1000 ? (n / 1000).toFixed(1) + "K" : String(n));
 
 export const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,11 @@ export const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const openProfile = (id: string) => {
+    navigate(`/profile/${id}`);
+    onClose();
   };
 
   useEffect(() => {
@@ -79,6 +86,9 @@ export const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") setFocused(i => Math.min(i + 1, results.length - 1));
     else if (e.key === "ArrowUp") setFocused(i => Math.max(i - 1, 0));
+    else if (e.key === "Enter" && focused >= 0 && results[focused]) {
+      openProfile(results[focused]._id);
+    }
   };
 
   return (
@@ -160,12 +170,22 @@ export const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
                 borderBottom: "1px solid rgba(140,40,220,0.08)"
               }}
             >
-              <div className="w-10 h-10 flex items-center justify-center overflow-hidden"
+              <button
+                type="button"
+                onClick={() => openProfile(user._id)}
+                className="w-10 h-10 flex items-center justify-center overflow-hidden"
                 style={{ background: "rgba(100,20,160,0.4)", border: "1px solid rgba(160,60,255,0.3)", clipPath: "polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%)", flexShrink: 0, fontFamily: "'Orbitron',monospace", fontSize: 12, fontWeight: 700, color: "#cc80ff" }}>
                 {user.avatar ? <img src={user.avatar} alt={user.username} className="w-full h-full object-cover" /> : user.username.slice(0, 2).toUpperCase()}
-              </div>
+              </button>
               <div className="flex-1 min-w-0">
-                <p className="truncate" style={{ fontFamily: "'VT323',monospace", fontSize: 22, color: "#d090ff", letterSpacing: "0.05em", lineHeight: 1.1 }}>{user.username}</p>
+                <button
+                  type="button"
+                  onClick={() => openProfile(user._id)}
+                  className="block max-w-full truncate text-left hover:underline"
+                  style={{ fontFamily: "'VT323',monospace", fontSize: 22, color: "#d090ff", letterSpacing: "0.05em", lineHeight: 1.1 }}
+                >
+                  {user.username}
+                </button>
                 <p style={{ fontFamily: "'Orbitron',monospace", fontSize: 9, color: "rgba(160,80,255,0.45)", letterSpacing: "0.12em", marginTop: 2 }}>{fmt(user.followerCount)} FOLLOWERS</p>
               </div>
               {user.isLive ? (
@@ -187,7 +207,10 @@ export const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
                   ◉ LIVE
                 </a>
               ) : <button
-                onClick={() => handleFollow(user._id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFollow(user._id);
+                }}
                 className={`font-pixel text-[9px] tracking-widest px-2 py-1 border transition-colors ${user.followed
                   ? "border-green-500/50 text-green-400 hover:bg-green-700"
                   : "border-vhs-purple/50 text-vhs-purple hover:bg-indigo-700"

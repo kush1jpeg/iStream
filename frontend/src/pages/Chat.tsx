@@ -21,10 +21,12 @@ type SuggestionUser = IUserFrontend & {
 
 interface Message {
   _id?: string;
-  senderId: string;
+  senderId: string | { _id: string; username?: string; avatar?: string };
+  receiverId?: string;
   message: string;
   createdAt?: string;
   pending?: boolean;
+  localId?: string;
 }
 
 const PAGE_SIZE = 30;
@@ -42,6 +44,20 @@ function formatDate(iso?: string) {
 
 function getOther(conv: Conversation, myId: string) {
   return conv.participants.find((p) => p._id !== myId);
+}
+
+function getSenderId(message: Message) {
+  return typeof message.senderId === "string" ? message.senderId : String(message.senderId?._id);
+}
+
+function getSenderMeta(message: Message, activeConv: Conversation, myId: string) {
+  if (typeof message.senderId === "object") return message.senderId;
+  return activeConv.participants.find((p) => p._id === message.senderId && p._id !== myId);
+}
+
+function createLocalId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) return crypto.randomUUID();
+  return `${Date.now()}-${Math.random()}`;
 }
 
 function sameDay(a?: string, b?: string) {
@@ -72,78 +88,149 @@ export default function ChatPage({ myId }: { myId: string }) {
   const groupSocket = getSocket("/group");
   const socketsReady = useAuthStore((s) => s.socketsReady);
 
+  const getConversationSocket = useCallback(
+    (conv: Conversation | null) => {
+      if (!conv) return null;
+      return conv.isGroup ? groupSocket : dmSocket;
+    },
+    [dmSocket, groupSocket]
+  );
+
+  const leaveConversation = useCallback(
+    (conv: Conversation | null) => {
+      if (!conv) return;
+      if (conv.isGroup) {
+        groupSocket?.emit("dm:leave", { conversationKey: conv.conversationKey });
+        return;
+      }
+
+      const other = getOther(conv, myId);
+      if (other) dmSocket?.emit("dm:leave", { receiverId: other._id });
+    },
+    [dmSocket, groupSocket, myId]
+  );
+
+  const joinConversation = useCallback(
+    (conv: Conversation) => {
+      if (conv.isGroup) {
+        groupSocket?.emit("dm:join", { conversationKey: conv.conversationKey });
+        groupSocket?.emit("dm:read", { conversationKey: conv.conversationKey });
+        return;
+      }
+
+      const other = getOther(conv, myId);
+      if (!other) return;
+      dmSocket?.emit("dm:join", { receiverId: other._id });
+      dmSocket?.emit("dm:read", { conversationKey: conv.conversationKey });
+    },
+    [dmSocket, groupSocket, myId]
+  );
+
+  const isDmMessageForConversation = useCallback(
+    (msg: Message, conv: Conversation) => {
+      if (conv.isGroup) return false;
+      const senderId = getSenderId(msg);
+      const counterpartId = senderId === myId ? msg.receiverId : senderId;
+      return Boolean(counterpartId && conv.participants.some((p) => p._id === counterpartId));
+    },
+    [myId]
+  );
 
   useEffect(() => {
     if (!dmSocket || !groupSocket || !socketsReady) return;
 
+    const updateSocketReady = () => {
+      const currentSocket = getConversationSocket(activeConvRef.current);
+      setSocketReady(Boolean(currentSocket?.connected));
+    };
 
-    const currentSocket =
-      activeConv?.isGroup
-        ? groupSocket
-        : dmSocket;
-    socketRef.current = currentSocket;
-    console.log(currentSocket);
-    currentSocket.off("connect");
-    currentSocket.off("disconnect");
-    currentSocket.off("dm:message");
-    currentSocket.off("message:read");
+    const handleDmMessage = (msg: Message) => {
+      const active = activeConvRef.current;
+      const isActiveDm = Boolean(active && isDmMessageForConversation(msg, active));
 
-    currentSocket.on("connect", () => {
-      console.log("connected");
-      setSocketReady(true)
-    }
-    );
-
-    currentSocket.on("disconnect", () =>
-      setSocketReady(false)
-    );
-
-    currentSocket.on(
-      "dm:message",
-      (msg: Message) => {
-        setMessages((prev) => [...prev, msg]);
-
-        setConversations((prev) =>
-          prev.map((c) => {
-            const other = getOther(c, myId);
-
-            if (
-              other?._id === msg.senderId &&
-              c._id !== activeConvRef.current?._id
-            ) {
-              return {
-                ...c,
-                unreadCount:
-                  (c.unreadCount || 0) + 1,
-              };
-            }
-
-            return c;
-          })
-        );
+      if (isActiveDm) {
+        setMessages((prev) => [...prev, { ...msg, createdAt: msg.createdAt || new Date().toISOString() }]);
+        dmSocket.emit("dm:read", { conversationKey: active.conversationKey });
       }
-    );
 
-    currentSocket.on(
-      "message:read",
-      ({ conversationKey }) => {
-        setConversations((prev) =>
-          prev.map((c) =>
-            c.conversationKey === conversationKey
-              ? { ...c, unreadCount: 0 }
-              : c
-          )
-        );
-      }
-    );
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (!isDmMessageForConversation(msg, c)) return c;
+
+          return {
+            ...c,
+            lastMessage: { message: msg.message, createdAt: msg.createdAt || new Date().toISOString() },
+            unreadCount: c._id === active?._id ? 0 : (c.unreadCount || 0) + 1,
+          };
+        })
+      );
+    };
+
+    const handleGroupMessage = (msg: Message) => {
+      const active = activeConvRef.current;
+      if (!active?.isGroup) return;
+
+      const message = { ...msg, createdAt: msg.createdAt || new Date().toISOString() };
+      setMessages((prev) => [...prev, message]);
+      groupSocket.emit("dm:read", { conversationKey: active.conversationKey });
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === active._id
+            ? { ...c, lastMessage: { message: msg.message, createdAt: message.createdAt }, unreadCount: 0 }
+            : c
+        )
+      );
+    };
+
+    const handleRead = ({ conversationKey }) => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.conversationKey === conversationKey
+            ? { ...c, unreadCount: 0 }
+            : c
+        )
+      );
+    };
+
+    const handleError = (err: { code?: string }) => {
+      console.error("chat socket error", err);
+      setMessages((prev) => prev.filter((m) => !m.pending));
+    };
+
+    dmSocket.on("connect", updateSocketReady);
+    dmSocket.on("disconnect", updateSocketReady);
+    dmSocket.on("dm:message", handleDmMessage);
+    dmSocket.on("message:read", handleRead);
+    dmSocket.on("dm:error", handleError);
+
+    groupSocket.on("connect", updateSocketReady);
+    groupSocket.on("disconnect", updateSocketReady);
+    groupSocket.on("dm:message", handleGroupMessage);
+    groupSocket.on("message:read", handleRead);
+    groupSocket.on("dm:error", handleError);
+
+    updateSocketReady();
 
     return () => {
-      currentSocket.off("connect");
-      currentSocket.off("disconnect");
-      currentSocket.off("dm:message");
-      currentSocket.off("message:read");
+      dmSocket.off("connect", updateSocketReady);
+      dmSocket.off("disconnect", updateSocketReady);
+      dmSocket.off("dm:message", handleDmMessage);
+      dmSocket.off("message:read", handleRead);
+      dmSocket.off("dm:error", handleError);
+
+      groupSocket.off("connect", updateSocketReady);
+      groupSocket.off("disconnect", updateSocketReady);
+      groupSocket.off("dm:message", handleGroupMessage);
+      groupSocket.off("message:read", handleRead);
+      groupSocket.off("dm:error", handleError);
     };
-  }, [myId, activeConv?.isGroup, dmSocket, groupSocket, socketsReady]);
+  }, [dmSocket, groupSocket, socketsReady, getConversationSocket, isDmMessageForConversation]);
+
+  useEffect(() => {
+    const currentSocket = getConversationSocket(activeConv);
+    socketRef.current = currentSocket;
+    setSocketReady(Boolean(currentSocket?.connected));
+  }, [activeConv, getConversationSocket]);
 
 
   useEffect(() => {
@@ -169,28 +256,7 @@ export default function ChatPage({ myId }: { myId: string }) {
     async (conv: Conversation) => {
       if (activeConv?._id === conv._id) return;
 
-      // leave old room
-      if (activeConv.isGroup) {
-        socketRef.current?.emit(
-          "group:leave",
-          {
-            conversationKey:
-              activeConv.conversationKey
-          }
-        );
-      } else {
-        const other =
-          getOther(activeConv, myId);
-
-        if (other) {
-          socketRef.current?.emit(
-            "dm:leave",
-            {
-              receiverId: other._id
-            }
-          );
-        }
-      }
+      leaveConversation(activeConv);
 
       setActiveConv(conv);
       setMessages([]);
@@ -198,16 +264,7 @@ export default function ChatPage({ myId }: { myId: string }) {
       setHasMore(false);
       setLoadingMsgs(true);
 
-      // join new room
-      if (!conv.isGroup) {
-        const other = getOther(conv, myId);
-        console.log(other);
-        socketRef.current?.emit("dm:join", { receiverId: other._id });
-      } else socketRef.current?.emit("dm:join", { conversationKey: conv.conversationKey });
-
-
-      // mark read
-      socketRef.current?.emit("dm:read", { conversationKey: conv.conversationKey });
+      joinConversation(conv);
       setConversations((prev) =>
         prev.map((c) => (c._id === conv._id ? { ...c, unreadCount: 0 } : c))
       );
@@ -226,7 +283,7 @@ export default function ChatPage({ myId }: { myId: string }) {
         setLoadingMsgs(false);
       }
     },
-    [activeConv, myId]
+    [activeConv, joinConversation, leaveConversation]
   );
 
   //fetch older messages  
@@ -258,51 +315,57 @@ export default function ChatPage({ myId }: { myId: string }) {
 
   // send message  
   const sendMessage = useCallback(() => {
-    console.log("sending msg");
-    if (!input.trim() || !activeConv || !socketRef.current) return;
-    const other = getOther(activeConv, myId);
-    if (!other) return;
+    const message = input.trim();
+    const currentSocket = getConversationSocket(activeConv);
+    if (!message || !activeConv || !currentSocket) return;
+    const other = activeConv.isGroup ? null : getOther(activeConv, myId);
+    if (!activeConv.isGroup && !other) return;
 
     const optimistic: Message = {
+      localId: createLocalId(),
       senderId: myId,
-      message: input.trim(),
+      receiverId: other?._id,
+      message,
       createdAt: new Date().toISOString(),
       pending: true,
     };
     setMessages((prev) => [...prev, optimistic]);
+    setConversations((prev) =>
+      prev.map((c) =>
+        c._id === activeConv._id
+          ? { ...c, lastMessage: { message, createdAt: optimistic.createdAt! } }
+          : c
+      )
+    );
+
+    currentSocket.once("dm:sent", () => {
+      setMessages((prev) =>
+        prev.map((m) => (m.localId === optimistic.localId ? { ...m, pending: false } : m))
+      );
+    });
 
     if (activeConv.isGroup) {
-      socketRef.current.emit(
-        "group:send",
+      currentSocket.emit(
+        "dm:send",
         {
           conversationKey:
             activeConv.conversationKey,
-          message: input.trim(),
+          message,
         }
       );
     } else {
-      const other =
-        getOther(activeConv, myId);
-
-      if (!other) return;
-
-      socketRef.current.emit(
+      currentSocket.emit(
         "dm:send",
         {
           receiverId: other._id,
-          message: input.trim(),
+          message,
         }
       );
     }
 
-    socketRef.current.once("dm:sent", () => {
-      setMessages((prev) =>
-        prev.map((m) => (m.pending && m.message === optimistic.message ? { ...m, pending: false } : m))
-      );
-    });
     setInput("");
     inputRef.current?.focus();
-  }, [input, activeConv, myId]);
+  }, [input, activeConv, myId, getConversationSocket]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -325,6 +388,8 @@ export default function ChatPage({ myId }: { myId: string }) {
 
       const convo = data.conversation;
 
+      leaveConversation(activeConv);
+
       setConversations((prev) => {
         const exists = prev.some((c) => c._id === convo._id);
         if (exists) return prev;
@@ -332,10 +397,10 @@ export default function ChatPage({ myId }: { myId: string }) {
       });
 
       setActiveConv(data.conversation);
-      // join socket room - use dmSocket directly since it's available
-      dmSocket?.emit("dm:join", {
-        receiverId: id,
-      });
+      setMessages([]);
+      setPage(1);
+      setHasMore(false);
+      dmSocket?.emit("dm:join", { receiverId: id });
 
       inputRef.current?.focus();
     } catch (err) {
@@ -416,7 +481,7 @@ export default function ChatPage({ myId }: { myId: string }) {
 
                       <p className="text-[13px] tracking-widest text-purple-500 mb-3 border-t-2">// start a conversation</p>
                       {suggestions.map((user) => (
-                        <div key={user._id} className="flex items-center gap-3 px-3 py-2 border-l-2 border-purple-700 border-y border-y-purple-950 bg-purple-950/20 cursor-pointer mb-1.5 transition-colors">
+                        <div key={String(user._id)} className="flex items-center gap-3 px-3 py-2 border-l-2 border-purple-700 border-y border-y-purple-950 bg-purple-950/20 cursor-pointer mb-1.5 transition-colors">
                           <div className="w-8 h-8 rounded-full bg-indigo-900 border border-purple-700 flex items-center justify-center text-[11px] text-purple-300 shrink-0">
                             <img src={user.avatar} />
                           </div>
@@ -425,7 +490,7 @@ export default function ChatPage({ myId }: { myId: string }) {
                             <p className="text-[10px] text-purple-600">{user.status}</p>
                           </div>
                           <button
-                            onClick={() => createConvo(user._id)}
+                            onClick={() => createConvo(String(user._id))}
                             className="text-[9px] uppercase tracking-widest text-purple-500 border border-purple-700 px-2 py-1  hover:text-white transition-colors"
                           >
                             msg
@@ -505,7 +570,9 @@ export default function ChatPage({ myId }: { myId: string }) {
                 )}
 
                 {messages.map((msg, i) => {
-                  const isMe = msg.senderId === myId;
+                  const senderId = getSenderId(msg);
+                  const sender = getSenderMeta(msg, activeConv, myId);
+                  const isMe = senderId === myId;
                   const showDate = i === 0 || !sameDay(messages[i - 1]?.createdAt, msg.createdAt);
                   return (
                     <div key={msg._id || i}>
@@ -527,10 +594,10 @@ export default function ChatPage({ myId }: { myId: string }) {
                           {!isMe && (
                             <div className="flex items-center gap-2">
                               <div className="w-5 h-5 border border-vhs-purple flex items-center justify-center font-mono text-[9px] text-vhs-purple uppercase">
-                                {getOther(activeConv, myId)?.avatar || "?"}
+                                {sender?.avatar ? <img src={sender.avatar} alt="" /> : "?"}
                               </div>
                               <span className="font-mono text-[10px] text-vhs-purple">
-                                {getOther(activeConv, myId)?.username}
+                                {sender?.username || "user"}
                               </span>
                               <span className="font-mono text-[9px] text-muted-foreground opacity-50">
                                 {formatTime(msg.createdAt)}
@@ -622,7 +689,7 @@ function ConvItem({
         "w-9 h-9 shrink-0 border flex items-center justify-center font-mono text-xs uppercase mt-0.5",
         active ? "border-vhs-purple text-vhs-purple" : "border-primary text-muted-foreground"
       )}>
-        <img src={avatar ? avatar : other.avatar} />
+        <img src={avatar ? avatar : other?.avatar} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
@@ -645,4 +712,3 @@ function ConvItem({
     </button>
   );
 }
-
