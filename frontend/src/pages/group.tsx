@@ -139,7 +139,7 @@ export default function CreateGroupPage() {
             value={groupName}
             onChange={(e) => setGroupName(e.target.value)}
             placeholder="GROUP NAME..."
-            className="text-3xl pl-4 font-black uppercase tracking-[0.2em] text-purple-700 drop-shadow-[0_0_12px_rgba(168,85,247,0.65)]"
+            className="text-3xl pl-4 font-black tracking-[0.2em] text-purple-700 drop-shadow-[0_0_12px_rgba(168,85,247,0.65)]"
           />
         </div>
 
@@ -327,7 +327,7 @@ export default function CreateGroupPage() {
         <button
           onClick={createGroup}
           disabled={!groupName || members.length === 0 || loading}
-          className="mt-8 w-full border border-purple-500 py-3 hover:bg-purple-800 transition disabled:opacity-30"
+          className="mt-8 w-full border border-purple-500 py-3 hover:bg-purple-800 transition "
         >
           {loading ? "CREATING..." : "INITIALIZE GROUP"}
         </button>

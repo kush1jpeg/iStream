@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="/frontend/public/icon.png" width="180" alt="Logo" />
+  <img src="assets/readme/icon.png" width="180" alt="Logo" />
   <br/>
   iStream
   <br/>
@@ -32,12 +32,11 @@
 
 ## What is iStream?
 
-iStream is an abs supported distributed live streaming platform engineered to reproduce a production-grade streaming stack without managed streaming services, handling the complete pipeline from RTMP ingest through FFmpeg -> transcoding into diff qualities -> HLS delivery : live -> via a static nginx server : VOD -> via cloudflare R2. 
+iStream rebuilds a production-grade live-streaming stack from primitives, no managed streaming services anywhere in the pipeline.
 
-With dynamic worker autoscaling, segment-level R2 uploads and minimal disk writes, iStream comes alongside as a modern architechture with chat support via namespaces, integration of payment-gateway for superchats, seperate notification service for isolated deliveries via queue/exchangers, reconcilliation service for cleaning up expired payments and dead streams.
+RTMP ingest → adaptive-bitrate FFmpeg streaming → HLS delivery for live, segment-level transcoded uploads to Cloudflare R2 for VOD. The whole pipeline runs behind a Dockerode-managed worker pool that autoscales transcoding capacity up and down with live load, coordinated through redis-backed lease state so dead/abandoned streams get reclaimed without manual intervention.
 
-The goal was not to use managed streaming services but to build every layer: from RTMP ingest to HLS delivery, from autoscaling worker containers to real-time socket communication.
-
+Beyond media: real-time chat over namespaced Socket.IO (sidebar, notify, dm, group, live), a razorpay integration for superchats, an isolated notification service with per-user pub/sub fan-out, and a reconciliation worker that cleans up expired payments.
 
 ### For contributors
 
@@ -71,9 +70,6 @@ Built by **kush1jpeg**
 - Email: [kushuvikas@gmail.com](mailto:kushuvikas@gmail.com)
 
 ---
-
-> **[hire me before someone else does](mailto:kushuvikas@gmail.com)**
-
 
 ## License
 

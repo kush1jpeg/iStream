@@ -50,8 +50,15 @@ export const startStreamHealthPoller = () => {
           continue;
         }
 
-        if (streamData.status === "live" || streamData.status === "pending") {
-          // just dropped — mark inactive
+        // Single source of truth: does the lease key still exist?
+        const isLiveOrPending =
+          streamData.status === "live" || streamData.status === "pending";
+        const leaseExists = await redis.exists(
+          `streamKey:${streamData.streamKey}`,
+        );
+
+        if (isLiveOrPending && !leaseExists) {
+          // just dropped - mark inactive
           await redis.hset(`stream:${streamId}`, {
             status: "inactive",
             inactiveSince: Date.now().toString(),
@@ -61,9 +68,7 @@ export const startStreamHealthPoller = () => {
         }
 
         if (streamData.status === "inactive") {
-          const inactiveDuration =
-            Date.now() - Number(streamData.inactiveSince);
-          if (inactiveDuration < INACTIVE_GRACE_MS) continue;
+          if(shouldEndStream(Number(streamData.inactiveSince), Date.now(), INACTIVE_GRACE_MS)) {
 
           const pipeline = redis.pipeline();
           pipeline.hset(`stream:${streamId}`, {
@@ -78,8 +83,13 @@ export const startStreamHealthPoller = () => {
           console.log(`[poller] ${streamId} → ended, pushed to queue`);
         }
       }
+      }
     } catch (err) {
       console.error("[poller] error:", err);
     }
   }, POLL_INTERVAL_MS);
 };
+
+export function shouldEndStream(inactiveSince: number, now: number, graceMs: number): boolean {
+  return now - inactiveSince >= graceMs;
+}

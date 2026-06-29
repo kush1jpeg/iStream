@@ -10,7 +10,6 @@ export const enqueueTasks = async (req, res) => {
   const { MTX_PATH } = req.body;
   if (!MTX_PATH) return res.status(400).send("Missing fields");
   const streamKey = MTX_PATH.split("/")[1];
-  console.log(streamKey);
 
   if (!(await verifyStreamKey(streamKey))) {
     return res.status(400).send("streamKey Not verified");

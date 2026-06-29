@@ -22,13 +22,14 @@ export function redisSubNotifyListener(io: Namespace) {
       console.warn("Empty notifications");
       return;
     }
-    const userId = channel.split(":")[1];
+    const notifuserId = channel.split(":")[1];
+    const streamUserId = channel.split(":")[2];
     if (pattern === "notifications:*") {
       console.log("got a notifcation - ", msg);
-      io.to(userId).emit("notifications", msg);
+      io.to(notifuserId).emit("notifications", msg);
     } else if (pattern === "stream:log*") {
       console.log("got a streamLog - ", msg);
-      io.to(userId).emit("stream:logs", msg);
+      io.to(streamUserId).emit("stream:logs", msg);
     }
   });
 }

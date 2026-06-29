@@ -65,6 +65,8 @@ function scTier(amount: number) {
   return SC_TIERS.find((t) => amount >= t.min) ?? SC_TIERS[SC_TIERS.length - 1];
 }
 
+const STREAM_STATUS_POLL_MS = 3000;
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function StreamerDashboard() {
   const { streamId } = useParams();
@@ -90,13 +92,34 @@ export default function StreamerDashboard() {
     const init = async () => {
       try {
         const { data } = await api.get(`/stream/${streamId}`);
-        setStats(data.stream);
+        setStats(data.stream ?? null);
       } catch (err) {
         console.error("Failed to fetch stream data:", err);
+        setStats(null);
       }
     };
     init();
   }, [streamId]);
+
+  useEffect(() => {
+    if (!streamId) return;
+    if (stats?.status === "live" || stats?.status === "ended") return;
+
+    let cancelled = false;
+    const id = window.setInterval(async () => {
+      try {
+        const { data } = await api.get(`/stream/${streamId}`);
+        if (!cancelled) setStats(data.stream ?? null);
+      } catch (err) {
+        console.error("Failed to poll stream status:", err);
+      }
+    }, STREAM_STATUS_POLL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [streamId, stats?.status]);
 
   const [logs, setLogs] = useState<IStreamLog[]>([]);
   const [chat, setChat] = useState<IChatMessage[]>([]);
@@ -107,10 +130,10 @@ export default function StreamerDashboard() {
 
   // ── timer ──
 useEffect(() => {
-  if (stats.status !== "live") return;
+  if (stats?.status !== "live") return;
   const id = setInterval(() => setElapsed((e) => e + 1), 1000);
   return () => clearInterval(id);
-}, [stats.status]);
+}, [stats?.status]);
 
   // auto-scroll chat
   useEffect(() => {
@@ -142,7 +165,7 @@ useEffect(() => {
         [
           {
             userId: payload.userId,
-            level: payload.level,
+            type: payload.type,
             msg: payload.msg,
             createdAt: new Date(payload.createdAt),
           },
@@ -236,7 +259,15 @@ useEffect(() => {
   }, [chatInput, streamId]);
 
   const scTotal = superchats.reduce((a, s) => a + s.amount, 0);
-const [showConfirm, setShowConfirm] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  if (!stats) return (
+    <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
+      <p className="font-mono text-xs text-destructive uppercase tracking-widest">
+        [ERROR] broadcast not found
+      </p>
+    </div>
+  );
 
   // ─── JSX ───────────────────────────────────────────────────────────────────
   return (
@@ -364,8 +395,8 @@ const [showConfirm, setShowConfirm] = useState(false);
               {logs.map((l, i) => (
                 <div key={i} style={S.logLine}>
                   <span style={S.logTime}>{String(l.createdAt)}</span>
-                  <span style={{ ...S.logType, color: LOG_COLORS[l.level] }}>
-                    {LOG_LABELS[l.level]}
+                  <span style={{ ...S.logType, color: LOG_COLORS[l.type] }}>
+                    {LOG_LABELS[l.type]}
                   </span>
                   <span style={S.logMsg}>{l.msg}</span>
                 </div>

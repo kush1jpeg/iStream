@@ -6,7 +6,14 @@ export const handleInactive = async (req, res) => {
   if (!MTX_PATH) return res.status(400).json({ error: "MTX_PATH required" });
   try {
     const streamKey = MTX_PATH.split("/")[1];
-    const status = await redisClient.hget(`stream:${streamKey}`, "status");
+    const streamId = await redisClient.get(`streamKey:${streamKey}`);
+    if (!streamId) {
+      return res
+        .status(404)
+        .json({ error: "stream key not found or already terminated" });
+    }
+
+    const status = await redisClient.hget(`stream:${streamId}`, "status");
 
     if (!status) {
       return res
@@ -14,7 +21,7 @@ export const handleInactive = async (req, res) => {
         .json({ error: "stream not found or already terminated" });
     }
 
-    await redisClient.hset(`stream:${streamKey}`, {
+    await redisClient.hset(`stream:${streamId}`, {
       status: "inactive",
       inactiveSince: Date.now(),
     });

@@ -5,6 +5,9 @@ const MAX_CONCURRENT_STREAMS = process.env.MAX_CONCURRENT_STREAMS || 4;
 
 export async function checkStreamLoadStatus(streamKey) {
   const activeCount = await redisClient.scard("live:streams");
+  console.log(
+    `[admission] checking stream load —> ${activeCount} streams active`,
+  );
 
   if (activeCount >= MAX_CONCURRENT_STREAMS) {
     console.warn(

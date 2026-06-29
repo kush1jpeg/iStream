@@ -1,6 +1,8 @@
 # iStream Architecture
 
-## Overview
+for per services info visit - [/docs/services/about.md]
+
+### Overview
 
 ```mermaid
 graph TD
@@ -83,7 +85,7 @@ graph TD
 
 ---
 
-##  Stream liveness detection logic-
+###  Stream liveness detection logic-
 
 iStream implements stream liveness detection via a TTL-based heartbeat pattern in Redis. Rather than relying solely on MediaMTX's runOnNotReady webhook, which often misfires and is unreliable if accepting all the connections - every segment processing task issued by the job-server performs a SET streamKey:{hash} {streamId} EX 15 as a side effect, acting as a rolling lease renewal. 
 
@@ -186,7 +188,7 @@ flowchart TD
 
 ---
 
-## Streaming Pipeline
+### Streaming Pipeline
 
 > From OBS hitting the ingest server to the viewer receiving HLS in their browser.
 
@@ -223,7 +225,7 @@ sequenceDiagram
 
 ---
 
-## VOD Recording Pipeline
+### VOD Recording Pipeline
 
 > Segments are uploaded to Cloudflare R2 as FFmpeg writes them. Disk usage stays constant regardless of stream duration.
 
@@ -253,7 +255,7 @@ flowchart LR
 
 ---
 
-## Autoscaler — Worker Lifecycle
+### Autoscaler — Worker Lifecycle
 
 ```mermaid
 stateDiagram-v2
@@ -269,7 +271,7 @@ stateDiagram-v2
 
 ---
 
-## Auth Flow
+### Auth Flow
 
 ```mermaid
 sequenceDiagram
@@ -294,7 +296,7 @@ sequenceDiagram
 
 ---
 
-## RabbitMQ Exchange Topology
+### RabbitMQ Exchange Topology
 
 ```mermaid
 flowchart LR
@@ -330,7 +332,7 @@ flowchart LR
 
 ---
 
-## Redis Data Model
+### Redis Data Model
 
 ```mermaid
 flowchart TD

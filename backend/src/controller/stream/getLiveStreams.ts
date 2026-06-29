@@ -42,6 +42,7 @@ export async function getLiveStreams(cursor: number, limit: number) {
       stream: JSON.parse(data.stream) as IStreamRedisData,
       streamerId: data.streamerId,
       streamId: data.streamId,
+      streamKey: data.streamKey,
       HLS_PATH: data.HLS_PATH,
       inactiveSince: data.inactiveSince,
       status: data.status,

@@ -65,7 +65,7 @@ export const StreamCard = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => navigate(`/stream/${id}`)}
+      onClick={() => navigate(`${type==="vod" ? "/vod" : "/stream"}/${id}`)}
       className={cn(
         "relative bg-card border-2 p-4 cursor-pointer transition-all duration-200",
         "hover:translate-x-1 hover:translate-y-1 hover:shadow-none",

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RetroContainer } from "@/components/RetroContainer";
-import { Users, MessageCircle, Send, Loader, ChevronDown } from "lucide-react";
+import { Users, MessageCircle, Send, Loader, ChevronDown, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
 import { getSocket } from "@/lib/socket";
 import { useAuthStore } from "@/components/zustand/zustand";
 import { IUserFrontend } from "@istream/shared";
+import { Link } from "react-router-dom";
 
 interface Conversation {
   _id: string;
@@ -431,9 +432,23 @@ export default function ChatPage({ myId }: { myId: string }) {
 
         {/* ── LEFT PANEL ── */}
         <RetroContainer className="w-72 shrink-0 flex flex-col p-0 overflow-hidden">
-          <div className="px-4 py-3 border-b-2 border-primary flex items-center gap-2">
-            <MessageCircle className="w-4 h-4 text-vhs-purple" />
-            <span className="font-pixel text-xs uppercase text-primary tracking-wider">Messages</span>
+          <div className="px-4 py-3 border-b-2 border-primary flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-4 h-4 text-vhs-purple" />
+              <span className="font-pixel text-xs uppercase text-primary tracking-wider">Messages</span>
+            </div>
+            <Link
+              to="/create-group"
+              className="group font-bold rounded-full relative flex h-7 items-center gap-1 overflow-hidden border border-vhs-cyan/60 bg-purple-600 px-2.5 font-mono text-[10px] uppercase tracking-[0.24em] text-vhs-cyan shadow-[0_0_10px_rgba(34,211,238,0.18)] transition-all hover:border-vhs-pink hover:text-vhs-pink hover:shadow-[0_0_14px_rgba(236,72,153,0.28)]"
+              title="Create group or start chat"
+            >
+              <span className="absolute inset-x-0 top-0 h-px bg-vhs-cyan/80 group-hover:bg-vhs-pink" />
+              <span className="absolute inset-y-0 right-0 w-1 bg-vhs-cyan/25 group-hover:bg-vhs-pink/40" />
+              <Plus className="relative z-10 w-3 h-3" />
+              <span className="relative z-10">
+    new
+              </span>
+            </Link>
           </div>
 
           <div className="flex-1 overflow-y-auto">

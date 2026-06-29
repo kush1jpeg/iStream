@@ -12,26 +12,27 @@ export async function verifyStreamKey(streamKey) {
       streamKey,
       "err",
     );
-
     return false;
   }
   if (streamData.status === "pending" || streamData.status === "inactive") {
     // checking if the server can handle any more streams!
     if (streamData.status === "pending") {
-      const result = checkStreamLoadStatus(streamKey);
+      const result = await checkStreamLoadStatus(streamKey);
       if (!result.allowed) {
         publishStreamLog(
           "Stream rejected - server at capacity. Try again in a few minutes.",
           streamKey,
           "err",
         );
-        sendToNotify(streamData.streamerId);
+        sendToNotify(streamData.streamerId, "server at capacity. Try again in a few minutes.");
+        return false;
       }
-      return false;
     }
-    await redisClient.hset(`stream:${streamId}`, "status", "live");
     // Heartbeat refresh
+  // if server dies ->  key auto-expires after 15sec -> job-server marks it as inactive -> queue clears it
     await redisClient.expire(`streamKey:${streamKey}`, 15);
+    await redisClient.hset(`stream:${streamId}`, { status: "live" });
+
     publishStreamLog(
       streamData.status === "pending"
         ? `OBS connected, stream:${streamId} set to live`
@@ -40,9 +41,10 @@ export async function verifyStreamKey(streamKey) {
       "info",
     );
     console.log(`streamKey verified, stream:${streamId} set to live`);
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 export async function publishStreamLog(msg, streamKey, type) {
@@ -58,7 +60,7 @@ export async function publishStreamLog(msg, streamKey, type) {
     return;
   }
 
-  const userId = JSON.parse(streamData.streamerId);
+  const userId = streamData.streamerId;
   const data = {
     type: "stream",
     msg,
@@ -70,14 +72,15 @@ export async function publishStreamLog(msg, streamKey, type) {
   if (type === "info") console.log(msg);
   else console.error(msg);
 
-  await redisClient.publish(`stream:log${userId}`, JSON.stringify(data));
+  await redisClient.publish(`stream:log:${userId}`, JSON.stringify(data));
 }
 
-async function sendToNotify(userId) {
+async function sendToNotify(userId,msg) {
   const buffer = {
     type: "stream",
+    msg,
     userId,
     createdAt: Date.now(),
   };
-  await redisClient.publish(`notifications:${userId}`, buffer);
+  await redisClient.publish(`notifications:${userId}`, JSON.stringify(buffer));
 }

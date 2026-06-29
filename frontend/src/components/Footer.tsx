@@ -33,7 +33,7 @@ export const Footer = () => {
                   <a href="mailto:kushuvikas@gmail.com"
                     className="italic hover:opacity-80 underline underline-offset-2"
                   >
-                    hire me before someone else does — kushuvikas@gmail.com
+                    hire me before someone else does ➔ 
                   </a>
                 </p>
 

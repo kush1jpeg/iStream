@@ -85,6 +85,7 @@ This service design demonstrates a mature separation of concerns acc to my llm, 
 - runtime orchestration is handled by a dedicated autoscaler
 - live delivery and VOD storage are separated
 - application concerns are decoupled from media processing concerns
+- each custom-built service has a /health checkpoint to know about the service health;
 
 ### Read Next -
 

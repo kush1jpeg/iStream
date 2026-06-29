@@ -12,13 +12,16 @@ type NotificationType = "follow" | "stream" | "chat" | "like";
 export interface INotification {
   type: NotificationType;
   userId: Types.ObjectId;
+  msg?: string;
   actorId?: string;
+  pfp?: string;
+  redirect?: string;
   createdAt: Number;
 }
 
 export type LogLevel = "err" | "info";
 export interface IStreamLog {
-  level: LogLevel;
+  type: LogLevel;
   msg: string;
   userId: string;
   createdAt: Date;
@@ -138,6 +141,7 @@ export interface IStreamRedis {
   stream: string; // JSON.stringify(IStreamRedisData)
   streamerId: string;
   streamId: string;
+  streamKey: string;
   HLS_PATH: string;
   inactiveSince: string;
   status: "pending" | "live" | "ended" | "inactive";
@@ -162,6 +166,7 @@ export interface IStreamRedisFrontend {
   };
   streamerId: string;
   streamId: string;
+  streamKey?: string;
   HLS_PATH: string;
   inactiveSince: string | null;
   status: "pending" | "live" | "ended" | "inactive";

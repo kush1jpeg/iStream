@@ -5,6 +5,9 @@ export const notificationSchema = new Schema<INotification>(
   {
     userId: { type: Schema.Types.ObjectId, required: true, index: true },
     actorId: { type: Schema.Types.ObjectId, required: true },
+    msg: { type: String, required: false },
+    pfp: { type: String, required: false },
+    redirect: { type: String, required: false },
     type: {
       type: String,
       required: true,

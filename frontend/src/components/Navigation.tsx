@@ -59,16 +59,33 @@ interface NavItemProps {
 }
 
 const NavItem = ({ href, icon: Icon, label, active }: NavItemProps) => {
+  const isExternal = /^https?:\/\//.test(href);
+  const className = cn(
+    "flex items-center gap-2 px-2 py-1 border-2 transition-all",
+    "hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none",
+    active
+      ? "border-primary bg-primary text-primary-foreground shadow-chunky"
+      : "border-muted text-muted-foreground hover:border-primary hover:text-primary"
+  );
+
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        <Icon className="w-4 h-4" />
+        <span className="text-sm font-mono uppercase">{label}</span>
+      </a>
+    );
+  }
+
   return (
     <Link
       to={href}
-      className={cn(
-        "flex items-center gap-2 px-2 py-1 border-2 transition-all",
-        "hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none",
-        active
-          ? "border-primary bg-primary text-primary-foreground shadow-chunky"
-          : "border-muted text-muted-foreground hover:border-primary hover:text-primary"
-      )}
+      className={className}
     >
       <Icon className="w-4 h-4" />
       <span className="text-sm font-mono uppercase">{label}</span>

@@ -65,6 +65,7 @@ export const startStream = async (req: Request, res: Response) => {
     }),
     streamerId: String(userId),
     streamId: String(streamId),
+    streamKey: stream.streamKey,
     HLS_PATH: `${HLS_PATH}/${stream.streamKey}/master.m3u8`,
     inactiveSince: "",
     status: "pending",

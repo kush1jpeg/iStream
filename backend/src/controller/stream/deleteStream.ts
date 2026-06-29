@@ -6,7 +6,6 @@ export const deleteStream = async (req: Request, res: Response) => {
   try {
     const { streamId } = req.params;
     const userId = req.id;
-    const streamKey = req.body;
 
     if (!streamId) {
       return res
@@ -37,7 +36,7 @@ export const deleteStream = async (req: Request, res: Response) => {
     pipeline.del(`stream:${streamId}`);
     pipeline.del(`live:user:${userId}`);
     pipeline.srem(`live:streams`, streamId);
-    pipeline.del(`streamKey:${streamKey}`);
+    pipeline.del(`streamKey:${stream.streamKey}`);
     await pipeline.exec();
 
     return res.status(200).json({
