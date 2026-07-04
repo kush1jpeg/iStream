@@ -1,5 +1,5 @@
 import { getChannel } from "../config/rabbitmq.js";
-import { verifyStreamKey } from "../support.js";
+import { verifyStreamKey } from "../helpers/support.js";
 
 export const enqueueTasks = async (req, res) => {
   console.log("[+] reached enqueue");

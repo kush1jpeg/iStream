@@ -11,7 +11,6 @@ export const getIStream = async (req: Request, res: Response) => {
       stream: JSON.parse(data.stream),
       streamerId: data.streamerId,
       streamId: data.streamId,
-      streamKey: data.streamKey,
       HLS_PATH: data.HLS_PATH,
       inactiveSince: data.inactiveSince,
       status: data.status as "live" | "pending" | "ended" | "inactive",

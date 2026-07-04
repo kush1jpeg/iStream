@@ -14,5 +14,12 @@
   },
   "dependencies": {
     "@istream/shared": "^1.0.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.9"
+  },
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "test:unit": "npm run test:unit --workspaces --if-present"
   }
 }

@@ -7,6 +7,7 @@ import { redisConnect } from "./config/redis.js";
 import { enqueueTasks } from "./controllers/enqueue.js";
 import { handleInactive } from "./controllers/handleInactive.js";
 import { healthCheck } from "./controllers/healthCheck.js";
+import { resolveStream } from "./controllers/getStreamKey.js";
 
 const app = express();
 app.use(express.json());
@@ -25,6 +26,8 @@ app.post("/enqueue", enqueueTasks);
 app.post("/stream-inactive", handleInactive);
 
 app.get("/health", healthCheck);
+
+app.get("/resolve-stream", resolveStream);
 
 await redisConnect();
 

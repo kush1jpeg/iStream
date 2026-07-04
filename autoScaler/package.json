@@ -12,8 +12,9 @@
   "dependencies": {
     "@istream/shared": "*",
     "amqplib": "^0.10.9",
-    "dockerode": "^4.0.9",
+    "dockerode": "^5.0.1",
     "dotenv": "^17.2.3",
-    "ioredis": "^5.9.1"
+    "ioredis": "^5.9.1",
+    "nodemailer": "9.0.3"
   }
 }
