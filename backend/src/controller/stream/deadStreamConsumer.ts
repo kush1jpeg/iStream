@@ -68,21 +68,26 @@ export const startStreamHealthPoller = () => {
         }
 
         if (streamData.status === "inactive") {
-          if(shouldEndStream(Number(streamData.inactiveSince), Date.now(), INACTIVE_GRACE_MS)) {
+          if (
+            shouldEndStream(
+              Number(streamData.inactiveSince),
+              Date.now(),
+              INACTIVE_GRACE_MS,
+            )
+          ) {
+            const pipeline = redis.pipeline();
+            pipeline.hset(`stream:${streamId}`, {
+              status: "ended",
+              endedAt: Date.now().toString(),
+            });
+            pipeline.srem("live:streams", streamId);
+            await pipeline.exec();
 
-          const pipeline = redis.pipeline();
-          pipeline.hset(`stream:${streamId}`, {
-            status: "ended",
-            endedAt: Date.now().toString(),
-          });
-          pipeline.srem("live:streams", streamId);
-          await pipeline.exec();
-
-          // push to streamEnd queue
-          await pushToTerminateStream(streamId, streamData.streamerId);
-          console.log(`[poller] ${streamId} → ended, pushed to queue`);
+            // push to streamEnd queue
+            await pushToTerminateStream(streamId, streamData.streamerId);
+            console.log(`[poller] ${streamId} → ended, pushed to queue`);
+          }
         }
-      }
       }
     } catch (err) {
       console.error("[poller] error:", err);
@@ -90,6 +95,11 @@ export const startStreamHealthPoller = () => {
   }, POLL_INTERVAL_MS);
 };
 
-export function shouldEndStream(inactiveSince: number, now: number, graceMs: number): boolean {
+export function shouldEndStream(
+  inactiveSince: number,
+  now: number,
+  graceMs: number,
+): boolean {
   return now - inactiveSince >= graceMs;
 }
+
