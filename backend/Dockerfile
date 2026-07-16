@@ -9,6 +9,7 @@ COPY ./backend/ ./backend
 
 RUN npm ci
 
+RUN npm run build --workspace=@istream/shared
 RUN npm run build --workspace=backend
 
 CMD ["npm", "start", "--workspace=backend"]

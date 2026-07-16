@@ -59,6 +59,7 @@ export async function initWatcher(MTX_PATH) {
 
 export async function publishStreamLog(msg, MTX_PATH, type) {
   const streamKey = MTX_PATH.split("/")[1];
+  console.log(`[stream:log]- ${msg} for streamKey: ${streamKey}`);
   const streamId = await redis.get(`streamKey:${streamKey}`);
   if (!streamId) {
     logger.warn(`[stream:log] no streamId found for ${streamKey}`);
@@ -71,7 +72,7 @@ export async function publishStreamLog(msg, MTX_PATH, type) {
     return;
   }
 
-  const userId = JSON.parse(streamData.streamerId);
+  const userId = streamData.streamerId;
   const data = {
     type: "stream",
     msg,

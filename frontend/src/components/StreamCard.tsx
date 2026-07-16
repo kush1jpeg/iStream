@@ -11,6 +11,7 @@ interface StreamCardProps {
   viewers: string;
   thumbnail?: string;
   isLive?: boolean;
+  avatar?: string;
   startedAt: string | Date;
   endedAt?: string | Date
   className?: string;
@@ -34,6 +35,7 @@ export const StreamCard = ({
   title,
   streamer,
   viewers,
+  avatar,
   thumbnail,
   colorAccent = "green",
   startedAt,
@@ -65,7 +67,7 @@ export const StreamCard = ({
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => navigate(`${type==="vod" ? "/vod" : "/stream"}/${id}`)}
+      onClick={() => navigate(`${type === "vod" ? "/vod" : "/stream"}/${id}`)}
       className={cn(
         "relative bg-card border-2 p-4 cursor-pointer transition-all duration-200",
         "hover:translate-x-1 hover:translate-y-1 hover:shadow-none",
@@ -124,7 +126,15 @@ export const StreamCard = ({
           {title}
         </h3>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Users className="w-4 h-4" />
+          {avatar ? (
+            <img
+              src={avatar}
+              alt={streamer}
+              className="h-5 w-5 shrink-0 rounded-full border border-primary object-cover brightness-110"
+            />
+          ) : (
+            <Users className="w-4 h-4 shrink-0" />
+          )}
           <span className="text-sm">{streamer}</span>
         </div>
       </div>

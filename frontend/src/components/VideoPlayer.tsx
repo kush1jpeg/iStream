@@ -1,19 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import Hls from "hls.js";
 import { RetroContainer } from "./RetroContainer";
-import { Play, Pause, Volume2, VolumeX, Maximize, Volume1 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Volume1, Loader2, TriangleAlert } from "lucide-react";
 
 interface VideoPlayerProps {
   streamUrl?: string;
+  thumbnail?: string;
+  autoPlay?: boolean;
 }
 
-export const VideoPlayer = ({ streamUrl }: VideoPlayerProps) => {
+interface PlaybackError {
+  status?: number;
+  message: string;
+}
+
+export const VideoPlayer = ({ streamUrl, thumbnail, autoPlay = true }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [showVolume, setShowVolume] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState<PlaybackError | null>(null);
   const prevVolume = useRef(0.5);
 
   const [levels, setLevels] = useState<{ height: number; index: number }[]>([]);
@@ -24,20 +33,73 @@ export const VideoPlayer = ({ streamUrl }: VideoPlayerProps) => {
 
 
   useEffect(() => {
-    if (!videoRef.current || !streamUrl) return;
+    const video = videoRef.current;
+    if (!video || !streamUrl) return;
+
+    setIsReady(false);
+    setIsPlaying(false);
+    setError(null);
+    setLevels([]);
+    const handleCanPlay = () => setIsReady(true);
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleNativeError = () => {
+      setError((current) => current ?? { message: "The video could not be loaded." });
+    };
+    video.addEventListener("canplay", handleCanPlay);
+    video.addEventListener("play", handlePlay);
+    video.addEventListener("pause", handlePause);
+    video.addEventListener("error", handleNativeError);
+
+    let hls: Hls | null = null;
     if (Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+      hls = new Hls({ enableWorker: true, lowLatencyMode: true });
       hlsRef.current = hls;
       hls.loadSource(streamUrl);
-      hls.attachMedia(videoRef.current);
+      hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-        videoRef.current?.play();
-        setIsPlaying(true);
         setLevels(data.levels.map((l, i) => ({ height: l.height, index: i })));
+        if (autoPlay) void video.play();
       });
-      return () => hls.destroy();
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        console.error("[HLS Error]", data.type, data.details, data);
+        if (!data.fatal) return;
+
+        const status = data.response?.code;
+        if (status === 404) {
+          setError({
+            status,
+            message: "VOD manifest not found on Nginx.",
+          });
+        } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          setError({
+            status,
+            message: "Failed to load the VOD from the playback server.",
+          });
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          setError({ message: "The VOD could not be decoded for playback." });
+        } else {
+          setError({ message: "Something went wrong while loading this video." });
+        }
+
+        setIsReady(false);
+        hls?.destroy();
+        if (hlsRef.current === hls) hlsRef.current = null;
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = streamUrl;
+      if (autoPlay) void video.play();
     }
-  }, [streamUrl]);
+
+    return () => {
+      video.removeEventListener("canplay", handleCanPlay);
+      video.removeEventListener("play", handlePlay);
+      video.removeEventListener("pause", handlePause);
+      video.removeEventListener("error", handleNativeError);
+      hls?.destroy();
+      if (hlsRef.current === hls) hlsRef.current = null;
+    };
+  }, [streamUrl, autoPlay]);
 
   const changeLevel = (index: number) => {
     if (!hlsRef.current) return;
@@ -55,8 +117,7 @@ export const VideoPlayer = ({ streamUrl }: VideoPlayerProps) => {
   const togglePlay = () => {
     if (!videoRef.current) return;
     if (isPlaying) videoRef.current.pause();
-    else videoRef.current.play();
-    setIsPlaying(!isPlaying);
+    else void videoRef.current.play();
   };
 
   const toggleMute = () => {
@@ -93,13 +154,48 @@ export const VideoPlayer = ({ streamUrl }: VideoPlayerProps) => {
     <RetroContainer variant="chunky" className="overflow-hidden">
       {/* Video */}
       <div className="relative aspect-video bg-background border-2 border-primary overflow-hidden crt-container vhs-effect film-grain">
-        <video ref={videoRef} className="w-full h-full scanlines" playsInline>
+        <video
+          ref={videoRef}
+          poster={thumbnail}
+          className={`w-full h-full object-cover scanlines transition-opacity duration-300 ${thumbnail && !isReady ? "opacity-40" : "opacity-100"}`}
+          playsInline
+        >
           Your browser does not support the video tag.
         </video>
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-black/20" />
 
+        {error ? (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-background/90 px-6 text-center">
+            <TriangleAlert className="h-10 w-10 text-destructive" />
+            <p className="font-pixel text-sm uppercase tracking-wider text-destructive">
+              {error.status ? `HTTP ${error.status}` : "Playback error"}
+            </p>
+            <p className="max-w-md font-mono text-xs text-muted-foreground">
+              {error.message}
+            </p>
+          </div>
+        ) : thumbnail && !isReady ? (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/20">
+            <Loader2 className="h-10 w-10 animate-spin text-vhs-cyan" />
+            <span className="font-mono text-xs uppercase tracking-widest text-foreground">
+              fetching archive...
+            </span>
+          </div>
+        ) : null}
+
+        {!error && thumbnail && isReady && !isPlaying && (
+          <button
+            type="button"
+            onClick={togglePlay}
+            aria-label="Play video"
+            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 border-2 border-primary bg-card/90 p-5 text-primary shadow-chunky transition-all hover:translate-x-[calc(-50%+2px)] hover:translate-y-[calc(-50%+2px)] hover:bg-primary hover:text-primary-foreground hover:shadow-none"
+          >
+            <Play className="h-10 w-10 fill-current" />
+          </button>
+        )}
+
         {/* Controls */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent p-4">
+        {!error && <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent p-4">
           <div className="flex items-center gap-4">
 
             {/* Play */}
@@ -179,7 +275,7 @@ export const VideoPlayer = ({ streamUrl }: VideoPlayerProps) => {
               <Maximize className="w-5 h-5" />
             </button>
           </div>
-        </div>
+        </div>}
       </div>
     </RetroContainer>
   );

@@ -12,14 +12,16 @@ import { endStream } from "../controller/stream/endStream";
 import { uploadThumbnail } from "../controller/stream/uploadStreamCloudinary";
 import { getStreamId } from "../controller/stream/getStreamId";
 import { likeStream } from "../controller/stream/likeStream";
-import { getAvailableVods } from "../controller/stream/getVOD";
 import { listHomePage } from "../controller/stream/listHomePage";
+import { getAvailableVods } from "../controller/stream/getAllVOD";
+import { getVodById } from "../controller/stream/getVod";
 
 export const streamRouter: Router = Router();
 
 // user: payments + hls serve
 streamRouter.get("/live", getAvailableLiveStreams); // returns all active live streams
 streamRouter.get("/vod", getAvailableVods); // returns all past iStreams(vod)
+streamRouter.get("/vod/:vodId", getVodById); // returns a specific past iStream(vod) by id
 streamRouter.get("/home", listHomePage);
 streamRouter.get("/getId", getStreamId);
 streamRouter.get("/:streamId", getIStream);

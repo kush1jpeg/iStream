@@ -21,6 +21,7 @@ import OtpVerify from "./components/OtpVerify";
 import CreateGroupPage from "./pages/group";
 import StreamerDashboard from "./pages/stream/StreamerDashboard";
 import { connectAllSockets } from "./lib/socket";
+import VodPage from "./pages/stream/VodPage";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8888/api/",
@@ -129,6 +130,7 @@ const App = () => {
         <Route element={<MainLayout />}>
           <Route path="/" element={<Index />} />
           <Route path="/stream/:streamId" element={<StreamPage />} />
+          <Route path="/vod/:vodId" element={<VodPage />} />
           <Route path="/profile/me" element={<ProfileSection />} />
           <Route path="/profile/:userId" element={<ProfileSection />} />
           <Route path="/shop" element={<ShopLanding />} />

@@ -37,7 +37,7 @@ export async function verifyStreamKey(streamKey) {
       }
     }
     // Heartbeat refresh
-    // if server dies ->  key auto-expires after 15sec -> job-server marks it as inactive -> queue clears it
+    // if server dies ->  key auto-expires after 15sec ->  marks it as inactive -> queue clears it
     await redisClient.expire(`streamKey:${streamKey}`, 15);
     await redisClient.hset(`stream:${streamId}`, { status: "live" });
 
@@ -51,7 +51,11 @@ export async function verifyStreamKey(streamKey) {
     console.log(`streamKey verified, stream:${streamId} set to live`);
     return true;
   }
-
+  if (streamData.status === "live") {
+    await redisClient.expire(`streamKey:${streamKey}`, 15);
+    console.log(`streamKey verified, stream:${streamId} set remains live`);
+    return true;
+  }
   return false;
 }
 

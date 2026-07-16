@@ -47,6 +47,26 @@ async function startWorker() {
       if (!msg) return;
 
       const MTX_PATH = JSON.parse(msg.content.toString());
+      const acceptedJob = await redis.eval(
+        `
+          local current = redis.call("HGET", KEYS[1], ARGV[1])
+          if current == "draining" then
+            return 0
+          end
+          redis.call("HSET", KEYS[1], ARGV[1], "busy")
+          return 1
+        `,
+        1,
+        "workers",
+        containerID,
+      );
+      if (!acceptedJob) {
+        channel.nack(msg, false, true);
+        return;
+      }
+
+      busy = true;
+
       const watcher = await initWatcher(MTX_PATH);
       if (!watcher)
         logger.info(`[!] ffmpeg error for stream  ${MTX_PATH.split("/")[1]}:`);
@@ -60,7 +80,6 @@ async function startWorker() {
         MTX_PATH,
         "info",
       );
-      busy = true;
 
       const ffmpegProcess = spawn(
         "ffmpeg",
@@ -69,38 +88,42 @@ async function startWorker() {
           stdio: "inherit",
         },
       );
-      await redis.hset("workers", containerID, "busy");
 
       ffmpegProcess.on("close", async (code) => {
-        await publishStreamLog(
-          `[x] Stream  ${MTX_PATH.split("/")[1]} finished with code ${code}`,
-          MTX_PATH,
-          "info",
-        );
-
-        // stop watching
-        await watcher.close();
-
-        // drain the upload queue
-        await drainUploadQueue(MTX_PATH);
-
-        // cleanup local files
-        fs.rmSync(`/hls/${MTX_PATH}`, { recursive: true, force: true });
-        await publishStreamLog(
-          `[VOD] cleaned up ${MTX_PATH}`,
-          MTX_PATH,
-          "info",
-        );
-
-        await redis.hset("workers", containerID, "idle");
-        busy = false;
-        await publishStreamLog(
-          `[SUCCESS] Stream Uploaded to Cloudflare-R2 : ${MTX_PATH}`,
-          MTX_PATH,
-          "info",
-        );
-
-        channel.ack(msg); // job done
+        try {
+          await publishStreamLog(
+            `[x] Stream  ${MTX_PATH.split("/")[1]} finished with code ${code}`,
+            MTX_PATH,
+            "info",
+          );
+          // stop watching
+          await watcher.close();
+          // drain the upload queue
+          await drainUploadQueue(MTX_PATH);
+          // cleanup local files
+          fs.rmSync(`/hls/${MTX_PATH}`, { recursive: true, force: true });
+          await publishStreamLog(
+            `[VOD] cleaned up ${MTX_PATH}`,
+            MTX_PATH,
+            "info",
+          );
+          await publishStreamLog(
+            `[SUCCESS] Stream Uploaded to Cloudflare-R2 : ${MTX_PATH}`,
+            MTX_PATH,
+            "info",
+          );
+        } catch (err) {
+          logger.info(err);
+          await publishStreamLog(
+            `[!] Cleanup failed for stream - ${MTX_PATH.split("/")[1]}: ${err}`,
+            MTX_PATH,
+            "err",
+          );
+        } finally {
+          await redis.hset("workers", containerID, "idle");
+          busy = false;
+          channel.ack(msg); // job done
+        }
       });
 
       ffmpegProcess.on("error", async (err) => {

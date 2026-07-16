@@ -22,6 +22,8 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1087.0",
+    "@aws-sdk/s3-request-presigner": "^3.1087.0",
     "@istream/shared": "*",
     "@socket.io/redis-adapter": "^8.3.0",
     "amqplib": "^0.10.9",

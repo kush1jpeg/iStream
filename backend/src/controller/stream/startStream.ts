@@ -6,7 +6,7 @@ import { INotification, IStreamRedis } from "@istream/shared";
 import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 
-const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/live/";
+const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/";
 const VOD_PATH = `${process.env.R2_PUBLIC_URL}/hls/live/`;
 
 export const startStream = async (req: Request, res: Response) => {

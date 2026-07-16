@@ -1,6 +1,6 @@
 # iStream Architecture
 
-for per services info visit - [/docs/services/about.md]
+For information about each service, see [Service Responsibilities](./services/about.md).
 
 ### Overview
 

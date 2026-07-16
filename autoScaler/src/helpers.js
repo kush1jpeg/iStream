@@ -57,13 +57,32 @@ export async function spawnWorker(
 export async function deleteWorker() {
   const workers = await redis.hgetall("workers");
   for (const [containerID, status] of Object.entries(workers)) {
-    if (status === "idle" || status == "dead") {
-      await redis.hdel("workers", containerID);
+    if (status === "idle" || status === "dead") {
+      const claimed = await redis.eval(
+        `
+          local current = redis.call("HGET", KEYS[1], ARGV[1])
+          if current == "idle" or current == "dead" then
+            redis.call("HSET", KEYS[1], ARGV[1], "draining")
+            return 1
+          end
+          return 0
+        `,
+        1,
+        "workers",
+        containerID,
+      );
+
+      if (!claimed) continue;
+
       const c = docker.getContainer(containerID);
       await c.stop().catch(() => {}); // ignore if already stopped
-      await c.remove({ force: true });
+      await c.remove({ force: true }).catch(() => {});
+      await redis.hdel("workers", containerID);
+      return containerID;
     }
   }
+
+  return null;
 }
 
 export const gracefulShutdown = async (signal) => {

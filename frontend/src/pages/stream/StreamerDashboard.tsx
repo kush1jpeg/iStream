@@ -129,11 +129,11 @@ export default function StreamerDashboard() {
   const chatBodyRef = useRef<HTMLDivElement>(null);
 
   // ── timer ──
-useEffect(() => {
-  if (stats?.status !== "live") return;
-  const id = setInterval(() => setElapsed((e) => e + 1), 1000);
-  return () => clearInterval(id);
-}, [stats?.status]);
+  useEffect(() => {
+    if (stats?.status !== "live") return;
+    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(id);
+  }, [stats?.status]);
 
   // auto-scroll chat
   useEffect(() => {
@@ -371,13 +371,15 @@ useEffect(() => {
           </div>
 
           {/* stream title / tags */}
-          <div style={S.titleBar}>
-            <span style={{ fontSize: 11, color: "#c0c0d0", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div style={S.titleBar} className="bg-zinc-950 border-t border-b border-zinc-800">
+            <span className="text-[11px] text-zinc-300 font-medium truncate flex-1">
               {stats?.stream.title || "—"}
             </span>
-            <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+            <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
               {stats?.stream.tags.map((t) => (
-                <span key={t} style={S.tag}>{t}</span>
+                <span key={t} className="text-[10px] uppercase tracking-[0.15em] text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-full px-2 py-0.5">
+                  {t}
+                </span>
               ))}
             </div>
           </div>
@@ -409,11 +411,11 @@ useEffect(() => {
         <div style={S.midCol}>
           <SectionHeader
             label="LIVE CHAT"
-right={
-  <span style={{ color: stats.status === "live" ? "#22c55e" : "#6b7280", fontSize: 10 }}>
-    ● {stats.status === "live" ? "LIVE" : "OFFLINE"}
-  </span>
-}
+            right={
+              <span style={{ color: stats.status === "live" ? "#22c55e" : "#6b7280", fontSize: 10 }}>
+                ● {stats.status === "live" ? "LIVE" : "OFFLINE"}
+              </span>
+            }
           />
           <div ref={chatBodyRef} style={S.chatBody}>
             {chat.length === 0 && (

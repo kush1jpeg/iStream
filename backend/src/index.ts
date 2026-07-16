@@ -25,6 +25,7 @@ import {
 import { chatRouter } from "./routes/chatRouter";
 import { shopRouter } from "./routes/shopRouter";
 import { healthCheck } from "./controller/healthCheck";
+import { resolveVod } from "./controller/getVodKey";
 export const instance = new Razorpay({
   key_id: process.env.KEY_ID,
   key_secret: process.env.KEY_SECRET,
@@ -50,7 +51,10 @@ app.use("/api/user", userRouter);
 app.use("/api/stream", streamRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/shop", shopRouter);
+
+// internal
 app.use("/api/health", healthCheck);
+app.use("/resolve-vod", resolveVod);
 
 const startServer = async () => {
   try {

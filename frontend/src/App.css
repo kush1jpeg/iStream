@@ -1,12 +1,17 @@
 .sr-root {
-  min-height: 100vh;
-  background: #0d0d12;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100vw;
+  height: 100dvh;
+  background: hsl(var(--background) / 0.92);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   overflow: hidden;
   font-family: "Courier New", Courier, monospace;
+  padding: 24px;
 }
 
 /* scanlines */
@@ -55,12 +60,11 @@
 
 /* card */
 .sr-card {
-  width: 100%;
-  max-width: 520px;
-  margin: 0 16px;
+  box-sizing: border-box;
+  width: min(100%, 560px);
   border: 1px solid #2a2a3a;
   background: #13131a;
-  padding: 28px 28px 24px;
+  padding: 28px;
   position: relative;
   z-index: 20;
   box-shadow:
@@ -91,7 +95,8 @@
 
 /* logo row */
 .sr-logo-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   margin-bottom: 18px;
@@ -110,9 +115,13 @@
   font-size: 14px;
   font-weight: bold;
   letter-spacing: 2px;
-  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sr-live-badge {
+  justify-self: end;
   background: #dc2626;
   color: #fff;
   font-size: 9px;
@@ -181,19 +190,25 @@
   font-size: 10px;
   color: #333;
   letter-spacing: 1px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .sr-terminal-body {
   padding: 12px 14px;
-  min-height: 110px;
+  min-height: 128px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 .sr-log-line {
   display: flex;
+  align-items: baseline;
   font-size: 11px;
   line-height: 1.7;
   animation: sr-fadein 0.2s ease;
+  min-width: 0;
 }
 @keyframes sr-fadein {
   from {
@@ -207,12 +222,17 @@
 }
 .sr-prompt {
   color: #a78bfa;
+  flex: 0 0 auto;
 }
 .sr-line-text {
   color: #666;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .sr-line-done {
   color: #22c55e;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .sr-cursor {
   color: #a78bfa;
@@ -231,12 +251,12 @@
 /* progress */
 .sr-progress-wrap {
   margin-bottom: 20px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
 }
 .sr-progress-track {
-  flex: 1;
   height: 2px;
   background: #1e1e2e;
   overflow: hidden;
@@ -259,16 +279,62 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 14px;
 }
 .sr-redir-text {
   font-size: 12px !important;
+  min-width: 0;
+  margin: 0;
 }
 .sr-cta {
   font-size: 11px !important;
   letter-spacing: 1px;
+  flex: 0 0 auto;
+  text-align: center;
   transition:
     background 0.15s,
     color 0.15s;
+}
+
+@media (max-width: 520px) {
+  .sr-root {
+    padding: 18px 14px;
+  }
+
+  .sr-card {
+    padding: 22px 18px 20px;
+  }
+
+  .sr-logo-row {
+    grid-template-columns: auto auto minmax(0, 1fr);
+    row-gap: 10px;
+  }
+
+  .sr-live-badge {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .sr-terminal-body {
+    min-height: 148px;
+    padding: 12px;
+  }
+
+  .sr-progress-wrap {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .sr-progress-label {
+    justify-self: start;
+  }
+
+  .sr-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sr-cta {
+    width: 100%;
+  }
 }

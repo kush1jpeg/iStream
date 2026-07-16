@@ -27,6 +27,7 @@ app.post("/stream-inactive", handleInactive);
 
 app.get("/health", healthCheck);
 
+// internal endpoint to resolve streamId -> streamKey
 app.get("/resolve-stream", resolveStream);
 
 await redisConnect();

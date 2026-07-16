@@ -19,7 +19,11 @@ export async function startUploadConsumer(MTX_PATH) {
 
     try {
       await uploadSegment(job.filePath, job.MTX_PATH);
-      await publishStreamLog(`starting upload to R2, ${job.filePath}`, "info");
+      await publishStreamLog(
+        `starting upload to R2, ${job.filePath}`,
+        MTX_PATH,
+        "info",
+      );
       fs.unlinkSync(job.filePath);
       await publishStreamLog(`del - ${job.filePath}`, MTX_PATH, "info");
     } catch (err) {

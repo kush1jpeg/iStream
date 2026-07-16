@@ -1,5 +1,5 @@
 // nginx auth_request calls this with X-Original-URI set to the original request path, e.g. /hls/<streamId>
-import { redisClient } from "../config/redis";
+import { redisClient } from "../config/redis.js";
 
 export const resolveStream = async (req, res) => {
   try {
@@ -29,7 +29,7 @@ export const resolveStream = async (req, res) => {
     }
 
     if (status == "pending" || status == "ended") {
-      return res.status(403).json({ error: "stream is not currently live" });
+      return res.status(403).json({ error: "stream is not currently live or ended" });
     }
 
     if (status == "inactive") {

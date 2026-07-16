@@ -1,5 +1,7 @@
 import { Radio } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import "@/App.css";
 
 interface Props {
   streamData: { streamId: string; title?: string } | null;
@@ -59,7 +61,7 @@ export default function StreamRedirect({
 
   const href = `/stream/${streamData?.streamId}/dashboard`;
 
-  return (
+  return createPortal(
     <div className="sr-root">
       {/* scanline overlay */}
       <div className="sr-scanlines" aria-hidden="true" />
@@ -137,6 +139,7 @@ export default function StreamRedirect({
           </a>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

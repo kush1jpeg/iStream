@@ -49,7 +49,7 @@ const Index = () => {
       setVods(prev => cursor === 0 ? data.vod.vods : [...prev, ...data.vod.vods]);
       setHasMore(!!(data?.live.hasMore || data?.vod.hasMore));
       setCursor(data?.live?.nextCursor ?? null);
-      setPage(data?.vod?.pagination?.hasMore ? page + 1 : page);
+      setPage(data?.vod?.hasMore ? page + 1 : page);
 
     } catch (err) {
       console.error(err);
@@ -66,7 +66,7 @@ const Index = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
-          fetchHome(cursor, page);
+          fetchHome(page, cursor ?? 0);
         }
       },
       { threshold: 1.0 }
@@ -191,6 +191,7 @@ const Index = () => {
                           id={stream.streamerId}
                           title={stream.stream.title}
                           streamer={stream.streamer.username}
+                          avatar={stream.streamer.avatar}
                           viewers={String(stream.viewers)}
                           thumbnail={stream.stream.thumbnail}
                           startedAt={String(stream.createdAt)}
@@ -234,6 +235,7 @@ const Index = () => {
                         <StreamCard
                           id={vod._id}
                           title={vod.title}
+                          avatar={vod.streamer.avatar}
                           streamer={vod.streamer.username}
                           viewers={String(vod.views)}
                           thumbnail={vod.thumbnail}

@@ -109,6 +109,7 @@ async function autoscaler() {
         IMAGE,
         "stream.jobs",
         RTMP_URL,
+        REDIS_HOST,
         REDIS_PORT,
         RABBITMQ_URL,
         NETWORK,
