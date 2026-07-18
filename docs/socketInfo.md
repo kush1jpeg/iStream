@@ -573,7 +573,7 @@ io.to(userId).emit(...)
 initialization. It subscribes to patterns:
 
 - `notifications:*`
-- `stream:log*`
+- `stream:log:*`
 
 When a pub/sub message arrives, the listener calculates:
 

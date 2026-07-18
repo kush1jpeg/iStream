@@ -73,8 +73,11 @@ const startServer = async () => {
     await publishChannel.assertExchange(streamExchange, "topic", {
       durable: true,
     });
-    await payChannel.assertQueue("stream_end", { durable: true });
+    await publishChannel.assertQueue("stream_end", { durable: true });
     await publishChannel.bindQueue("stream_end", streamExchange, "stream.end");
+
+    // to handle r2 cleanup requests;
+    await publishChannel.assertQueue("delete-vod", { durable: true });
 
     await payChannel.assertExchange(payExchange, "topic", {
       durable: true,

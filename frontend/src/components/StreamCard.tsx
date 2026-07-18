@@ -116,13 +116,20 @@ export const StreamCard = ({
 
       {/* Stream Info */}
       <div className="space-y-2">
-        <h3 className={cn(
-          "font-pixel text-xs leading-relaxed transition-all duration-200",
-          isHovered && colorAccent === 'green' && "text-terminal-green",
-          isHovered && colorAccent === 'purple' && "text-vhs-purple",
-          isHovered && colorAccent === 'cyan' && "text-vhs-cyan",
-          isHovered && colorAccent === 'pink' && "text-vhs-pink"
-        )}>
+        <h3
+          title={title}
+          className={cn(
+            "h-[3rem] min-w-0 max-w-full overflow-hidden",
+            "break-words font-pixel text-xs leading-6",
+            "[display:-webkit-box]",
+            "[-webkit-box-orient:vertical]",
+            "[-webkit-line-clamp:2]",
+            isHovered && colorAccent === "green" && "text-terminal-green",
+            isHovered && colorAccent === "purple" && "text-vhs-purple",
+            isHovered && colorAccent === "cyan" && "text-vhs-cyan",
+            isHovered && colorAccent === "pink" && "text-vhs-pink",
+          )}
+        >
           {title}
         </h3>
         <div className="flex items-center gap-2 text-muted-foreground">

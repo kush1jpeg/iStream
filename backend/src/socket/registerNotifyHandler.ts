@@ -16,7 +16,7 @@ export function redisSubNotifyListener(io: Namespace) {
     of parsing, the caveat for a global channel is that Every notification read by socket server even if user offline
 
    * */
-  redisSub.psubscribe("notifications:*", "stream:log*");
+  redisSub.psubscribe("notifications:*", "stream:log:*");
   redisSub.on("pmessage", (pattern: string, channel: string, msg: string) => {
     if (!msg) {
       console.warn("Empty notifications");
@@ -27,7 +27,7 @@ export function redisSubNotifyListener(io: Namespace) {
     if (pattern === "notifications:*") {
       console.log("got a notifcation - ", msg);
       io.to(notifuserId).emit("notifications", msg);
-    } else if (pattern === "stream:log*") {
+    } else if (pattern === "stream:log:*") {
       console.log("got a streamLog - ", msg);
       io.to(streamUserId).emit("stream:logs", msg);
     }

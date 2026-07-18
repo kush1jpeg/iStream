@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { streamModel } from "../../models/stream";
 import { redis } from "../../config/redis";
+import { getPublishChannel } from "../../config/rabbitmq";
 
 export const deleteStream = async (req: Request, res: Response) => {
   try {
@@ -28,10 +29,20 @@ export const deleteStream = async (req: Request, res: Response) => {
       });
     }
 
-    // Delete from DB
-    await streamModel.findByIdAndDelete(streamId);
+    // marking the status as delete-pending to prevent any further actions on this stream
+    stream.status = "delete-pending";
+    await stream.save();
 
-    // Delete from redis
+
+    // triggering the r2 delete
+    const payload = Buffer.from(JSON.stringify({ streamId, path: `hls/live/${stream.streamKey}` }));
+    const channel = await getPublishChannel();
+    channel.sendToQueue("delete-vod", payload, {
+      persistent: true,
+      headers: { "x-retry-count": 0 },
+    });
+
+    // Delete from redis just incase the stream ;
     const pipeline = redis.multi();
     pipeline.del(`stream:${streamId}`);
     pipeline.del(`live:user:${userId}`);

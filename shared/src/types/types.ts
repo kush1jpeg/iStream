@@ -92,7 +92,7 @@ export interface IStream {
   tags: Array<string>;
   streamKey: string;
   VOD_URL?: string;
-  status?: "pending" | "live" | "ended" | "inactive";
+  status?: "pending" | "live" | "ended" | "inactive" | "delete-pending";
   startedAt?: Date;
   endedAt?: Date;
   viewers: number;
@@ -144,7 +144,7 @@ export interface IStreamRedis {
   streamKey: string;
   HLS_PATH: string;
   inactiveSince: string;
-  status: "pending" | "live" | "ended" | "inactive";
+  status: "pending" | "live" | "ended" | "inactive" | "delete-pending";
   viewers: string;
   likes: string;
   views: string;
@@ -169,7 +169,7 @@ export interface IStreamRedisFrontend {
   streamKey?: string;
   HLS_PATH: string;
   inactiveSince: string | null;
-  status: "pending" | "live" | "ended" | "inactive";
+  status: "pending" | "live" | "ended" | "inactive" | "delete-pending";
   viewers: String;
   likes: String;
   views: String;

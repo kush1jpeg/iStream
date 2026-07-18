@@ -22,6 +22,7 @@ import CreateGroupPage from "./pages/group";
 import StreamerDashboard from "./pages/stream/StreamerDashboard";
 import { connectAllSockets } from "./lib/socket";
 import VodPage from "./pages/stream/VodPage";
+import PersistentStreamBadge from "./components/PersistentStreamBadge";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8888/api/",
@@ -124,6 +125,7 @@ const App = () => {
   return (<>
     <TooltipProvider>
       <ToastContainer />
+      <PersistentStreamBadge />
       <Routes>
         {/* Routes WITH sidebar */}
 

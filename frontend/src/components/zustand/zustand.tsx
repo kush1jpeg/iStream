@@ -10,6 +10,20 @@ interface AuthState {
   logout: () => void;
 }
 
+export type StreamSessionStatus = "idle" | "pending" | "live";
+
+interface StreamSessionState {
+  status: StreamSessionStatus;
+  streamId: string | null;
+  setStreamSession: (status: StreamSessionStatus, streamId: string | null) => void;
+}
+
+export const useStreamSessionStore = create<StreamSessionState>((set) => ({
+  status: "idle",
+  streamId: null,
+  setStreamSession: (status, streamId) => set({ status, streamId }),
+}));
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({

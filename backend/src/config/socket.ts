@@ -17,6 +17,7 @@ import {
   SidebarRedisListener,
 } from "../socket/registerSidebarHandler";
 import { registerGroupChatHandler } from "../socket/registerGroupChatHandler";
+import { handleStreamSessionCheck } from "../socket/handleStreamSession";
 
 const frontend_url = process.env.FRONTEND_URL || "http://localhost:8080";
 
@@ -77,11 +78,14 @@ export async function initSocket(server: any) {
     );
   });
 
-  // notifications
+  // notifications+streamLogs
   redisSubNotifyListener(io.of("/notify")); // establishing a global redisSubscriber
   io.of("/notify").on("connection", (socket) => {
     const notify = io.of("/notify");
     registerNotifyHandler(notify, socket);
+    socket.on("check:active-session", () =>
+      handleStreamSessionCheck(socket),
+    );
   });
 
   // sidebar quick updates

@@ -34,7 +34,7 @@ const StreamSchema = new Schema(
 
     status: {
       type: String,
-      enum: ["live", "ended", "pending", "inactive"],
+      enum: ["live", "ended", "pending", "inactive", "delete-pending"],
       default: "pending",
     },
 

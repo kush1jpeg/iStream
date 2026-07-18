@@ -3,13 +3,25 @@ import { GlitchText } from "@/components/GlitchText";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Users, Heart, Video, DollarSign, Calendar,
-  Eye, Globe, Pencil, X, Check, Upload, Loader2, Signal,
+  Eye, Globe, Pencil, X, Check, Upload, Loader2, Signal, Trash2,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { IPay, IStream, IUserFrontend } from "@istream/shared";
 import { useAuthStore } from "@/components/zustand/zustand";
 import { cn } from "@/lib/utils";
 import { api } from "@/App";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "react-toastify";
 
 // ─── EditModal ─────────────────────────────────────────────────────────────────
 
@@ -195,6 +207,7 @@ const Profile = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [deletingStreamId, setDeletingStreamId] = useState<string | null>(null);
   const displayUser = isOwnProfile ? user : otherUser;
 
   useEffect(() => {
@@ -264,6 +277,28 @@ const Profile = () => {
       setFollowUpdating(false);
     }
   }
+
+  const handleDeleteStream = async (streamId: string) => {
+    if (deletingStreamId) return;
+
+    setDeletingStreamId(streamId);
+    try {
+      const { data } = await api.delete(`/stream/${streamId}/delete`);
+      setStreams((current) =>
+        current.filter((stream) => String(stream._id) !== streamId)
+      );
+      setUser((current) => current ? {
+        ...current,
+        streams: (current.streams ?? []).filter(
+          (stream) => String(stream._id) !== streamId
+        ),
+      } : current);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to delete stream");
+    } finally {
+      setDeletingStreamId(null);
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-background crt-container film-grain flex items-center justify-center">
@@ -474,6 +509,46 @@ const Profile = () => {
                       )}
                     </div>
                     <span className="font-mono text-xs text-muted-foreground shrink-0">{duration}</span>
+                    {isOwnProfile && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            type="button"
+                            disabled={deletingStreamId !== null}
+                            className="shrink-0 border border-destructive/50 p-2 text-destructive transition-colors hover:bg-destructive/15 hover:border-destructive disabled:cursor-not-allowed disabled:opacity-50"
+                            aria-label={`Delete ${stream.title}`}
+                            title="Delete stream"
+                          >
+                            {deletingStreamId === String(stream._id) ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="border-2 border-destructive bg-background font-mono shadow-[0_0_40px_rgba(239,68,68,0.25)]">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="font-pixel text-sm uppercase text-destructive">
+                              Delete stream?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="font-mono">
+                              Are you sure you want to permanently delete “{stream.title}”? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="font-pixel text-xs">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteStream(String(stream._id))}
+                              className="bg-destructive font-pixel text-xs text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete permanently
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
                   </div>
                 );
               })}

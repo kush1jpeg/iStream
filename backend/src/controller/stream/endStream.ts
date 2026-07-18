@@ -35,10 +35,10 @@ export const terminateStream = async (streamId: string, userId: string) => {
 
   if (!stream) throw new Error("Stream not found");
   console.log({
-  userId,
-  streamerId: stream.streamerId.toString(),
-  streamId,
-});
+    userId,
+    streamerId: stream.streamerId.toString(),
+    streamId,
+  });
   if (stream.streamerId.toString() !== userId) throw new Error("Unauthorized");
   if (stream.status !== "live") throw new Error("Stream is not live");
 
@@ -58,4 +58,11 @@ export const terminateStream = async (streamId: string, userId: string) => {
   pipeline.del(`streamKey:${stream.streamKey}`);
   pipeline.del(`stream:likes:${streamId}`);
   await pipeline.exec();
+
+  await redis.publish(`stream:log:${userId}`, JSON.stringify({
+    status: "stream:ended",
+    msg: "stream ended due to user action or poller",
+    streamId,
+    createdAt: Date.now()
+  }));
 };
