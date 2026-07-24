@@ -28,7 +28,6 @@ export function redisSubNotifyListener(io: Namespace) {
       console.log("got a notifcation - ", msg);
       io.to(notifuserId).emit("notifications", msg);
     } else if (pattern === "stream:log:*") {
-      console.log("got a streamLog - ", msg);
       io.to(streamUserId).emit("stream:logs", msg);
     }
   });

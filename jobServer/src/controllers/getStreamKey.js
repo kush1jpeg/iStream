@@ -4,6 +4,7 @@ import { redisClient } from "../config/redis.js";
 export const resolveStream = async (req, res) => {
   try {
     const originalUri = req.headers["x-original-uri"];
+    console.log("[NGINX ] - resolveStream called with X-Original-URI:", originalUri);
     if (!originalUri) {
       return res.status(400).json({ error: "X-Original-URI header required" });
     }
@@ -15,6 +16,7 @@ export const resolveStream = async (req, res) => {
     }
 
     const streamId = match[1];
+    console.log("[NGINX ] - resolveStream called with streamId:", streamId);
 
     const streamData = await redisClient.hgetall(`stream:${streamId}`);
     if (!streamData || Object.keys(streamData).length === 0) {
@@ -29,7 +31,9 @@ export const resolveStream = async (req, res) => {
     }
 
     if (status == "pending" || status == "ended") {
-      return res.status(403).json({ error: "stream is not currently live or ended" });
+      return res
+        .status(403)
+        .json({ error: "stream is not currently live or ended" });
     }
 
     if (status == "inactive") {
@@ -38,6 +42,7 @@ export const resolveStream = async (req, res) => {
 
     // nginx reads this header via $upstream_http_x_stream_key
     res.setHeader("X-Stream-Key", streamKey);
+    console.log("[NGINX ] -", streamKey);
     return res.status(200).end();
   } catch (err) {
     console.error("resolveStream error:", err);

@@ -5,16 +5,36 @@ import { terminateStream } from "./endStream";
 export async function start_deadStreamConsumer() {
   const channel = await getPublishChannel();
   channel.prefetch(1);
+
   channel.consume("stream_end", async (msg) => {
     if (!msg) return;
-    console.log(
-      "[*] Received message in stream_end queue",
-      msg.content.toString(),
-    );
-    const { streamId, userId } = JSON.parse(msg.content.toString());
-    await terminateStream(streamId, userId);
-    channel.ack(msg);
-  });
+
+    let payload: { streamId: string; userId: string };
+    try {
+      payload = JSON.parse(msg.content.toString());
+    } catch (err) {
+      console.error("[stream_end] malformed message, dropping", msg.content.toString());
+      channel.nack(msg, false, false);
+      return;
+    }
+
+    const { streamId, userId } = payload;
+    console.log("[*] Received message in stream_end queue", { streamId, userId });
+
+    try {
+      await terminateStream(streamId, userId);
+      channel.ack(msg);
+    } catch (err: any) {
+      if (err.message === "Stream is not live" || err.message === "Stream not found") {
+        // already handled elsewhere (race with HTTP endStream, or duplicate delivery) — not a real failure
+        console.warn(`[stream_end] no-op: ${err.message}`, { streamId, userId });
+        channel.ack(msg); // acknowledge, don't retry — retrying won't fix "already ended"
+      } else {
+        console.error(`[stream_end] terminateStream failed`, err);
+        channel.nack(msg, false, true); // transient failure (DB down, redis down) — requeue and retry
+      }
+    }
+  }, { noAck: false });
 
   console.log("[+] stream lifecycle consumer started");
 }

@@ -6,7 +6,7 @@ import { INotification, IStreamRedis } from "@istream/shared";
 import { publishNotifs } from "../../services/otp/publishNotif";
 import { getFullLink } from "../user/getSignedLink";
 
-const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls/live";
+const HLS_PATH = process.env.HLS_BASE_URL || "http://localhost:8888/hls";
 const VOD_PATH = `${process.env.R2_PUBLIC_URL}/hls/live/`;
 
 export const startStream = async (req: Request, res: Response) => {
@@ -66,7 +66,7 @@ export const startStream = async (req: Request, res: Response) => {
     streamerId: String(userId),
     streamId: String(streamId),
     streamKey: stream.streamKey,
-    HLS_PATH: `${HLS_PATH}/${stream.streamKey}/master.m3u8`,
+    HLS_PATH: `${HLS_PATH}/${stream.id}/master.m3u8`,
     inactiveSince: "",
     status: "pending",
     viewers: "0",
@@ -91,13 +91,16 @@ export const startStream = async (req: Request, res: Response) => {
     createdAt: Date.now(),
   };
   await publishNotifs(notify);
-  await redis.publish(`stream:log:${userId}`, JSON.stringify({
-    type: "stream:pending",
-    msg: "waiting for OBS to connect",
-    userId,
-    streamId,
-    createdAt: Date.now()
-  }));
+  await redis.publish(
+    `stream:log:${userId}`,
+    JSON.stringify({
+      type: "stream:pending",
+      msg: "waiting for OBS to connect",
+      userId,
+      streamId,
+      createdAt: Date.now(),
+    }),
+  );
   return res
     .status(201)
     .json({ success: true, message: "Stream started successfully" });

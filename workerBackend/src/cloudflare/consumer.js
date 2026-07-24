@@ -25,6 +25,8 @@ export async function startUploadConsumer(MTX_PATH) {
         "info",
       );
       fs.unlinkSync(job.filePath);
+      /* deleting it as soon as it pushes to r2; cant store it in disk though there is a condition(very rare)
+       that it is not streamed but pushed first and deleted */
       await publishStreamLog(`del - ${job.filePath}`, MTX_PATH, "info");
     } catch (err) {
       await publishStreamLog(`[VOD] upload failed:, ${err}`, MTX_PATH, "err");

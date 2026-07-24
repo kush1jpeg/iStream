@@ -40,7 +40,7 @@ export const terminateStream = async (streamId: string, userId: string) => {
     streamId,
   });
   if (stream.streamerId.toString() !== userId) throw new Error("Unauthorized");
-  if (stream.status !== "live") throw new Error("Stream is not live");
+  if (stream.status !== "live") return; // already ended no-op
 
   const redisStream = await redis.hgetall(`stream:${streamId}`);
 
