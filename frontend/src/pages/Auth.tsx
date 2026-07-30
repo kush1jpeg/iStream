@@ -5,9 +5,11 @@ import 'ldrs/react/Pinwheel.css'
 import { api } from '@/App';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useAuthStore } from "@/components/zustand/zustand";
 
 export function Auth() {
   const navigate = useNavigate();
+  const setUser = useAuthStore((state) => state.setUser);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,6 +31,8 @@ export function Auth() {
       toast(response.data.msg);
       if (response.data.type === "OTP") navigate("/otp/verify");
       else if (response.data.type === "SUCCESS") {
+        const { data } = await api.get("/user/me");
+        setUser(data.user);
         navigate("/");
       }
     } catch (err: any) {
@@ -240,4 +244,3 @@ export function Auth() {
     </div>
   </>);
 }
-

@@ -37,25 +37,40 @@ export const updateLastReadNotification = async (
   res: Response,
 ) => {
   const userId = req.id;
-  if (!userId) throw new Error("Unauthorized");
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
   const notifId = req.body.notifId;
-  if (!notifId) {
-    return res.status(400).json({ error: "notifId required" });
+  if (!notifId || !Types.ObjectId.isValid(notifId)) {
+    return res.status(400).json({ message: "Valid notifId required" });
   }
+
   const notif = await notifyModel.findOne({
     _id: notifId,
-    userId: userId,
-  });
+    userId,
+  }).select("_id");
 
   if (!notif) {
-    return res.status(404).json({ error: "Notification not found" });
+    return res.status(404).json({ message: "Notification not found" });
   }
-  const user = await userModel.findByIdAndUpdate(userId, {
-    lastReadNotificationId: notifId,
+
+  const user = await userModel.findById(userId).select("lastReadNotificationId");
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // A delayed request from another tab must not move the read cursor backwards.
+  if (
+    !user.lastReadNotificationId ||
+    user.lastReadNotificationId.toString() < notif._id.toString()
+  ) {
+    user.lastReadNotificationId = notif._id;
+    await user.save();
+  }
+
+  return res.status(200).json({
+    success: true,
+    lastReadNotificationId: user.lastReadNotificationId,
   });
-
-  if (!user) throw new Error("user not found");
-
-  return res.status(200).json({ msg: "lastReadNotificationId updated" });
 };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Bell, BellOff, X, BellRingIcon } from "lucide-react";
 import { INotification } from "@istream/shared";
 import { api } from "@/App";
@@ -11,27 +11,69 @@ const TYPE_META: Record<string, { symbol: string; label: string }> = {
   like: { symbol: "❤️", label: "liked your stream" },
 };
 
+type NotificationItem = INotification & { _id: string };
 
 const NotifDropdown = () => {
   const [open, setOpen] = useState(false);
-  const [notifs, setNotifs] = useState<INotification[]>([]);
+  const [notifs, setNotifs] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // unread count is persisted across opens so the badge doesn't vanish after marking read
   const [unreadCount, setUnreadCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const hasConnected = useRef(false);
   const notifySocket = getSocket("/notify");
 
+  const fetchNotifs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.get<NotificationItem[]>("/user/notify");
+      setNotifs(data);
+      setUnreadCount(data.length);
+    } catch (err: any) {
+      setError(err.response?.data?.message?.toUpperCase() || "FAILED TO LOAD");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
+    fetchNotifs();
     if (!notifySocket) return;
-    notifySocket.on("connect", () => {
-      console.log("connected");
-    });
+
+    const handleConnect = () => {
+      if (hasConnected.current) {
+        // Reconcile notifications that may have arrived while the socket was offline.
+        fetchNotifs();
+      }
+      hasConnected.current = true;
+    };
+    const handleNotification = (payload: string | NotificationItem) => {
+      try {
+        const notification = typeof payload === "string" ? JSON.parse(payload) : payload;
+        if (!notification?._id) return;
+        setNotifs((current) => {
+          if (current.some((item) => String(item._id) === String(notification._id))) {
+            return current;
+          }
+          setUnreadCount((count) => count + 1);
+          return [...current, notification];
+        });
+      } catch {
+        console.error("Received an invalid notification payload");
+      }
+    };
+
+    notifySocket.on("connect", handleConnect);
+    notifySocket.on("notifications", handleNotification);
+    if (notifySocket.connected) hasConnected.current = true;
 
     return () => {
-      notifySocket.disconnect();
+      notifySocket.off("connect", handleConnect);
+      notifySocket.off("notifications", handleNotification);
     };
-  }, []);
+  }, [fetchNotifs, notifySocket]);
 
   // Close on outside click
   useEffect(() => {
@@ -42,43 +84,17 @@ const NotifDropdown = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-
-  const fetchNotifs = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Backend only returns notifs AFTER lastReadId — so every item here is unread
-      const { data } = await api.get<INotification[]>(
-        "/user/notify",
-        { withCredentials: true }
-      );
-      console.log("notifs - ", data)
-      setNotifs(data);
-      setUnreadCount(data.length);
-
-      // Mark all as read by sending the last (most recent) notif's _id
-      // Backend sorts by _id asc, so last item = most recent
-      if (data.length > 0) {
-        const lastId = data[data.length - 1]._id;
-        api
-          .post(
-            "user/update/lastReadNotif",
-            { notifId: lastId },
-            { withCredentials: true }
-          )
-          .catch(() => { }); // fire-and-forget, non-critical
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message?.toUpperCase() || "FAILED TO LOAD");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleToggle = () => {
     if (!open) {
-      fetchNotifs();
-      setUnreadCount(0); // clear badge immediately on open
+      const latestNotification = notifs[notifs.length - 1];
+      if (latestNotification) {
+        api
+          .patch("/user/update/lastReadNotif", { notifId: latestNotification._id })
+          .then(() => setUnreadCount(0))
+          .catch((err) => {
+            setError(err.response?.data?.message?.toUpperCase() || "FAILED TO MARK AS READ");
+          });
+      }
     }
     setOpen((prev) => !prev);
   };
@@ -161,7 +177,7 @@ const NotifDropdown = () => {
 };
 
 
-const NotifItem = ({ notif }: { notif: INotification }) => {
+const NotifItem = ({ notif }: { notif: NotificationItem }) => {
   const meta = TYPE_META[notif.type];
 
   const timeAgo = (() => {

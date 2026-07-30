@@ -4,8 +4,9 @@ import { getPayChannel } from "../config/rabbitmq";
 import { IPay } from "@istream/shared";
 
 interface ChatPayload {
-  streamId: string;
-  msg: string;
+  streamId?: string;
+  stickerType?: string;
+  msg?: string;
 }
 
 export function registerLiveChatHandler(io: Namespace, socket: Socket) {
@@ -22,17 +23,25 @@ export function registerLiveChatHandler(io: Namespace, socket: Socket) {
     socket.leave(streamId);
   });
 
-  socket.on("stream:send", async ({ streamId, msg }: ChatPayload) => {
+  socket.on("stream:send", async (payload: ChatPayload = {}) => {
     const userId = socket.data.userId;
     const username = socket.data.username;
+    const { streamId, msg, stickerType } = payload;
+    const message = typeof msg === "string" ? msg.trim() : "";
+
+    if (!streamId || !message) {
+      return socket.emit("stream:chat:error", "Message cannot be empty");
+    }
 
     if (!(await redis.exists(`stream:${streamId}`))) {
       return socket.emit("error", "Stream does not exist");
     }
-    socket.to(streamId).emit("stream:chat", {
-      msg,
+
+    io.to(streamId).emit("stream:chat", {
+      msg: message,
       userId,
       username,
+      stickerType,
       createdAt: Date.now(),
     });
   });

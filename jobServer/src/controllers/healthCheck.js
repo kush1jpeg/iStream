@@ -1,4 +1,5 @@
 import { redisConnect } from "../config/redis.js";
+import { checkRabbitMQ } from "../config/rabbitmq.js";
 
 export const healthCheck = async (req, res) => {
   const redis = await redisConnect();

@@ -4,38 +4,105 @@ import { Send, Smile, Terminal } from "lucide-react";
 import Picker from "emoji-picker-react";
 import { SuperChatSelector } from "./ui/superchat";
 import { cn } from "@/lib/utils";
+import { connectAllSockets, getSocket } from "@/lib/socket";
+import { useAuthStore } from "./zustand/zustand";
 
 interface Message {
   id: string;
+  userId: string;
   username: string;
   message: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
-export const ChatBox = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", username: "retro_user", message: "This stream is amazing!", createdAt: "12:34" },
-    { id: "2", username: "pixel_fan", message: "Love the analog vibes", createdAt: "12:35" },
-    { id: "3", username: "vhs_collector", message: "Reminds me of old broadcasts", createdAt: "12:36" },
-  ]);
+interface StreamChatPayload {
+  msg: string;
+  userId: string;
+  username: string;
+  createdAt: string | number | Date;
+}
+
+export const ChatBox = ({ streamId }: { streamId: string }) => {
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [showEmoji, setShowEmoji] = useState(false);
+  const user = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    connectAllSockets();
+    const liveSocket = getSocket("/live");
+    if (!liveSocket) return;
+
+    const joinRoom = () => {
+      if (!streamId) return;
+      liveSocket.emit("stream:join", { streamId });
+    };
+
+    const receiveMessage = (payload: StreamChatPayload | string) => {
+      let chat: StreamChatPayload;
+      try {
+        chat = typeof payload === "string" ? JSON.parse(payload) : payload;
+      } catch {
+        return;
+      }
+      if (!chat?.msg || !chat.userId || !chat.username) return;
+
+      const createdAt = new Date(chat.createdAt);
+      if (Number.isNaN(createdAt.getTime())) return;
+
+      setMessages((previous) =>
+        [
+          ...previous,
+          {
+            id: `${chat.userId}-${createdAt.getTime()}-${previous.length}`,
+            userId: chat.userId,
+            username: chat.username,
+            message: chat.msg,
+            createdAt,
+          },
+        ].slice(-300)
+      );
+    };
+
+    const handleConnectError = (error: any) => {
+      console.error("Live socket connect error:", error);
+    };
+
+    if (liveSocket.connected) {
+      joinRoom();
+    }
+
+    liveSocket.on("connect", joinRoom);
+    liveSocket.on("connect_error", handleConnectError);
+    liveSocket.on("stream:chat", receiveMessage);
+    liveSocket.on("stream:chat:error", (errorMessage: string) => {
+      console.error("Stream chat error:", errorMessage);
+    });
+
+    return () => {
+      liveSocket.off("connect", joinRoom);
+      liveSocket.off("connect_error", handleConnectError);
+      liveSocket.off("stream:chat", receiveMessage);
+      liveSocket.off("stream:chat:error");
+      liveSocket.emit("stream:leave", { streamId });
+    };
+  }, [streamId]);
 
   const handleEmojiClick = (emojiData: any) => {
     setInput((prev) => prev + emojiData.emoji);
   };
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    const message = input.trim();
+    if (!message) return;
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      username: "you",
-      message: input,
-      createdAt: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-    };
+    const liveSocket = getSocket("/live");
+    if (!liveSocket) {
+      console.error("Live socket not connected");
+      return;
+    }
 
-    setMessages([...messages, newMessage]);
+    liveSocket.emit("stream:send", { streamId, msg: message });
     setInput("");
   };
 
@@ -62,12 +129,18 @@ export const ChatBox = () => {
         {messages.map((msg) => (
           <div key={msg.id} className="group animate-slide-in">
             <div className="flex items-baseline gap-2">
-              <span className="text-xs text-muted-foreground">{msg.createdAt}</span>
+              <span className="text-xs text-muted-foreground">
+                {msg.createdAt.toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })}
+              </span>
               <span className={cn(
                 "text-sm font-mono",
-                msg.username === "you" ? "text-accent" : "text-primary"
+                String(user?._id) === msg.userId ? "text-accent" : "text-primary"
               )}>
-                {msg.username}:
+                {String(user?._id) === msg.userId ? "you" : msg.username}:
               </span>
             </div>
             <p className="text-sm pl-14 text-foreground">{msg.message}</p>

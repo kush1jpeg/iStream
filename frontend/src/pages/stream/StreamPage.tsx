@@ -115,7 +115,7 @@ const StreamPage = () => {
             </RetroContainer>
           </div>
 
-          <ChatBox />
+          <ChatBox streamId={streamId!} />
 
         </div>
       </main>

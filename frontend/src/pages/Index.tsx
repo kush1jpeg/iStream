@@ -183,12 +183,13 @@ const Index = () => {
                     .filter(s => activeTag ? s.stream.tags?.includes(activeTag) : true)
                     .map((stream, i) => (
                       <div
-                        key={stream.streamerId}
+                        key={stream.streamId}
                         className="animate-slide-in"
                         style={{ animationDelay: `${i * 100}ms` }}
                       >
                         <StreamCard
-                          id={stream.streamerId}
+                          id={stream.streamId}
+                          type="live"
                           title={stream.stream.title}
                           streamer={stream.streamer.username}
                           avatar={stream.streamer.avatar}

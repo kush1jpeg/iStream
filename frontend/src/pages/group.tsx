@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/App";
 import { useNavigate } from "react-router-dom";
 import { Search, Plus, X, Check } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface User {
   _id: string;
@@ -67,7 +68,12 @@ export default function CreateGroupPage() {
 
   // create group -- currently i am storing the url but do the same like in user
   const createGroup = async () => {
-    if (!groupName || members.length === 0) return;
+    if (members.length < 2) {
+      toast.error("Please add at least 2 people to create a group.");
+      return;
+    }
+
+    if (!groupName.trim()) return;
 
     setLoading(true);
     try {
@@ -326,7 +332,7 @@ export default function CreateGroupPage() {
         {/* CREATE BUTTON */}
         <button
           onClick={createGroup}
-          disabled={!groupName || members.length === 0 || loading}
+          disabled={loading}
           className="mt-8 w-full border border-purple-500 py-3 hover:bg-purple-800 transition "
         >
           {loading ? "CREATING..." : "INITIALIZE GROUP"}

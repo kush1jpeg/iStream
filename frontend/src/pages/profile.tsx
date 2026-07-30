@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { GlitchText } from "@/components/GlitchText";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -200,8 +200,6 @@ const Profile = () => {
   const [otherUser, setOtherUser] = useState<IUserFrontend | null>(null);
   const [otherUserFollowing, setOtherUserFollowing] = useState(false);
   const [followUpdating, setFollowUpdating] = useState(false);
-  const [streams, setStreams] = useState<IStream[]>([]);
-  const [donations, setDonations] = useState<IPay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -209,29 +207,46 @@ const Profile = () => {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [deletingStreamId, setDeletingStreamId] = useState<string | null>(null);
   const displayUser = isOwnProfile ? user : otherUser;
+  const streams: IStream[] = displayUser?.streams ?? [];
+  const donations: IPay[] = displayUser?.donations ?? [];
+
+  const loadProfile = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true);
+    setError(null);
+
+    try {
+      if (isOwnProfile) {
+        const { data } = await api.get("/user/me", { withCredentials: true });
+        setUser(data.user);
+      } else {
+        const { data } = await api.get(`/user/${userId}/stats`, { withCredentials: true });
+        setOtherUser(data.user);
+        setOtherUserFollowing(data.following);
+      }
+    } catch (e: any) {
+      setError(e.response?.data?.message || "Failed to load profile");
+    } finally {
+      setLoading(false);
+    }
+  }, [isOwnProfile, setUser, userId]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        if (isOwnProfile) {
-          setStreams(user.streams ?? []);
-          setDonations(user.donations ?? []);
-        } else {
-          const { data } = await api.get(`user/${userId}/stats`, { withCredentials: true });
-          setOtherUser(data.user);
-          setOtherUserFollowing(data.following)
-          console.log(data);
-          setStreams(data.user?.streams ?? []);
-          setDonations(data.user?.donations ?? []);
-        }
-      } catch (e: any) {
-        setError(e.response?.data?.message || "Failed to load profile");
-      } finally {
-        setLoading(false);
+    void loadProfile(true);
+
+    const refreshVisibleProfile = () => {
+      if (document.visibilityState === "visible") {
+        void loadProfile();
       }
     };
-    load();
-  }, [userId]);
+
+    window.addEventListener("focus", refreshVisibleProfile);
+    document.addEventListener("visibilitychange", refreshVisibleProfile);
+
+    return () => {
+      window.removeEventListener("focus", refreshVisibleProfile);
+      document.removeEventListener("visibilitychange", refreshVisibleProfile);
+    };
+  }, [loadProfile]);
 
   const handleBannerUpload = async (file: File) => {
     setUploadingBanner(true);
@@ -283,10 +298,7 @@ const Profile = () => {
 
     setDeletingStreamId(streamId);
     try {
-      const { data } = await api.delete(`/stream/${streamId}/delete`);
-      setStreams((current) =>
-        current.filter((stream) => String(stream._id) !== streamId)
-      );
+      await api.delete(`/stream/${streamId}/delete`);
       setUser((current) => current ? {
         ...current,
         streams: (current.streams ?? []).filter(

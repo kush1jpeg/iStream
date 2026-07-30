@@ -53,7 +53,11 @@ export const VideoPlayer = ({ streamUrl, thumbnail, autoPlay = true }: VideoPlay
 
     let hls: Hls | null = null;
     if (Hls.isSupported()) {
-      hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+      hls = new Hls({
+        enableWorker: true, lowLatencyMode: true, manifestLoadingMaxRetry: 30,
+        manifestLoadingRetryDelay: 500,
+        manifestLoadingMaxRetryTimeout: 1500,
+      });
       hlsRef.current = hls;
       hls.loadSource(streamUrl);
       hls.attachMedia(video);
@@ -69,15 +73,15 @@ export const VideoPlayer = ({ streamUrl, thumbnail, autoPlay = true }: VideoPlay
         if (status === 404) {
           setError({
             status,
-            message: "VOD manifest not found on Nginx.",
+            message: "Manifest not found on Nginx.",
           });
         } else if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
           setError({
             status,
-            message: "Failed to load the VOD from the playback server.",
+            message: "Failed to load the manifest from the playback server.",
           });
         } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          setError({ message: "The VOD could not be decoded for playback." });
+          setError({ message: "The manifest could not be decoded for playback." });
         } else {
           setError({ message: "Something went wrong while loading this video." });
         }

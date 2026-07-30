@@ -244,17 +244,6 @@ export default function StreamerDashboard() {
     if (!text || !streamId) return;
     const liveSocket = getSocket("/live");
     liveSocket?.emit("stream:send", { streamId, msg: text });
-    setChat((prev) =>
-      [
-        ...prev,
-        {
-          msg: text,
-          userId: "me",
-          username: "You",
-          createdAt: new Date(),
-        },
-      ].slice(-300)
-    );
     setChatInput("");
   }, [chatInput, streamId]);
 

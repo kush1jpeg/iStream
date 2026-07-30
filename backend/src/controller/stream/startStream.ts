@@ -32,7 +32,14 @@ export const startStream = async (req: Request, res: Response) => {
   }
 
   stream.status = "live";
-  if (!stream.isCloud) stream.thumbnail = thumbnail;
+  if (thumbnail) {
+    if (stream.isCloud && !thumbnail.startsWith("http")) {
+      stream.thumbnail = thumbnail;
+      stream.isCloud = false;
+    } else if (!stream.isCloud) {
+      stream.thumbnail = thumbnail;
+    }
+  }
   stream.VOD_URL = `${VOD_PATH}${stream.streamKey}/master.m3u8`;
   stream.startedAt = new Date();
   await stream.save();

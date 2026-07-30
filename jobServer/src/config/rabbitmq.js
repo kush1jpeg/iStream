@@ -6,14 +6,37 @@ let channel = null;
 export async function connectRabbitMQ(RABBITMQ_URL) {
   while (true) {
     try {
-      conn = await amqp.connect(RABBITMQ_URL);
-      channel = await conn.createChannel();
-      await channel.assertQueue("stream.jobs", { durable: true });
+      const nextConn = await amqp.connect(RABBITMQ_URL);
+      const nextChannel = await nextConn.createChannel();
+
+      conn = nextConn;
+      channel = nextChannel;
+
+      nextConn.on("error", (err) => {
+        console.error("[RabbitMQ] connection error:", err);
+      });
+      nextConn.on("close", () => {
+        console.error("[RabbitMQ] connection closed");
+        if (conn === nextConn) conn = null;
+        if (channel === nextChannel) channel = null;
+      });
+
+      nextChannel.on("error", (err) => {
+        console.error("[RabbitMQ] channel error:", err);
+      });
+      nextChannel.on("close", () => {
+        console.error("[RabbitMQ] channel closed");
+        if (channel === nextChannel) channel = null;
+      });
+
+      await nextChannel.assertQueue("stream.jobs", { durable: true });
       console.log("✅ Connected to RabbitMQ");
-      return channel;
+      return nextChannel;
     } catch (err) {
       console.log("[!] RabbitMQ not ready, retrying in 3s...", err.message);
       if (conn) await conn.close().catch(() => {});
+      conn = null;
+      channel = null;
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   }
@@ -27,9 +50,9 @@ export async function getChannel() {
 }
 
 export async function checkRabbitMQ() {
-  if (!conn) return false;
+  if (!conn || !channel) return false;
   try {
-    await channel.checkQueue("like_queue");
+    await channel.checkQueue("stream.jobs");
     return true;
   } catch {
     return false;

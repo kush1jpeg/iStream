@@ -101,6 +101,7 @@ export default function GoLive() {
       console.log("Stream initiated:", data);
       setStreamData({
         ...data.data,
+        thumbnail: form.thumbnail,
       });
       setStep("ready");
     } catch (err: any) {
@@ -115,7 +116,8 @@ export default function GoLive() {
     setLoading(true);
     setError(null);
     try {
-      await api.post("/stream/start", { streamId: streamData?.streamId, thumbnail: streamData.thumbnail }, { withCredentials: true });
+      const thumbnail = streamData.thumbnail || form.thumbnail || "/thumbnail/miku.jpg";
+      await api.post("/stream/start", { streamId: streamData.streamId, thumbnail }, { withCredentials: true });
       setStep("live");
     } catch (err: any) {
       setError(err.message);

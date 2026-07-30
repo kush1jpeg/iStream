@@ -1,7 +1,7 @@
 import { api } from "@/App";
 
 export const verifyPayment = async (response: any, transactionId: string) => {
-  api.post("/verify-payment", {
+  api.post("/shop/verify-payment", {
     ...response,
     transactionId,
   })
