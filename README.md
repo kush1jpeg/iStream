@@ -38,26 +38,18 @@ RTMP ingest → adaptive-bitrate FFmpeg streaming → HLS delivery for live, seg
 
 Beyond media: real-time chat over namespaced Socket.IO (sidebar, notify, dm, group, live), a razorpay integration for superchats, an isolated notification service with per-user pub/sub fan-out, and a reconciliation worker that cleans up expired payments.
 
+<p align="center"> <a href="https://youtu.be/ukJ5Uw1WdHg?si=S96CU9g0YujTSJJi"> <img src="https://img.shields.io/badge/Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch the iStream demo on YouTube" > </a> </p>
+
+
 ### For contributors
 
-<table>
-<tr>
-<td width="220">
+[Open an issue here](https://github.com/kush1jpeg/iStream/issues) for suggestions, bugs, or feature requests.
 
-<img src="assets/readme/wip.gif" alt="wip" width="210">
-</td>
-<td>
+Interested in contributing? Read these first:
 
-[Open an issue here](https://github.com/kush1jpeg/iStream/issues) for suggestions, bugs, etc.
+- [Architecture](docs/architecture.md) — understand how the streaming pipeline, jobs, workers, and storage fit together.
+- [Contributing](docs/contributing.md) — contribution guidelines and project setup.
 
-If you are contributing code, please read these docs first:
-
-- [architecture](docs/architecture.md) —> to understand how the streaming pipeline, jobs, workers, and storage fit together.
-- [contribute](docs/contributing.md) —> a humble request
-
-</td>
-</tr>
-</table>
 
 
 ## Contact
